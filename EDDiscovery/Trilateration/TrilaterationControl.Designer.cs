@@ -67,10 +67,10 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripButtonSubmitDistances = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonNew = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonMap = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonRemoveAll = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonRemoveUnused = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonRemoveAll = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonMap = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDistances)).BeginInit();
             this.panelImplementation.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -102,6 +102,7 @@
             this.dataGridViewDistances.CellLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewDistances_CellLeave);
             this.dataGridViewDistances.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.dataGridViewDistances_CellValidating);
             this.dataGridViewDistances.EditingControlShowing += new System.Windows.Forms.DataGridViewEditingControlShowingEventHandler(this.dataGridViewDistances_EditingControlShowing);
+            this.dataGridViewDistances.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewDistances_KeyDown);
             // 
             // ColumnSystem
             // 
@@ -472,28 +473,6 @@
             this.toolStripButtonNew.ToolTipText = "Calculate coordinates for current system";
             this.toolStripButtonNew.Click += new System.EventHandler(this.toolStripButtonNew_Click);
             // 
-            // toolStripButtonMap
-            // 
-            this.toolStripButtonMap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonMap.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonMap.Image")));
-            this.toolStripButtonMap.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonMap.Name = "toolStripButtonMap";
-            this.toolStripButtonMap.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonMap.Text = "3d map";
-            this.toolStripButtonMap.ToolTipText = "Show 3d map";
-            this.toolStripButtonMap.Click += new System.EventHandler(this.toolStripButtonMap_Click);
-            // 
-            // toolStripButtonRemoveAll
-            // 
-            this.toolStripButtonRemoveAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonRemoveAll.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonRemoveAll.Image")));
-            this.toolStripButtonRemoveAll.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonRemoveAll.Name = "toolStripButtonRemoveAll";
-            this.toolStripButtonRemoveAll.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButtonRemoveAll.Text = "toolStripButton1";
-            this.toolStripButtonRemoveAll.ToolTipText = "Remove all";
-            this.toolStripButtonRemoveAll.Click += new System.EventHandler(this.toolStripButtonRemoveAll_Click);
-            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -509,6 +488,28 @@
             this.toolStripButtonRemoveUnused.Text = "toolStripButtonRemoveUnused";
             this.toolStripButtonRemoveUnused.ToolTipText = "Remove unused";
             this.toolStripButtonRemoveUnused.Click += new System.EventHandler(this.toolStripButtonRemoveUnused_Click);
+            // 
+            // toolStripButtonRemoveAll
+            // 
+            this.toolStripButtonRemoveAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonRemoveAll.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonRemoveAll.Image")));
+            this.toolStripButtonRemoveAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonRemoveAll.Name = "toolStripButtonRemoveAll";
+            this.toolStripButtonRemoveAll.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonRemoveAll.Text = "toolStripButton1";
+            this.toolStripButtonRemoveAll.ToolTipText = "Remove all";
+            this.toolStripButtonRemoveAll.Click += new System.EventHandler(this.toolStripButtonRemoveAll_Click);
+            // 
+            // toolStripButtonMap
+            // 
+            this.toolStripButtonMap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonMap.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonMap.Image")));
+            this.toolStripButtonMap.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonMap.Name = "toolStripButtonMap";
+            this.toolStripButtonMap.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonMap.Text = "3d map";
+            this.toolStripButtonMap.ToolTipText = "Show 3d map";
+            this.toolStripButtonMap.Click += new System.EventHandler(this.toolStripButtonMap_Click);
             // 
             // TrilaterationControl
             // 

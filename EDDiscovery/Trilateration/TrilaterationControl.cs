@@ -877,5 +877,44 @@ namespace EDDiscovery
                 }
             }
         }
+
+        private void SelectNextEditableCell(DataGridView dataGridView)
+        {
+            DataGridViewCell cell = dataGridView.CurrentCell;
+            if(cell == null) return;
+
+            int row = cell.RowIndex;
+            int col = cell.ColumnIndex;
+
+            if(row == dataGridView.RowCount && col == dataGridView.RowCount) return;
+
+            do {
+                col++;
+                if(col >= dataGridView.ColumnCount)
+                {
+                    col = 0;
+                    row++;
+                    if (row >= dataGridView.RowCount)
+                    {
+                        row = dataGridView.RowCount - 1;
+                        dataGridView.CurrentCell = dataGridView.Rows[row].Cells[col];
+                        return;
+                    }
+                }
+                cell = dataGridView.Rows[row].Cells[col];
+            } while( cell.ReadOnly );
+            dataGridView.CurrentCell = cell;
+        }
+
+        private void dataGridViewDistances_KeyDown(object sender, KeyEventArgs e)
+        {
+            DataGridView self = sender as DataGridView;
+            /* On tab, skip over read-only cells */
+            if (self.Focused && e.KeyCode == Keys.Tab)
+            {
+                SelectNextEditableCell(self);
+                e.Handled = true;
+            }
+        }
     }
 }
