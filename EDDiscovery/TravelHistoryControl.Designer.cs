@@ -110,6 +110,7 @@
             this.richTextBox_History.Name = "richTextBox_History";
             this.richTextBox_History.Size = new System.Drawing.Size(588, 91);
             this.richTextBox_History.TabIndex = 6;
+            this.richTextBox_History.TabStop = false;
             this.richTextBox_History.Text = "";
             // 
             // button_RefreshHistory
@@ -119,6 +120,7 @@
             this.button_RefreshHistory.Name = "button_RefreshHistory";
             this.button_RefreshHistory.Size = new System.Drawing.Size(69, 23);
             this.button_RefreshHistory.TabIndex = 5;
+            this.button_RefreshHistory.TabStop = false;
             this.button_RefreshHistory.Text = "Refresh";
             this.button_RefreshHistory.UseVisualStyleBackColor = true;
             this.button_RefreshHistory.Click += new System.EventHandler(this.button_RefreshHistory_Click);
@@ -152,6 +154,7 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.Size = new System.Drawing.Size(589, 444);
             this.dataGridView1.TabIndex = 8;
+            this.dataGridView1.TabStop = false;
             this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellClick);
             this.dataGridView1.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentDoubleClick);
             this.dataGridView1.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgv_ColumnHeaderMouseClick);
@@ -227,6 +230,7 @@
             this.comboBoxHistoryWindow.Name = "comboBoxHistoryWindow";
             this.comboBoxHistoryWindow.Size = new System.Drawing.Size(94, 21);
             this.comboBoxHistoryWindow.TabIndex = 9;
+            this.comboBoxHistoryWindow.TabStop = false;
             this.comboBoxHistoryWindow.SelectedIndexChanged += new System.EventHandler(this.comboBoxHistoryWindow_SelectedIndexChanged);
             // 
             // label2
@@ -255,6 +259,7 @@
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(278, 213);
             this.listView1.TabIndex = 11;
+            this.listView1.TabStop = false;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
@@ -283,6 +288,7 @@
             this.buttonMap.Name = "buttonMap";
             this.buttonMap.Size = new System.Drawing.Size(83, 23);
             this.buttonMap.TabIndex = 14;
+            this.buttonMap.TabStop = false;
             this.buttonMap.Text = "3D star map";
             this.buttonMap.UseVisualStyleBackColor = true;
             this.buttonMap.Click += new System.EventHandler(this.buttonMap_Click);
@@ -294,6 +300,7 @@
             this.textBoxSystem.ReadOnly = true;
             this.textBoxSystem.Size = new System.Drawing.Size(203, 20);
             this.textBoxSystem.TabIndex = 15;
+            this.textBoxSystem.TabStop = false;
             // 
             // panel1
             // 
@@ -349,13 +356,14 @@
             this.textBoxSolDist.ReadOnly = true;
             this.textBoxSolDist.Size = new System.Drawing.Size(67, 20);
             this.textBoxSolDist.TabIndex = 42;
+            this.textBoxSolDist.TabStop = false;
             // 
             // buttonTrilaterate
             // 
             this.buttonTrilaterate.Location = new System.Drawing.Point(168, 186);
             this.buttonTrilaterate.Name = "buttonTrilaterate";
             this.buttonTrilaterate.Size = new System.Drawing.Size(99, 22);
-            this.buttonTrilaterate.TabIndex = 41;
+            this.buttonTrilaterate.TabIndex = 5;
             this.buttonTrilaterate.Text = "Trilaterate";
             this.buttonTrilaterate.UseVisualStyleBackColor = true;
             this.buttonTrilaterate.Click += new System.EventHandler(this.buttonTrilaterate_Click);
@@ -395,6 +403,7 @@
             this.textBoxState.ReadOnly = true;
             this.textBoxState.Size = new System.Drawing.Size(71, 20);
             this.textBoxState.TabIndex = 37;
+            this.textBoxState.TabStop = false;
             // 
             // textBoxEconomy
             // 
@@ -403,6 +412,7 @@
             this.textBoxEconomy.ReadOnly = true;
             this.textBoxEconomy.Size = new System.Drawing.Size(71, 20);
             this.textBoxEconomy.TabIndex = 33;
+            this.textBoxEconomy.TabStop = false;
             // 
             // label12
             // 
@@ -431,6 +441,7 @@
             this.textBoxGovernment.ReadOnly = true;
             this.textBoxGovernment.Size = new System.Drawing.Size(71, 20);
             this.textBoxGovernment.TabIndex = 35;
+            this.textBoxGovernment.TabStop = false;
             // 
             // textBoxAllegiance
             // 
@@ -439,6 +450,7 @@
             this.textBoxAllegiance.ReadOnly = true;
             this.textBoxAllegiance.Size = new System.Drawing.Size(71, 20);
             this.textBoxAllegiance.TabIndex = 31;
+            this.textBoxAllegiance.TabStop = false;
             // 
             // label11
             // 
@@ -477,6 +489,7 @@
             this.textBoxVisits.ReadOnly = true;
             this.textBoxVisits.Size = new System.Drawing.Size(71, 20);
             this.textBoxVisits.TabIndex = 29;
+            this.textBoxVisits.TabStop = false;
             // 
             // label8
             // 
@@ -493,7 +506,7 @@
             this.richTextBoxNote.Location = new System.Drawing.Point(29, 123);
             this.richTextBoxNote.Name = "richTextBoxNote";
             this.richTextBoxNote.Size = new System.Drawing.Size(238, 47);
-            this.richTextBoxNote.TabIndex = 27;
+            this.richTextBoxNote.TabIndex = 2;
             this.richTextBoxNote.Text = "";
             this.richTextBoxNote.Leave += new System.EventHandler(this.richTextBoxNote_Leave);
             // 
@@ -508,6 +521,7 @@
             this.textBoxDistText.ReadOnly = true;
             this.textBoxDistText.Size = new System.Drawing.Size(263, 28);
             this.textBoxDistText.TabIndex = 26;
+            this.textBoxDistText.TabStop = false;
             this.textBoxDistText.Text = "Important!!  Use galaxy map to get distance with 2 decimals. Ex 17.44     ";
             // 
             // buttonUpdate
@@ -515,7 +529,7 @@
             this.buttonUpdate.Location = new System.Drawing.Point(6, 186);
             this.buttonUpdate.Name = "buttonUpdate";
             this.buttonUpdate.Size = new System.Drawing.Size(69, 22);
-            this.buttonUpdate.TabIndex = 24;
+            this.buttonUpdate.TabIndex = 4;
             this.buttonUpdate.Text = "Update";
             this.buttonUpdate.UseVisualStyleBackColor = true;
             this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
@@ -526,7 +540,7 @@
             this.textBoxDistance.Location = new System.Drawing.Point(81, 188);
             this.textBoxDistance.Name = "textBoxDistance";
             this.textBoxDistance.Size = new System.Drawing.Size(70, 20);
-            this.textBoxDistance.TabIndex = 23;
+            this.textBoxDistance.TabIndex = 3;
             // 
             // label7
             // 
@@ -545,6 +559,7 @@
             this.textBoxPrevSystem.ReadOnly = true;
             this.textBoxPrevSystem.Size = new System.Drawing.Size(186, 13);
             this.textBoxPrevSystem.TabIndex = 21;
+            this.textBoxPrevSystem.TabStop = false;
             // 
             // label_Z
             // 
@@ -563,6 +578,7 @@
             this.textBoxZ.ReadOnly = true;
             this.textBoxZ.Size = new System.Drawing.Size(67, 20);
             this.textBoxZ.TabIndex = 19;
+            this.textBoxZ.TabStop = false;
             // 
             // labelDistEnter
             // 
@@ -592,6 +608,7 @@
             this.textBoxY.ReadOnly = true;
             this.textBoxY.Size = new System.Drawing.Size(67, 20);
             this.textBoxY.TabIndex = 17;
+            this.textBoxY.TabStop = false;
             // 
             // textBoxX
             // 
@@ -600,6 +617,7 @@
             this.textBoxX.ReadOnly = true;
             this.textBoxX.Size = new System.Drawing.Size(67, 20);
             this.textBoxX.TabIndex = 17;
+            this.textBoxX.TabStop = false;
             // 
             // label4
             // 
@@ -627,6 +645,7 @@
             this.textBoxCmdrName.Name = "textBoxCmdrName";
             this.textBoxCmdrName.Size = new System.Drawing.Size(167, 26);
             this.textBoxCmdrName.TabIndex = 18;
+            this.textBoxCmdrName.TabStop = false;
             this.textBoxCmdrName.Leave += new System.EventHandler(this.textBoxCmdrName_Leave);
             // 
             // buttonSync
@@ -635,6 +654,7 @@
             this.buttonSync.Name = "buttonSync";
             this.buttonSync.Size = new System.Drawing.Size(164, 23);
             this.buttonSync.TabIndex = 19;
+            this.buttonSync.TabStop = false;
             this.buttonSync.Text = "Sync with EDSM";
             this.buttonSync.UseVisualStyleBackColor = true;
             this.buttonSync.Click += new System.EventHandler(this.buttonSync_Click);
@@ -653,7 +673,7 @@
             this.textBoxDistanceToNextSystem.Location = new System.Drawing.Point(78, 80);
             this.textBoxDistanceToNextSystem.Name = "textBoxDistanceToNextSystem";
             this.textBoxDistanceToNextSystem.Size = new System.Drawing.Size(48, 20);
-            this.textBoxDistanceToNextSystem.TabIndex = 21;
+            this.textBoxDistanceToNextSystem.TabIndex = 1;
             this.textBoxDistanceToNextSystem.Validating += new System.ComponentModel.CancelEventHandler(this.textBoxDistanceToNextSystem_Validating);
             // 
             // panelRight
@@ -680,6 +700,7 @@
             this.textBoxFilter.Name = "textBoxFilter";
             this.textBoxFilter.Size = new System.Drawing.Size(100, 20);
             this.textBoxFilter.TabIndex = 23;
+            this.textBoxFilter.TabStop = false;
             this.textBoxFilter.TextChanged += new System.EventHandler(this.textBoxFilter_TextChanged);
             this.textBoxFilter.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBoxFilter_KeyUp);
             // 
