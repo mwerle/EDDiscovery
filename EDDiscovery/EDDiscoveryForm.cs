@@ -3,6 +3,7 @@ using EDDiscovery2;
 using EDDiscovery2.DB;
 using EDDiscovery2.EDDB;
 using EDDiscovery2.EDSM;
+using EDDiscovery2.Forms;
 using EDDiscovery2.PlanetSystems;
 using Newtonsoft.Json.Linq;
 using System;
@@ -144,8 +145,8 @@ namespace EDDiscovery
                 Text += "         Systems:  " + SystemData.SystemList.Count;
 
                 imageHandler1.StartWatcher();
-                routeControl1.UpdateRouteButtonState(); // now we have systems, we can update this..
-                
+                routeControl1.EnableRouteTab(); // now we have systems, we can update this..
+
                 routeControl1.travelhistorycontrol1 = travelHistoryControl1;
                 travelHistoryControl1.netlog.OnNewPosition += new NetLogEventHandler(routeControl1.NewPosition);
                 travelHistoryControl1.netlog.OnNewPosition += new NetLogEventHandler(travelHistoryControl1.NewPosition);
@@ -207,7 +208,9 @@ namespace EDDiscovery
                     DownloadMapFile("DW2.json");
                     DownloadMapFile("DW3.jpg");
                     DownloadMapFile("DW3.json");
-
+                    DownloadMapFile("DW4.jpg");
+                    DownloadMapFile("DW4.json");
+                    DeleteMapFile("DW4.png");
 
                     //for (int ii = -10; ii <= 60; ii += 10)
                     //{
@@ -243,6 +246,24 @@ namespace EDDiscovery
             else
                 return false;
         }
+
+        private void DeleteMapFile(string file)
+        {
+            string filename = Path.Combine(Tools.GetAppDataDirectory(), "Maps\\" + file);
+
+            try
+            {
+                if (File.Exists(filename))
+                    File.Delete(filename);
+            }
+            catch (Exception ex)
+            {
+                LogText("Exception in DeleteMapFile:" + ex.Message + Environment.NewLine);
+
+            }
+
+        }
+
 
         private bool CanSkipSlowUpdates()
         {
@@ -363,12 +384,15 @@ namespace EDDiscovery
                 _db.GetAllSystems();
 
 
-  
+                Invoke((MethodInvoker)delegate
+                {
                     SystemNames.Clear();
                     foreach (SystemClass system in SystemData.SystemList)
                     {
                         SystemNames.Add(system.name);
                     }
+                });
+
             }
             catch (Exception ex)
             {
@@ -754,10 +778,10 @@ namespace EDDiscovery
             _db.PutSettingString("DefaultMapCenter", textBoxHomeSystem.Text);
             _db.PutSettingDouble("DefaultMapZoom", Double.Parse(textBoxDefaultZoom.Text));
             _db.PutSettingBool("CentreMapOnSelection", radioButtonHistorySelection.Checked);
-            _db.PutSettingString("RouteFrom", routeControl1.textBox_From.Text);
-            _db.PutSettingString("RouteTo", routeControl1.textBox_To.Text);
-            _db.PutSettingString("RouteRange", routeControl1.textBox_Range.Text);
-            _db.PutSettingBool("EDSMPushOnly", travelHistoryControl1.EDSMPushOnly);
+            routeControl1.SaveSettings();
+
+            _db.PutSettingBool("EDSMSyncTo", travelHistoryControl1.checkBoxEDSMSyncTo.Checked);
+            _db.PutSettingBool("EDSMSyncFrom", travelHistoryControl1.checkBoxEDSMSyncFrom.Checked);
             EDDConfig.UseDistances = checkBox_Distances.Checked;
             EDDConfig.EDSMLog = checkBoxEDSMLog.Checked;
             EDDConfig.CanSkipSlowUpdates = checkboxSkipSlowUpdates.Checked;
@@ -795,38 +819,38 @@ namespace EDDiscovery
             //SystemViewForm frm = new SystemViewForm();
             //frm.Show();
 
-            EdMaterializer mat = new EdMaterializer();
+            //EdMaterializer mat = new EdMaterializer();
 
-            mat.GetAllPlanets(null);
+            //mat.GetAllWorlds(null);
 
 
-            EDPlanet obj = new EDPlanet();
+            //EDWorld obj = new EDWorld();
 
-            obj.commander = "Test";
-            obj.system = "Fine Ring Sector JH-V C2-4";
-            obj.objectName = "A 3";
-            obj.ObjectType = ObjectTypesEnum.HighMetalContent;
-            obj.arrivalPoint = 0;
-            obj.gravity = 0.13f;
+            //obj.updater = "Test";
+            //obj.system = "Fine Ring Sector JH-V C2-4";
+            //obj.objectName = "A 3";
+            //obj.ObjectType = ObjectTypesEnum.HighMetalContent;
+            //obj.arrivalPoint = 0;
+            //obj.gravity = 0.13f;
 
-            obj.materials[MaterialEnum.Carbon] = true;
-            obj.materials[MaterialEnum.Iron] = true;
-            obj.materials[MaterialEnum.Nickel] = true;
-            obj.materials[MaterialEnum.Phosphorus] = true;
-            obj.materials[MaterialEnum.Sulphur] = true;
-            obj.materials[MaterialEnum.Germanium] = true;
-            obj.materials[MaterialEnum.Selenium] = true;
-            obj.materials[MaterialEnum.Vanadium] = true;
-            obj.materials[MaterialEnum.Cadmium] = true;
-            obj.materials[MaterialEnum.Molybdenum] = true;
-            obj.materials[MaterialEnum.Tin] = true;
-            obj.materials[MaterialEnum.Polonium] = true;
+            //obj.materials[MaterialEnum.Carbon] = true;
+            //obj.materials[MaterialEnum.Iron] = true;
+            //obj.materials[MaterialEnum.Nickel] = true;
+            //obj.materials[MaterialEnum.Phosphorus] = true;
+            //obj.materials[MaterialEnum.Sulphur] = true;
+            //obj.materials[MaterialEnum.Germanium] = true;
+            //obj.materials[MaterialEnum.Selenium] = true;
+            //obj.materials[MaterialEnum.Vanadium] = true;
+            //obj.materials[MaterialEnum.Cadmium] = true;
+            //obj.materials[MaterialEnum.Molybdenum] = true;
+            //obj.materials[MaterialEnum.Tin] = true;
+            //obj.materials[MaterialEnum.Polonium] = true;
 
-            mat.DeletePlanetID(5);
-            mat.DeletePlanetID(6);
-            mat.DeletePlanetID(7);
+            //mat.DeletePlanetID(5);
+            //mat.DeletePlanetID(6);
+            //mat.DeletePlanetID(7);
 
-            mat.StorePlanet(obj);
+            //mat.StorePlanet(obj);
         }
 
         private void addNewStarToolStripMenuItem_Click(object sender, EventArgs e)
@@ -892,62 +916,6 @@ namespace EDDiscovery
 
 
 
-        private void TestTrileteration()
-        {
-            foreach (SystemClass System in SQLiteDBClass.globalSystems)
-            {
-                if (DateTime.Now.Subtract(System.CreateDate).TotalDays < 60)
-                {
-                    //var Distances = from SQLiteDBClass.globalDistances
-
-                    var distances1 = from p in SQLiteDBClass.dictDistances where p.Value.NameA.ToLower() == System.SearchName select p.Value;
-                    var distances2 = from p in SQLiteDBClass.dictDistances where p.Value.NameB.ToLower() == System.SearchName select p.Value;
-
-                    int nr = distances1.Count();
-                    //nr = distances2.Count();
-
-
-                    if (nr > 4)
-                    {
-                        var trilateration = new Trilateration();
-                        //                    trilateration.Logger = (s) => System.Console.WriteLine(s);
-
-                        foreach (var item in distances1)
-                        {
-                            SystemClass distsys = SystemData.GetSystem(item.NameB);
-                            if (distsys != null)
-                            {
-                                if (distsys.HasCoordinate)
-                                {
-                                    Trilateration.Entry entry = new Trilateration.Entry(distsys.x, distsys.y, distsys.z, item.Dist);
-                                    trilateration.AddEntry(entry);
-                                }
-                            }
-                        }
-
-                        foreach (var item in distances2)
-                        {
-                            SystemClass distsys = SystemData.GetSystem(item.NameA);
-                            if (distsys != null)
-                            {
-                                if (distsys.HasCoordinate)
-                                {
-                                    Trilateration.Entry entry = new Trilateration.Entry(distsys.x, distsys.y, distsys.z, item.Dist);
-                                    trilateration.AddEntry(entry);
-                                }
-                            }
-                        }
-
-
-                        var csharpResult = trilateration.Run(Trilateration.Algorithm.RedWizzard_Native);
-                        var javascriptResult = trilateration.Run(Trilateration.Algorithm.RedWizzard_Emulated);
-                        if (javascriptResult.State == Trilateration.ResultState.Exact)
-                            nr++;
-                    }
-                }
-            }
-        }
-
         private void show2DMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormSagCarinaMission frm = new FormSagCarinaMission(this);
@@ -977,7 +945,6 @@ namespace EDDiscovery
             panelInfo.BackColor = Color.Gold;
 
             routeControl1.travelhistorycontrol1 = travelHistoryControl1;
-            routeControl1.SetFromTo(_db.GetSettingString("RouteFrom", ""), _db.GetSettingString("RouteTo", ""), _db.GetSettingString("RouteRange", "15"));
         }
 
         private void UpdateTitle()
@@ -1226,6 +1193,23 @@ namespace EDDiscovery
                     vs.Update();
                 }
             }
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutForm frm = new AboutForm();
+            frm.labelVersion.Text = Text;
+            frm.ShowDialog();
+        }
+
+        private void eDDiscoveryChatDiscordToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://discord.gg/0qIqfCQbziTWzsQu");
         }
     }
 }

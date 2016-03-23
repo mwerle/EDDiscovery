@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using EDDiscovery2.Trilateration;
 using EDDiscovery2.EDSM;
+using EDDiscovery2.HTTP;
 
 namespace EDDiscovery
 {
@@ -29,7 +30,8 @@ namespace EDDiscovery
         string datapath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Frontier_Development_s\\Products"; // \\FORC-FDEV-D-1001\\Logs\\";
 
         internal List<SystemPosition> visitedSystems;
-        internal bool EDSMPushOnly = false;
+        internal bool EDSMSyncTo = true;
+        internal bool EDSMSyncFrom = true;
 
         public NetLogClass netlog = new NetLogClass();
         List<SystemDist> sysDist = null;
@@ -53,9 +55,10 @@ namespace EDDiscovery
             sync = new EDSMSync(_discoveryForm);
             var db = new SQLiteDBClass();
             defaultColour = db.GetSettingInt("DefaultMap", Color.Red.ToArgb());
-            EDSMPushOnly = db.GetSettingBool("EDSMPushOnly", false);
-            optPushOnly.Checked = EDSMPushOnly;
-            optFullSync.Checked = !EDSMPushOnly;
+            EDSMSyncTo = db.GetSettingBool("EDSMSyncTo", true);
+            EDSMSyncFrom = db.GetSettingBool("EDSMSyncFrom", true);
+            checkBoxEDSMSyncTo.Checked = EDSMSyncTo;
+            checkBoxEDSMSyncFrom.Checked = EDSMSyncFrom;
         }
 
 
@@ -96,13 +99,14 @@ namespace EDDiscovery
                 static_richTextBox.AppendText(text);
                 static_richTextBox.SelectionColor = static_richTextBox.ForeColor;
 
-
-
-
                 static_richTextBox.SelectionStart = static_richTextBox.Text.Length;
                 static_richTextBox.SelectionLength = 0;
                 static_richTextBox.ScrollToCaret();
                 static_richTextBox.Refresh();
+
+
+                HttpCom.WriteLog(text, "");
+
             }
             catch (Exception ex)
             {
@@ -761,8 +765,9 @@ namespace EDDiscovery
                 return;
             }
             var db = new SQLiteDBClass();
-            
-            var dists = from p in SQLiteDBClass.dictDistances where p.Value.Status == DistancsEnum.EDDiscovery  orderby p.Value.CreateTime  select p.Value;
+
+            var dists = db.GetDistancesByStatus((int)DistancsEnum.EDDiscovery);
+            //var dists = from p in SQLiteDBClass.dictDistances where p.Value.Status == DistancsEnum.EDDiscovery  orderby p.Value.CreateTime  select p.Value;
 
             EDSMClass edsm = new EDSMClass();
 
@@ -809,7 +814,7 @@ namespace EDDiscovery
                 return;
 
             }
-            sync.StartSync(EDSMPushOnly);
+            sync.StartSync(EDSMSyncTo, EDSMSyncFrom);
             
         }
 
@@ -947,10 +952,15 @@ namespace EDDiscovery
         
         private void buttonTrilaterate_Click(object sender, EventArgs e)
         {
-            TrilaterationControl tctrl = _discoveryForm.trilaterationControl;
+            ISystem currSys = GetCurrentSystem();
 
-            _discoveryForm.ShowTrilaterationTab();
-            tctrl.Set(((SystemPosition)dataGridView1.CurrentRow.Cells[1].Tag).curSystem);
+            if (currSys != null)
+            {
+                TrilaterationControl tctrl = _discoveryForm.trilaterationControl;
+
+                _discoveryForm.ShowTrilaterationTab();
+                tctrl.Set(currSys);
+            }
         }
     
 		public ISystem CurrentSystem
@@ -1199,10 +1209,7 @@ namespace EDDiscovery
             }
         }
 
-        private void optFullSync_CheckedChanged(object sender, EventArgs e)
-        {
-            EDSMPushOnly = !optFullSync.Checked;
-        }
+
 
         /* Add selected systems to trilateration grid */
         private void addToTrilaterationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1234,6 +1241,16 @@ namespace EDDiscovery
             {
                 System.Windows.Forms.Clipboard.SetText(tb.Text);
             }
+        }
+
+        private void checkBoxEDSMSyncTo_CheckedChanged(object sender, EventArgs e)
+        {
+            EDSMSyncTo = checkBoxEDSMSyncTo.Checked;
+        }
+
+        private void checkBoxEDSMSyncFrom_CheckedChanged(object sender, EventArgs e)
+        {
+            EDSMSyncFrom = checkBoxEDSMSyncFrom.Checked;
         }
     }
 

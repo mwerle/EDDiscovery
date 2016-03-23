@@ -75,7 +75,12 @@ namespace EDDiscovery
             dataGridViewDistances.Focus();
 
             PopulateSuggestedSystems();
-            PopulateClosestSystems();
+            //PopulateClosestSystems();
+
+
+            Thread ViewPushedSystemsThread = new Thread(ViewPushedSystems) { Name = "EDSM get pushed systems" };
+            ViewPushedSystemsThread.Start();
+
         }
 
         private List<SystemClass> GetEnteredSystems()
@@ -149,11 +154,22 @@ namespace EDDiscovery
 
                 if (value == "")
                 {
+                    dataGridViewDistances.Rows[e.RowIndex].ErrorText = null;
                     return;
                 }
 
-                var regex = new Regex(@"^\d{1,5}([,.]\d{1,2})?$");
-                e.Cancel = !regex.Match(e.FormattedValue.ToString()).Success;
+                //var regex = new Regex(@"^((\d{1,2}[,.]\d{3})|(\d{1,5}))([,.]\d{1,2})?$");
+                //e.Cancel = !regex.Match(e.FormattedValue.ToString()).Success;
+                double dummy;
+                if ( double.TryParse(value, out dummy))
+                {
+                    dataGridViewDistances.Rows[e.RowIndex].ErrorText = null;
+                }
+                else
+                {
+                    e.Cancel = true;
+                    dataGridViewDistances.Rows[e.RowIndex].ErrorText = "Invalid number";
+                }
             }
         }
 
@@ -244,8 +260,13 @@ namespace EDDiscovery
             }
             else if (e.ColumnIndex == 1)
             {
-                // trigger trilateration calculation
-                RunTrilateration();
+                if (dataGridViewDistances[1, e.RowIndex].Value != null && !string.IsNullOrEmpty(dataGridViewDistances[1, e.RowIndex].Value.ToString()))
+                {
+                    double dist = double.Parse(dataGridViewDistances[1, e.RowIndex].Value.ToString());
+                    dataGridViewDistances[1, e.RowIndex].Value = dist.ToString();
+                    // trigger trilateration calculation
+                    RunTrilateration();
+                }
             }
             /* skip to the next editable cell */
             skipReadOnlyCells = true;
@@ -289,8 +310,8 @@ namespace EDDiscovery
                 var system = (SystemClass)systemCell.Tag;
                 if (system != null && system.HasCoordinate)
                 {
-                    var culture = new CultureInfo("en-US");
-                    var distance = double.Parse(distanceCell.Value.ToString().Replace(",", "."), culture);
+                    //var culture = new CultureInfo("en-US");
+                    var distance = double.Parse(distanceCell.Value.ToString());
 
                     var entry = new Trilateration.Entry(system.x, system.y, system.z, distance);
 
@@ -581,6 +602,31 @@ namespace EDDiscovery
             }
         }
 
+        // Runs as a thread.
+        private void ViewPushedSystems()
+        {
+            List<String> systems = edsm.GetPushedSystems();
+
+            this.BeginInvoke(new MethodInvoker(() =>
+            {
+                dataGridViewClosestSystems.Rows.Clear();
+            }));
+
+            foreach (String system in systems)
+            {
+                SystemClass star = SystemData.GetSystem(system);
+                if (star == null)
+                    star = new SystemClass(system);
+
+                this.BeginInvoke(new MethodInvoker(() =>
+                {
+                    var index = dataGridViewClosestSystems.Rows.Add(system);
+                    dataGridViewClosestSystems[0, index].Tag = star;
+                }));
+            }
+
+
+        } 
 
         private void PopulateClosestSystems()
         {
@@ -593,7 +639,7 @@ namespace EDDiscovery
                 return;
             }
 
-            labelLastKnownSystem.Text = lastKnown.name;
+            //labelLastKnownSystem.Text = lastKnown.name;
 
             var closest = (from systems
                            in SystemData.SystemList
@@ -683,13 +729,13 @@ namespace EDDiscovery
                 trilaterationThread = null;
             }
 
-            // edge case - make sure distances were trilaterated OR the current system already has known coordinates
-            if (lastTrilatelationResult == null && !CurrentSystem.HasCoordinate)
-            {
-                LogText("EDSM submission aborted, local trilateration did not run properly." + Environment.NewLine, Color.Red);
-                UnfreezeTrilaterationUI();
-                return;
-            }
+            //// edge case - make sure distances were trilaterated OR the current system already has known coordinates
+            //if (lastTrilatelationResult == null && !CurrentSystem.HasCoordinate)
+            //{
+            //    LogText("EDSM submission aborted, local trilateration did not run properly." + Environment.NewLine, Color.Red);
+            //    UnfreezeTrilaterationUI();
+            //    return;
+            //}
 
             EDSMSubmissionThread = new Thread(SubmitToEDSM) {Name = "EDSM Submission"};
             EDSMSubmissionThread.Start();
@@ -714,7 +760,6 @@ namespace EDDiscovery
                 edsm.commanderName = commanderName;
             }
             var distances = new Dictionary<string, double>();
-            var culture = new CultureInfo("en-US");
             for (int i = 0, count = dataGridViewDistances.Rows.Count - 1; i < count; i++)
             {
                 var systemCell = dataGridViewDistances[0, i];
@@ -722,7 +767,7 @@ namespace EDDiscovery
                 if (systemCell.Value != null && distanceCell.Value != null)
                 {
                     var system = systemCell.Value.ToString();
-                    var distance = double.Parse(distanceCell.Value.ToString().Replace(",", "."), culture);
+                    var distance = double.Parse(distanceCell.Value.ToString());
                     // can over-ride drop down now if it's a real system so you could add duplicates if you wanted (even once I've figured out issue #81 which makes it easy if not likely...)
                     if (!distances.Keys.Contains(system))
                     {
@@ -840,6 +885,8 @@ namespace EDDiscovery
 
         private void toolStripButtonNew_Click(object sender, EventArgs e)
         {
+
+
 			Set(CurrentSystem);
         }
 

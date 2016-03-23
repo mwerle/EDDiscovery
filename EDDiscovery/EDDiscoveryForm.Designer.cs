@@ -32,9 +32,13 @@
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPageTravelHistory = new System.Windows.Forms.TabPage();
+            this.travelHistoryControl1 = new EDDiscovery.TravelHistoryControl();
             this.tabPageTriletaration = new System.Windows.Forms.TabPage();
+            this.trilaterationControl = new EDDiscovery.TrilaterationControl();
             this.tabPageScreenshots = new System.Windows.Forms.TabPage();
+            this.imageHandler1 = new EDDiscovery2.ImageHandler.ImageHandler();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.routeControl1 = new EDDiscovery.RouteControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.checkBox_Distances = new System.Windows.Forms.CheckBox();
@@ -58,10 +62,13 @@
             this.buttonAddCommander = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.dataGridViewCommanders = new System.Windows.Forms.DataGridView();
+            this.ColumnNr = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnCommander = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnEDSMAPIKey = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnNetLogPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.button1 = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addNewStarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openEliteDangerousDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showLogfilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.show2DMapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,6 +83,7 @@
             this.keepOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fastTravelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gitHubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eDDiscoveryHomepageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.frontierForumThreadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -83,14 +91,7 @@
             this.panelInfo = new System.Windows.Forms.Panel();
             this.labelPanelText = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.travelHistoryControl1 = new EDDiscovery.TravelHistoryControl();
-            this.trilaterationControl = new EDDiscovery.TrilaterationControl();
-            this.imageHandler1 = new EDDiscovery2.ImageHandler.ImageHandler();
-            this.routeControl1 = new EDDiscovery.RouteControl();
-            this.ColumnNr = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnCommander = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnEDSMAPIKey = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnNetLogPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.eDDiscoveryChatDiscordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPageTravelHistory.SuspendLayout();
             this.tabPageTriletaration.SuspendLayout();
@@ -133,26 +134,51 @@
             this.tabPageTravelHistory.Text = "Travel history";
             this.tabPageTravelHistory.UseVisualStyleBackColor = true;
             // 
+            // travelHistoryControl1
+            // 
+            this.travelHistoryControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.travelHistoryControl1.Location = new System.Drawing.Point(3, 3);
+            this.travelHistoryControl1.Name = "travelHistoryControl1";
+            this.travelHistoryControl1.Size = new System.Drawing.Size(910, 561);
+            this.travelHistoryControl1.TabIndex = 0;
+            this.travelHistoryControl1.Load += new System.EventHandler(this.travelHistoryControl1_Load);
+            // 
             // tabPageTriletaration
             // 
             this.tabPageTriletaration.Controls.Add(this.trilaterationControl);
             this.tabPageTriletaration.Location = new System.Drawing.Point(4, 22);
             this.tabPageTriletaration.Name = "tabPageTriletaration";
             this.tabPageTriletaration.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageTriletaration.Size = new System.Drawing.Size(897, 567);
+            this.tabPageTriletaration.Size = new System.Drawing.Size(916, 567);
             this.tabPageTriletaration.TabIndex = 3;
             this.tabPageTriletaration.Text = "Trilateration";
             this.tabPageTriletaration.UseVisualStyleBackColor = true;
+            // 
+            // trilaterationControl
+            // 
+            this.trilaterationControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.trilaterationControl.Location = new System.Drawing.Point(3, 3);
+            this.trilaterationControl.Name = "trilaterationControl";
+            this.trilaterationControl.Size = new System.Drawing.Size(910, 561);
+            this.trilaterationControl.TabIndex = 21;
             // 
             // tabPageScreenshots
             // 
             this.tabPageScreenshots.Controls.Add(this.imageHandler1);
             this.tabPageScreenshots.Location = new System.Drawing.Point(4, 22);
             this.tabPageScreenshots.Name = "tabPageScreenshots";
-            this.tabPageScreenshots.Size = new System.Drawing.Size(897, 567);
+            this.tabPageScreenshots.Size = new System.Drawing.Size(916, 567);
             this.tabPageScreenshots.TabIndex = 4;
             this.tabPageScreenshots.Text = "Screenshots";
             this.tabPageScreenshots.UseVisualStyleBackColor = true;
+            // 
+            // imageHandler1
+            // 
+            this.imageHandler1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.imageHandler1.Location = new System.Drawing.Point(0, 0);
+            this.imageHandler1.Name = "imageHandler1";
+            this.imageHandler1.Size = new System.Drawing.Size(916, 567);
+            this.imageHandler1.TabIndex = 0;
             // 
             // tabPage2
             // 
@@ -160,10 +186,19 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(897, 567);
+            this.tabPage2.Size = new System.Drawing.Size(916, 567);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Route";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // routeControl1
+            // 
+            this.routeControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.routeControl1.Location = new System.Drawing.Point(3, 3);
+            this.routeControl1.Name = "routeControl1";
+            this.routeControl1.Size = new System.Drawing.Size(910, 561);
+            this.routeControl1.TabIndex = 0;
+            this.routeControl1.Load += new System.EventHandler(this.routeControl1_Load);
             // 
             // tabPage3
             // 
@@ -425,6 +460,35 @@
             this.dataGridViewCommanders.Size = new System.Drawing.Size(868, 128);
             this.dataGridViewCommanders.TabIndex = 13;
             // 
+            // ColumnNr
+            // 
+            this.ColumnNr.DataPropertyName = "Nr";
+            this.ColumnNr.HeaderText = "Nr";
+            this.ColumnNr.Name = "ColumnNr";
+            this.ColumnNr.ReadOnly = true;
+            this.ColumnNr.Width = 20;
+            // 
+            // ColumnCommander
+            // 
+            this.ColumnCommander.DataPropertyName = "Name";
+            this.ColumnCommander.HeaderText = "Commander";
+            this.ColumnCommander.Name = "ColumnCommander";
+            this.ColumnCommander.Width = 130;
+            // 
+            // ColumnEDSMAPIKey
+            // 
+            this.ColumnEDSMAPIKey.DataPropertyName = "APIKey";
+            this.ColumnEDSMAPIKey.HeaderText = "EDSM api key";
+            this.ColumnEDSMAPIKey.Name = "ColumnEDSMAPIKey";
+            this.ColumnEDSMAPIKey.Width = 150;
+            // 
+            // ColumnNetLogPath
+            // 
+            this.ColumnNetLogPath.DataPropertyName = "NetLogPath";
+            this.ColumnNetLogPath.FillWeight = 300F;
+            this.ColumnNetLogPath.HeaderText = "NetLog path";
+            this.ColumnNetLogPath.Name = "ColumnNetLogPath";
+            // 
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(178, 0);
@@ -452,7 +516,6 @@
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addNewStarToolStripMenuItem,
             this.openEliteDangerousDirectoryToolStripMenuItem,
             this.showLogfilesToolStripMenuItem,
             this.show2DMapsToolStripMenuItem,
@@ -462,13 +525,6 @@
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
-            // 
-            // addNewStarToolStripMenuItem
-            // 
-            this.addNewStarToolStripMenuItem.Name = "addNewStarToolStripMenuItem";
-            this.addNewStarToolStripMenuItem.Size = new System.Drawing.Size(238, 22);
-            this.addNewStarToolStripMenuItem.Text = "Add new star";
-            this.addNewStarToolStripMenuItem.Click += new System.EventHandler(this.addNewStarToolStripMenuItem_Click);
             // 
             // openEliteDangerousDirectoryToolStripMenuItem
             // 
@@ -569,39 +625,49 @@
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutToolStripMenuItem,
             this.gitHubToolStripMenuItem,
             this.eDDiscoveryHomepageToolStripMenuItem,
             this.frontierForumThreadToolStripMenuItem,
-            this.reportIssueIdeasToolStripMenuItem});
+            this.reportIssueIdeasToolStripMenuItem,
+            this.eDDiscoveryChatDiscordToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
+            this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // gitHubToolStripMenuItem
             // 
             this.gitHubToolStripMenuItem.Name = "gitHubToolStripMenuItem";
-            this.gitHubToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.gitHubToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.gitHubToolStripMenuItem.Text = "Github";
             this.gitHubToolStripMenuItem.Click += new System.EventHandler(this.gitHubToolStripMenuItem_Click);
             // 
             // eDDiscoveryHomepageToolStripMenuItem
             // 
             this.eDDiscoveryHomepageToolStripMenuItem.Name = "eDDiscoveryHomepageToolStripMenuItem";
-            this.eDDiscoveryHomepageToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.eDDiscoveryHomepageToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.eDDiscoveryHomepageToolStripMenuItem.Text = "EDDiscovery homepage";
             this.eDDiscoveryHomepageToolStripMenuItem.Click += new System.EventHandler(this.eDDiscoveryHomepageToolStripMenuItem_Click);
             // 
             // frontierForumThreadToolStripMenuItem
             // 
             this.frontierForumThreadToolStripMenuItem.Name = "frontierForumThreadToolStripMenuItem";
-            this.frontierForumThreadToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.frontierForumThreadToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.frontierForumThreadToolStripMenuItem.Text = "Frontier forum thread";
             this.frontierForumThreadToolStripMenuItem.Click += new System.EventHandler(this.frontierForumThreadToolStripMenuItem_Click);
             // 
             // reportIssueIdeasToolStripMenuItem
             // 
             this.reportIssueIdeasToolStripMenuItem.Name = "reportIssueIdeasToolStripMenuItem";
-            this.reportIssueIdeasToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.reportIssueIdeasToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.reportIssueIdeasToolStripMenuItem.Text = "Report issue / ideas";
             this.reportIssueIdeasToolStripMenuItem.Click += new System.EventHandler(this.reportIssueIdeasToolStripMenuItem_Click);
             // 
@@ -638,68 +704,12 @@
             this.panel1.Size = new System.Drawing.Size(101, 46);
             this.panel1.TabIndex = 18;
             // 
-            // travelHistoryControl1
+            // eDDiscoveryChatDiscordToolStripMenuItem
             // 
-            this.travelHistoryControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.travelHistoryControl1.Location = new System.Drawing.Point(3, 3);
-            this.travelHistoryControl1.Name = "travelHistoryControl1";
-            this.travelHistoryControl1.Size = new System.Drawing.Size(910, 561);
-            this.travelHistoryControl1.TabIndex = 0;
-            this.travelHistoryControl1.Load += new System.EventHandler(this.travelHistoryControl1_Load);
-            // 
-            // trilaterationControl
-            // 
-            this.trilaterationControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.trilaterationControl.Location = new System.Drawing.Point(3, 3);
-            this.trilaterationControl.Name = "trilaterationControl";
-            this.trilaterationControl.Size = new System.Drawing.Size(891, 561);
-            this.trilaterationControl.TabIndex = 21;
-            // 
-            // imageHandler1
-            // 
-            this.imageHandler1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.imageHandler1.Location = new System.Drawing.Point(0, 0);
-            this.imageHandler1.Name = "imageHandler1";
-            this.imageHandler1.Size = new System.Drawing.Size(897, 567);
-            this.imageHandler1.TabIndex = 0;
-            // 
-            // routeControl1
-            // 
-            this.routeControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.routeControl1.Location = new System.Drawing.Point(3, 3);
-            this.routeControl1.Name = "routeControl1";
-            this.routeControl1.Size = new System.Drawing.Size(891, 561);
-            this.routeControl1.TabIndex = 0;
-            this.routeControl1.Load += new System.EventHandler(this.routeControl1_Load);
-            // 
-            // ColumnNr
-            // 
-            this.ColumnNr.DataPropertyName = "Nr";
-            this.ColumnNr.HeaderText = "Nr";
-            this.ColumnNr.Name = "ColumnNr";
-            this.ColumnNr.ReadOnly = true;
-            this.ColumnNr.Width = 20;
-            // 
-            // ColumnCommander
-            // 
-            this.ColumnCommander.DataPropertyName = "Name";
-            this.ColumnCommander.HeaderText = "Commander";
-            this.ColumnCommander.Name = "ColumnCommander";
-            this.ColumnCommander.Width = 130;
-            // 
-            // ColumnEDSMAPIKey
-            // 
-            this.ColumnEDSMAPIKey.DataPropertyName = "APIKey";
-            this.ColumnEDSMAPIKey.HeaderText = "EDSM api key";
-            this.ColumnEDSMAPIKey.Name = "ColumnEDSMAPIKey";
-            this.ColumnEDSMAPIKey.Width = 150;
-            // 
-            // ColumnNetLogPath
-            // 
-            this.ColumnNetLogPath.DataPropertyName = "NetLogPath";
-            this.ColumnNetLogPath.FillWeight = 300F;
-            this.ColumnNetLogPath.HeaderText = "NetLog path";
-            this.ColumnNetLogPath.Name = "ColumnNetLogPath";
+            this.eDDiscoveryChatDiscordToolStripMenuItem.Name = "eDDiscoveryChatDiscordToolStripMenuItem";
+            this.eDDiscoveryChatDiscordToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.eDDiscoveryChatDiscordToolStripMenuItem.Text = "EDDiscovery chat (Discord)";
+            this.eDDiscoveryChatDiscordToolStripMenuItem.Click += new System.EventHandler(this.eDDiscoveryChatDiscordToolStripMenuItem_Click);
             // 
             // EDDiscoveryForm
             // 
@@ -760,7 +770,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem addNewStarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem eDDiscoveryHomepageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem frontierForumThreadToolStripMenuItem;
@@ -806,6 +815,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCommander;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnEDSMAPIKey;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnNetLogPath;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eDDiscoveryChatDiscordToolStripMenuItem;
     }
 }
 
