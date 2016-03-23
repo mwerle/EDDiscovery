@@ -9,3 +9,4 @@ packages
 /Installer/AnyCPU_DebugSetupFiles
 /Installer/EDDiscovery
 */*Secrets.config
+/EDDiscovery.v12.suo
