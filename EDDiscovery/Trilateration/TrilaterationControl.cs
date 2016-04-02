@@ -373,7 +373,7 @@ namespace EDDiscovery
                     s3.y = trilaterationResult.Coordinate.Y;
                     s3.z = trilaterationResult.Coordinate.Z;
 
-                    LogText("Trilateration successful (" + spentTimeString + "), exact coordinates found." + Environment.NewLine);
+                    LogTextColor("Trilateration successful (" + spentTimeString + "), exact coordinates found." + Environment.NewLine, Color.Green);
                     LogText("x=" + trilaterationResult.Coordinate.X + ", y=" + trilaterationResult.Coordinate.Y + ", z=" + trilaterationResult.Coordinate.Z + " Sol: " + SystemData.Distance(s1, s3).ToString("0.0") +  " Sag A* " + SystemData.Distance(s2, s3).ToString("0.0") + Environment.NewLine);
                     SetTriStatusSuccess("Success, coordinates found!");
                 });
@@ -797,7 +797,7 @@ namespace EDDiscovery
             {
                 if (responseOkM && trilaterationOkM)
                 {
-                    LogText("EDSM submission succeeded, trilateration successful." + Environment.NewLine);
+                    LogTextColor("EDSM submission succeeded, trilateration successful." + Environment.NewLine, Color.Green);
                 }
                 else if (responseOkM)
                 {
