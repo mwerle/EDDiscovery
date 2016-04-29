@@ -77,7 +77,7 @@ namespace EDDiscovery
             InitializeComponent();
             ProcessCommandLineOptions();
 
-            EDDConfig = new EDDConfig();
+            EDDConfig = EDDConfig.Instance;
 
             //_fileTgcSystems = Path.Combine(Tools.GetAppDataDirectory(), "tgcsystems.json");
             _fileEDSMDistances = Path.Combine(Tools.GetAppDataDirectory(), "EDSMDistances.json");
@@ -385,6 +385,12 @@ namespace EDDiscovery
                     DownloadMapFile("DW3.json");
                     DownloadMapFile("DW4.jpg");
                     DownloadMapFile("DW4.json");
+
+                    DownloadMapFile("Formidine.png");
+                    DownloadMapFile("Formidine.json");
+                    DownloadMapFile("Formidine trans.png");
+                    DownloadMapFile("Formidine trans.json");
+
 
                     DeleteMapFile("DW4.png");
                     DeleteMapFile("SC-00.jpg");
