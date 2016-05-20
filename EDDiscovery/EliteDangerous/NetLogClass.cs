@@ -26,7 +26,7 @@ namespace EDDiscovery
 
     public class NetLogClass
     {
-        public List<SystemPosition> visitedSystems = new List<SystemPosition>();
+        public List<VisitedSystemsClass> visitedSystems = new List<VisitedSystemsClass>();
         Dictionary<string, NetLogFileInfo> netlogfiles = new Dictionary<string, NetLogFileInfo>();
         FileSystemWatcher m_Watcher;
         Thread ThreadNetLog;
@@ -59,7 +59,7 @@ namespace EDDiscovery
                         return datapath;
                     }
 
-                    datapath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Frontier_Developments\\Products"; // \\FORC-FDEV-D-1001\\Logs\\";
+                    datapath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Frontier_Developments", "Products"); // \\FORC-FDEV-D-1001\\Logs\\";
 
                     // Find the right subdirectory....
 
@@ -123,7 +123,7 @@ namespace EDDiscovery
 
 
 
-        public List<SystemPosition> ParseFiles(ExtendedControls.RichTextBoxScroll richTextBox_History, int defaultMapColour)
+        public List<VisitedSystemsClass> ParseFiles(ExtendedControls.RichTextBoxScroll richTextBox_History, int defaultMapColour)
         {
             string datapath;
             DirectoryInfo dirInfo;
@@ -171,14 +171,17 @@ namespace EDDiscovery
                     foreach (VisitedSystemsClass vs in vsSystemsList)
                     {
                         if (visitedSystems.Count == 0)
-                            visitedSystems.Add(new SystemPosition(vs));
-                        else if (!visitedSystems.Last<SystemPosition>().Name.Equals(vs.Name))  // Avoid duplicate if times exist in same system from different files.
-                            visitedSystems.Add(new SystemPosition(vs));
+                            visitedSystems.Add(vs);
+                        else if (!visitedSystems.Last<VisitedSystemsClass>().Name.Equals(vs.Name))  // Avoid duplicate if times exist in same system from different files.
+                            visitedSystems.Add(vs);
                         else
                         {
-                            VisitedSystemsClass vs2 = (VisitedSystemsClass)visitedSystems.Last<SystemPosition>().vs;
-                            vs.Commander = -2; // Move to dupe user
-                            vs.Update();
+                            VisitedSystemsClass vs2 = (VisitedSystemsClass)visitedSystems.Last<VisitedSystemsClass>();
+                            if (vs2.id != vs.id)
+                            {
+                                vs.Commander = -2; // Move to dupe user
+                                vs.Update();
+                            }
                         }
 
                     }
@@ -218,35 +221,33 @@ namespace EDDiscovery
                     if (parsefile)
                     {
                         int nr = 0;
-                        List<SystemPosition> tempVisitedSystems = new List<SystemPosition>();
+                        List<VisitedSystemsClass> tempVisitedSystems = new List<VisitedSystemsClass>();
                         ParseFile(fi, tempVisitedSystems);
 
 
-                        foreach (SystemPosition ps in tempVisitedSystems)
+                        foreach (VisitedSystemsClass ps in tempVisitedSystems)
                         {
-                            SystemPosition ps2;
-                            ps2 = (from c in visitedSystems where c.Name == ps.Name && c.time == ps.time select c).FirstOrDefault<SystemPosition>();
+                            VisitedSystemsClass ps2;
+                            ps2 = (from c in visitedSystems where c.Name == ps.Name && c.Time == ps.Time select c).FirstOrDefault<VisitedSystemsClass>();
                             if (ps2 == null)
                             {
-                                VisitedSystemsClass dbsys = new VisitedSystemsClass();
+                                //VisitedSystemsClass dbsys = new VisitedSystemsClass();
 
-                                dbsys.Name = ps.Name;
-                                dbsys.Time = ps.time;
-                                dbsys.Source = lu.id;
-                                dbsys.EDSM_sync = false;
-                                dbsys.Unit = fi.Name;
-                                dbsys.MapColour = defaultMapColour;
-                                dbsys.Commander = EDDConfig.Instance.CurrentCmdrID;
+                                ps.Source = lu.id;
+                                ps.EDSM_sync = false;
+                                ps.Unit = fi.Name;
+                                ps.MapColour = defaultMapColour;
+                                ps.Commander = EDDConfig.Instance.CurrentCmdrID;
 
-                                if (!lu.Beta)  // dont store  history in DB for beta (YET)
+                                //if (!lu.Beta)  // dont store  history in DB for beta (YET)
                                 {
                                     VisitedSystemsClass last = VisitedSystemsClass.GetLast();
 
-                                    if (last == null || !last.Name.Equals(dbsys.Name))  // If same name as last system. Dont Add.  otherwise we get a duplet with last from logfile before with different time. 
+                                    if (last == null || !last.Name.Equals(ps.Name))  // If same name as last system. Dont Add.  otherwise we get a duplet with last from logfile before with different time. 
                                     {
-                                        if (!VisitedSystemsClass.Exist(dbsys.Name, dbsys.Time))
+                                        if (!VisitedSystemsClass.Exist(ps.Name, ps.Time))
                                         {
-                                            dbsys.Add();
+                                            ps.Add();
                                             visitedSystems.Add(ps);
                                             nr++;
                                         }
@@ -270,13 +271,13 @@ namespace EDDiscovery
                 NoEvents = false;
             }
 
-            //var result = visitedSystems.OrderByDescending(a => a.time).ToList<SystemPosition>();
+            //var result = visitedSystems.OrderByDescending(a => a.time).ToList<VisitedSystemsClass>();
 
             return visitedSystems;
         }
 
 
-        private int ParseFile(FileInfo fi, List<SystemPosition> visitedSystems)
+        private int ParseFile(FileInfo fi, List<VisitedSystemsClass> visitedSystems)
         {
             int count = 0, nrsystems=visitedSystems.Count;
             try
@@ -294,16 +295,11 @@ namespace EDDiscovery
                 return 0;
             }
 
-            if (nrsystems < visitedSystems.Count)
-            {
-                if (!NoEvents)
-                    OnNewPosition(this);
-            }
             return count;
         }
 
         private NetLogFileInfo lastnfi = null;
-        private int ReadData(FileInfo fi, List<SystemPosition> visitedSystems, int count, StreamReader sr)
+        private int ReadData(FileInfo fi, List<VisitedSystemsClass> visitedSystems, int count, StreamReader sr)
         {
             DateTime gammastart = new DateTime(2014, 11, 22, 13, 00, 00);
 
@@ -345,7 +341,7 @@ namespace EDDiscovery
                     if (line.Contains("ProvingGround"))
                         continue;
 
-                    SystemPosition ps = SystemPosition.Parse(filetime, line);
+                    VisitedSystemsClass ps = VisitedSystemsClass.Parse(filetime, line);
                     if (ps != null)
                     {   // Remove some training systems
                         if (ps.Name.Equals("Training"))
@@ -354,13 +350,13 @@ namespace EDDiscovery
                             continue;
                         if (ps.Name.Equals("Altiris"))
                             continue;
-                        filetime = ps.time;
+                        filetime = ps.Time;
 
                         if (visitedSystems.Count > 0)
                             if (visitedSystems[visitedSystems.Count - 1].Name.Equals(ps.Name))
                                 continue;
 
-                        if (ps.time.Subtract(gammastart).TotalMinutes > 0)  // Ta bara med efter gamma. 
+                        if (ps.Time.Subtract(gammastart).TotalMinutes > 0)  // Ta bara med efter gamma. 
                         {
 
                             
@@ -423,12 +419,12 @@ namespace EDDiscovery
             lock (EventLogLock)
             {
                 string logdir = GetNetLogPath();
-                if (m_Watcher != null && m_Watcher.Path != logdir + "\\" && Directory.Exists(logdir))
+                if (m_Watcher != null && m_Watcher.Path != logdir + Path.DirectorySeparatorChar && Directory.Exists(logdir))
                 {
                     try
                     {
                         m_Watcher.EnableRaisingEvents = false;
-                        m_Watcher.Path = logdir + "\\";
+                        m_Watcher.Path = logdir + Path.DirectorySeparatorChar;
                         m_Watcher.EnableRaisingEvents = true;
                     }
                     catch (Exception ex)
@@ -450,7 +446,7 @@ namespace EDDiscovery
                     string logpath = GetNetLogPath();
                     if (Directory.Exists(logpath))
                     {
-                        m_Watcher.Path = logpath + "\\";
+                        m_Watcher.Path = logpath + Path.DirectorySeparatorChar;
                         m_Watcher.Filter = "netLog*.log";
                         m_Watcher.IncludeSubdirectories = true;
                         m_Watcher.NotifyFilter = NotifyFilters.FileName; // | NotifyFilters.Size; 
@@ -540,23 +536,17 @@ namespace EDDiscovery
                                             System.Diagnostics.Trace.WriteLine("New systems " + nrsystems.ToString() + ":" + visitedSystems.Count.ToString());
                                             for (int nr = nrsystems; nr < visitedSystems.Count; nr++)  // Lägg till nya i locala databaslogen
                                             {
-                                                VisitedSystemsClass dbsys = new VisitedSystemsClass();
-
-                                                dbsys.Name = visitedSystems[nr].Name;
-                                                dbsys.Time = visitedSystems[nr].time;
+                                                VisitedSystemsClass dbsys = visitedSystems[nr];
                                                 dbsys.Source = tlUnit.id;
                                                 dbsys.EDSM_sync = false;
-                                                dbsys.Unit = fi.Name;
                                                 dbsys.MapColour = EDDConfig.Instance.DefaultMapColour;
                                                 dbsys.Unit = fi.Name;
-                                                dbsys.Commander = 0;
+                                                dbsys.Commander = EDDConfig.Instance.CurrentCmdrID;
 
-                                                if (!tlUnit.Beta)  // dont store  history in DB for beta (YET)
-                                                {
-                                                    dbsys.Add();
-                                                }
-                                                visitedSystems[nr].vs = dbsys;
+                                                dbsys.Add();
                                             }
+
+                                            OnNewPosition(this);    // NoEvents= false
                                         }
                                         else
                                         {

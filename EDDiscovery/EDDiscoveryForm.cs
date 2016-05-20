@@ -35,10 +35,12 @@ namespace EDDiscovery
         public const int WM_NCL_RESIZE = 0x112;
         public const int HT_RESIZE = 61448;
 
-        [DllImportAttribute("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        [DllImportAttribute("user32.dll")]
-        public static extern bool ReleaseCapture();
+        private IntPtr SendMessage(int msg, IntPtr wparam, IntPtr lparam)
+        {
+            Message message = Message.Create(this.Handle, msg, wparam, lparam);
+            this.WndProc(ref message);
+            return message.Result;
+        }
 
         //readonly string _fileTgcSystems;
         readonly string _fileEDSMDistances;
@@ -51,9 +53,9 @@ namespace EDDiscovery
         static public EDDConfig EDDConfig { get; private set; }
 
         public TravelHistoryControl TravelControl { get { return travelHistoryControl1; } }
-        public List<SystemPosition> VisitedSystems { get { return travelHistoryControl1.visitedSystems; } }
+        public List<VisitedSystemsClass> VisitedSystems { get { return travelHistoryControl1.visitedSystems; } }
 
-        bool option_nowindowreposition = false;                             // Cmd line options
+        public bool option_nowindowreposition { get; set;  }  = false;                             // Cmd line options
 
         public EDDiscovery2._3DMap.MapManager Map { get; private set; }
 
@@ -111,7 +113,7 @@ namespace EDDiscovery
             savedRouteExpeditionControl1.InitControl(this);
 
             SystemNames = new AutoCompleteStringCollection();
-            Map = new EDDiscovery2._3DMap.MapManager();
+            Map = new EDDiscovery2._3DMap.MapManager(option_nowindowreposition);
 
             ApplyTheme(false);
         }
@@ -214,16 +216,6 @@ namespace EDDiscovery
 
                 CheckForNewInstaller();
 
-#if DEBUG
-//Robby : not sure about this, should we be moaning about this, what if people don't want to use EDmaterializer.
-                var appSettings = ConfigurationManager.AppSettings;
-                if (appSettings["EDMaterializerUsername"] == null || appSettings["EDMaterializerPassword"] == null)
-                {
-                    // Note: It's ok if this happens in DEBUG build Because we now hard code the
-                    // credentials in that particular case.
-                    LogLineHighlight("WARNING: EDMaterializer credentials are missing!");
-                }
-#endif
                 LogLineSuccess("Loading completed, Total number of systems " + SystemData.SystemList.Count().ToString());
             }
             catch (Exception ex)
@@ -276,11 +268,11 @@ namespace EDDiscovery
         private void RepositionForm()
         {
             var top = _db.GetSettingInt("FormTop", -1);
-            if (top > 0 && option_nowindowreposition == false )
+            if (top >= 0 && option_nowindowreposition == false )
             {
-                var left = _db.GetSettingInt("FormLeft", -1);
-                var height = _db.GetSettingInt("FormHeight", -1);
-                var width = _db.GetSettingInt("FormWidth", -1);
+                var left = _db.GetSettingInt("FormLeft", 0);
+                var height = _db.GetSettingInt("FormHeight", 800);
+                var width = _db.GetSettingInt("FormWidth", 800);
                 this.Top = top;
                 this.Left = left;
                 this.Height = height;
@@ -414,7 +406,7 @@ namespace EDDiscovery
         {
             EDDBClass eddb = new EDDBClass();
             bool newfile = false;
-            if (eddb.DownloadFile("http://eddiscovery.astronet.se/Maps/" + file, Path.Combine(Tools.GetAppDataDirectory(), "Maps\\" + file), out newfile))
+            if (eddb.DownloadFile("http://eddiscovery.astronet.se/Maps/" + file, Path.Combine(Tools.GetAppDataDirectory(), "Maps", file), out newfile))
             {
                 if (newfile)
                     LogText("Downloaded map: " + file + Environment.NewLine);
@@ -427,7 +419,7 @@ namespace EDDiscovery
 
         private void DeleteMapFile(string file)
         {
-            string filename = Path.Combine(Tools.GetAppDataDirectory(), "Maps\\" + file);
+            string filename = Path.Combine(Tools.GetAppDataDirectory(), "Maps", file);
 
             try
             {
@@ -764,12 +756,12 @@ namespace EDDiscovery
             string json = null;
             try
             {
-                string appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\EDDiscovery";
+                string appdata = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EDDiscovery");
 
                 if (!Directory.Exists(appdata))
                     Directory.CreateDirectory(appdata);
 
-                string filename = appdata + "\\" + jfile;
+                string filename = Path.Combine(appdata, jfile);
 
                 if (!File.Exists(filename))
                     return null;
@@ -924,7 +916,7 @@ namespace EDDiscovery
         private void show2DMapsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormSagCarinaMission frm = new FormSagCarinaMission(this);
-
+            frm.Nowindowreposition = option_nowindowreposition;
             frm.Show();
         }
 
@@ -973,8 +965,8 @@ namespace EDDiscovery
             if (e.Button == MouseButtons.Left)
             {
                 panel_grip.Captured();           // tell it, doing this royally screws up the MD/MU/ME/ML calls to it
-                ReleaseCapture();
-                SendMessage(Handle, WM_NCL_RESIZE, HT_RESIZE, 0);
+                panel_grip.Capture = false;
+                SendMessage(WM_NCL_RESIZE, (IntPtr)HT_RESIZE, IntPtr.Zero);
             }
         }
 
@@ -1017,8 +1009,8 @@ namespace EDDiscovery
         {
             if (!theme.WindowsFrame && e.Button == MouseButtons.Left)           // only if theme is borderless
             {
-                ReleaseCapture();
-                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                this.Capture = false;
+                SendMessage(WM_NCLBUTTONDOWN, (IntPtr)HT_CAPTION, IntPtr.Zero);
             }
         }
 
@@ -1051,6 +1043,22 @@ namespace EDDiscovery
                 }
             }
         }
+
+        private void debugBetaFixHiddenLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            List<VisitedSystemsClass> vsall = VisitedSystemsClass.GetAll();
+
+            foreach (VisitedSystemsClass vs in vsall)
+            {
+                if (vs.Commander == -2 && vs.Time > new DateTime(2016, 5, 5))
+                {
+                    vs.Commander = 0;
+                    vs.Update();
+                }
+            }
+
+        }
+
         #endregion
 
         #region AsyncEDSM
@@ -1071,9 +1079,12 @@ namespace EDDiscovery
                 string edsmsystems = Path.Combine(Tools.GetAppDataDirectory(), "edsmsystems.json");
                 bool newfile = false;
                 string rwsysfiletime = "2014-01-01 00:00:00";
+
+                RemoveHiddenSystems(edsm);
+
                 LogText("Get systems from EDSM." + Environment.NewLine);
 
-                eddb.DownloadFile("http://www.edsm.net/dump/systemsWithCoordinates.json", edsmsystems, out newfile);
+                eddb.DownloadFile("https://www.edsm.net/dump/systemsWithCoordinates.json", edsmsystems, out newfile);
 
                 if (newfile)
                 {
@@ -1125,8 +1136,37 @@ namespace EDDiscovery
 
         }
 
+        private void RemoveHiddenSystems(EDSMClass edsm)
+        {
+            LogText("Get hidden systems from EDSM." + Environment.NewLine);
+
+            _db.GetAllSystems();
+            string strhiddensystems = edsm.GetHiddenSystems();
+
+            if (strhiddensystems == null || strhiddensystems.Length < 6)
+                return;
+
+
+            JArray hiddensystems = (JArray)JArray.Parse(strhiddensystems);
+
+            foreach (JObject hsys in hiddensystems)
+            {
+                // Check if sys exists first
+                SystemClass sys = SystemData.GetSystem(hsys["system"].Value<string>());
+                if (sys != null)
+                {
+                    SystemClass.Delete(sys.name);
+                }
+            }
+            
+
+
+
+            }
+
+
         #endregion
 
-        
+
     }
 }

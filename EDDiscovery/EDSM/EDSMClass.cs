@@ -1,10 +1,12 @@
 ﻿using EDDiscovery;
 using EDDiscovery.DB;
 using EDDiscovery2.DB;
+using EDDiscovery2.EDDB;
 using EDDiscovery2.HTTP;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -30,7 +32,7 @@ namespace EDDiscovery2.EDSM
         public EDSMClass()
         {
             fromSoftware = "EDDiscovery";
-            _serverAddress = "http://www.edsm.net/";
+            _serverAddress = "https://www.edsm.net/";
 
             var assemblyFullName = Assembly.GetExecutingAssembly().FullName;
             fromSoftwareVersion = assemblyFullName.Split(',')[1].Split('=')[1];
@@ -186,8 +188,9 @@ namespace EDDiscovery2.EDSM
                 NewSystemTime = SQLiteDBClass.globalSystems.Max(x => x.UpdateDate);
                 lstsyst = NewSystemTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                 lstsyst = db.GetSettingString("EDSMLastSystems", lstsyst);
+                DateTime lstsystdate;
 
-                if (lstsyst.Equals("2010-01-01 00:00:00"))
+                if (lstsyst.Equals("2010-01-01 00:00:00") || !DateTime.TryParseExact(lstsyst, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out lstsystdate))
                     lstsyst = NewSystemTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
 
 
@@ -222,6 +225,30 @@ namespace EDDiscovery2.EDSM
         }
 
 
+        internal string GetHiddenSystems()
+        {
+            EDDBClass eddb = new EDDBClass();
+
+            try
+            {
+                string edsmhiddensystems = Path.Combine(Tools.GetAppDataDirectory(), "edsmhiddensystems.json");
+                bool newfile = false;
+                eddb.DownloadFile("https://www.edsm.net/api-v1/hidden-systems", edsmhiddensystems, out newfile);
+
+                string json = EDDiscovery.EDDiscoveryForm.LoadJsonFile(edsmhiddensystems);
+
+                return json;
+            }
+            
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"Exception: {ex.Message}");
+                Trace.WriteLine($"ETrace: {ex.StackTrace}");
+                return null;
+            }
+        
+        }
+
         public List<DistanceClass> GetDistances(string systemname)
         {
             List<DistanceClass> listDistances = new List<DistanceClass>();
@@ -233,7 +260,7 @@ namespace EDDiscovery2.EDSM
                 var response = RequestGet("api-v1/system" + query);
                 var json = response.Body;
 
-                //http://www.edsm.net/api-v1/system?sysname=Col+359+Sector+CP-Y+c1-18&coords=1&include_hidden=1&distances=1&submitted=1
+                //https://www.edsm.net/api-v1/system?sysname=Col+359+Sector+CP-Y+c1-18&coords=1&include_hidden=1&distances=1&submitted=1
 
                 if (json.Length > 1)
                 {
@@ -323,14 +350,28 @@ namespace EDDiscovery2.EDSM
         public string SetLog(string systemName, DateTime dateVisited)
         {
             string query;
-            query = "set-log?systemName=" + HttpUtility.UrlEncode(systemName) + "&commanderName=" + HttpUtility.UrlEncode(commanderName) + "&apiKey=" + apiKey + "&dateVisited=" + HttpUtility.UrlEncode(dateVisited.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            query = "set-log?systemName=" + HttpUtility.UrlEncode(systemName) + "&commanderName=" + HttpUtility.UrlEncode(commanderName) + "&apiKey=" + apiKey +
+                 "&fromSoftware=" + HttpUtility.UrlEncode(fromSoftware) + "&fromSoftwareVersion=" + HttpUtility.UrlEncode(fromSoftwareVersion) +
+                  "&dateVisited=" + HttpUtility.UrlEncode(dateVisited.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
             var response = RequestGet("api-logs-v1/" + query);
             return response.Body;
         }
 
-        public int GetLogs(DateTime starttime, out List<SystemPosition> log)
+        public string SetLogWithPos(string systemName, DateTime dateVisited, double x, double y, double z)
         {
-            log = new List<SystemPosition>();
+            var culture = new System.Globalization.CultureInfo("en-US");
+            string query;
+            query = "set-log?systemName=" + HttpUtility.UrlEncode(systemName) + "&commanderName=" + HttpUtility.UrlEncode(commanderName) + "&apiKey=" + apiKey +
+                 "&fromSoftware=" + HttpUtility.UrlEncode(fromSoftware) + "&fromSoftwareVersion=" + HttpUtility.UrlEncode(fromSoftwareVersion) +
+                 "&x=" + HttpUtility.UrlEncode(x.ToString(culture)) + "&y=" + HttpUtility.UrlEncode(y.ToString(culture)) + "&z=" + HttpUtility.UrlEncode(z.ToString(culture)) +
+                  "&dateVisited=" + HttpUtility.UrlEncode(dateVisited.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+            var response = RequestGet("api-logs-v1/" + query);
+            return response.Body;
+        }
+
+        public int GetLogs(DateTime starttime, out List<VisitedSystemsClass> log)
+        {
+            log = new List<VisitedSystemsClass>();
 
             string query = "get-logs?startdatetime=" + HttpUtility.UrlEncode(starttime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)) + "&apiKey=" + apiKey + "&commanderName=" + HttpUtility.UrlEncode(commanderName);
             //string query = "get-logs?apiKey=" + apiKey + "&commanderName=" + HttpUtility.UrlEncode(commanderName);
@@ -349,13 +390,13 @@ namespace EDDiscovery2.EDSM
             {
                 foreach (JObject jo in logs)
                 {
-                    SystemPosition pos = new SystemPosition();
+                    VisitedSystemsClass pos = new VisitedSystemsClass();
 
 
                     pos.Name = jo["system"].Value<string>();
                     string str = jo["date"].Value<string>();
 
-                    pos.time = DateTime.ParseExact(str, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToLocalTime();
+                    pos.Time = DateTime.ParseExact(str, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).ToLocalTime();
 
                     log.Add(pos);
               
@@ -403,19 +444,32 @@ namespace EDDiscovery2.EDSM
 
         public bool ShowSystemInEDSM(string sysName)
         {
+            string url = GetUrlToEDSMSystem(sysName);
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(url);
+            }
+            return true;
+        }
+
+        public string GetUrlToEDSMSystem(string sysName)
+        {
             string encodedSys = HttpUtility.UrlEncode(sysName);
             string query = "system?sysname=" + encodedSys + "&commanderName=" + HttpUtility.UrlEncode(commanderName) + "&apiKey=" + apiKey + "&showId=1";
             var response = RequestGet("api-v1/" + query);
             var json = response.Body;
             if (json == null || json.ToString() == "[]")
-                return false;
+                return "";
 
             JObject msg = JObject.Parse(json);
             string sysID = msg["id"].Value<string>();
 
-            string url = "http://www.edsm.net/show-system/index/id/" + sysID + "/name/" + encodedSys;
-            System.Diagnostics.Process.Start(url);
-            return true;
+            string url = "https://www.edsm.net/show-system/index/id/" + sysID + "/name/" + encodedSys;
+            return url;
         }
 
     }
