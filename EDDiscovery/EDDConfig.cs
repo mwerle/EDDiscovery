@@ -8,6 +8,32 @@ namespace EDDiscovery2
 {
     public class EDDConfig
     {
+        public class MapColoursClass
+        {
+            public System.Drawing.Color GetColour(string name)
+            {
+                return System.Drawing.Color.FromArgb(EDDConfig.Instance.GetSettingInt("MapColour_" + name));
+            }
+
+            public bool PutColour(string name, System.Drawing.Color colour)
+            {
+                return EDDConfig.Instance.PutSettingInt("MapColour_" + name, colour.ToArgb());
+            }
+
+            public System.Drawing.Color CoarseGridLines { get { return GetColour("CoarseGridLines"); } set { PutColour("CoarseGridLines", value); } }
+            public System.Drawing.Color FineGridLines { get { return GetColour("FineGridLines"); } set { PutColour("FineGridLines", value); } }
+            public System.Drawing.Color SystemDefault { get { return GetColour("SystemDefault"); } set { PutColour("SystemDefault", value); } }
+            public System.Drawing.Color StationSystem { get { return GetColour("StationSystem"); } set { PutColour("StationSystem", value); } }
+            public System.Drawing.Color CentredSystem { get { return GetColour("CentredSystem"); } set { PutColour("CentredSystem", value); } }
+            public System.Drawing.Color SelectedSystem { get { return GetColour("SelectedSystem"); } set { PutColour("SelectedSystem", value); } }
+            public System.Drawing.Color POISystem { get { return GetColour("POISystem"); } set { PutColour("POISystem", value); } }
+            public System.Drawing.Color TrilatCurrentReference { get { return GetColour("TrilatCurrentReference"); } set { PutColour("TrilatCurrentReference", value); } }
+            public System.Drawing.Color TrilatSuggestedReference { get { return GetColour("TrilatSuggestedReference"); } set { PutColour("TrilatSuggestedReference", value); } }
+            public System.Drawing.Color PlannedRoute { get { return GetColour("PlannedRoute"); } set { PutColour("PlannedRoute", value); } }
+            public System.Drawing.Color NamedStar { get { return GetColour("NamedStar"); } set { PutColour("NamedStar", value); } }
+            public System.Drawing.Color NamedStarUnpopulated { get { return GetColour("NamedStarUnpop"); } set { PutColour("NamedStarUnpop", value); } }
+        }
+
         private static EDDConfig _instance;
         public static EDDConfig Instance
         {
@@ -25,6 +51,7 @@ namespace EDDiscovery2
         private bool _EDSMLog;
         readonly public string LogIndex;
         private bool _canSkipSlowUpdates = false;
+        private bool _orderrowsinverted = false;
         public List<EDCommander> listCommanders;
         private int currentCmdrID=0;
         private Dictionary<string, object> settings = new Dictionary<string, object>();
@@ -32,7 +59,19 @@ namespace EDDiscovery2
         {
             { "Netlogdir", () => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Frontier_Developments", "Products") },
             { "NetlogDirAutoMode", () => true },
-            { "DefaultMap", () => System.Drawing.Color.Red.ToArgb() }
+            { "DefaultMap", () => System.Drawing.Color.Red.ToArgb() },
+            { "MapColour_CoarseGridLines", () => System.Drawing.ColorTranslator.FromHtml("#296A6C").ToArgb() },
+            { "MapColour_FineGridLines", () => System.Drawing.ColorTranslator.FromHtml("#202020").ToArgb() },
+            { "MapColour_SystemDefault", () => System.Drawing.Color.White.ToArgb() },
+            { "MapColour_StationSystem", () => System.Drawing.Color.RoyalBlue.ToArgb() },
+            { "MapColour_CentredSystem", () => System.Drawing.Color.Yellow.ToArgb() },
+            { "MapColour_SelectedSystem", () => System.Drawing.Color.Orange.ToArgb() },
+            { "MapColour_POISystem", () => System.Drawing.Color.Purple.ToArgb() },
+            { "MapColour_TrilatCurrentReference", () => System.Drawing.Color.Green.ToArgb() },
+            { "MapColour_TrilatSuggestedReference", () => System.Drawing.Color.DarkOrange.ToArgb() },
+            { "MapColour_PlannedRoute", () => System.Drawing.Color.Green.ToArgb() },
+            { "MapColour_NamedStar", () => System.Drawing.Color.Yellow.ToArgb() },
+            { "MapColour_NamedStarUnpop", () => System.Drawing.Color.FromArgb(255,192,192,0).ToArgb() }
         };
 
         private Dictionary<string, Action> onchange = new Dictionary<string, Action>
@@ -122,9 +161,22 @@ namespace EDDiscovery2
             }
         }
 
+        public bool OrderRowsInverted {
+            get
+            {
+                return _orderrowsinverted;
+            }
+            set
+            {
+                _orderrowsinverted = value;
+                _db.PutSettingBool("OrderRowsInverted", value);
+            }
+        }
+
         public string NetLogDir { get { return GetSettingString("Netlogdir"); } set { PutSettingString("Netlogdir", value); } }
         public bool NetLogDirAutoMode { get { return GetSettingBool("NetlogDirAutoMode"); } set { PutSettingBool("NetlogDirAutoMode", value); } }
         public int DefaultMapColour { get { return GetSettingInt("DefaultMap"); } set { PutSettingInt("DefaultMap", value); } }
+        public MapColoursClass MapColours { get; private set; } = new EDDConfig.MapColoursClass();
 
         public event Action NetLogDirChanged { add { onchange["Netlogdir"] += value; } remove { onchange["Netlogdir"] -= value; } }
         public event Action NetLogDirAutoModeChanged { add { onchange["NetlogDirAutoMode"] += value; } remove { onchange["NetlogDirAutoMode"] -= value; } }
@@ -211,6 +263,7 @@ namespace EDDiscovery2
                 _useDistances = _db.GetSettingBool("EDSMDistances", false);
                 _EDSMLog = _db.GetSettingBool("EDSMLog", false);
                 _canSkipSlowUpdates = _db.GetSettingBool("CanSkipSlowUpdates", false);
+                _orderrowsinverted = _db.GetSettingBool("OrderRowsInverted", false);
                 LoadCommanders();
                 int activecommander = _db.GetSettingInt("ActiveCommander", 0);
                 var cmdr = listCommanders.Select((c, i) => new { index = i, cmdr = c }).SingleOrDefault(a => a.cmdr.Nr == activecommander);

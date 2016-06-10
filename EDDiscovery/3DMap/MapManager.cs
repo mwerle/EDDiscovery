@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using EDDiscovery;
 using EDDiscovery.DB;
+using EDDiscovery2.DB;
 
 namespace EDDiscovery2._3DMap
 {
@@ -12,38 +13,40 @@ namespace EDDiscovery2._3DMap
     {
         private FormMap _formMap;
 
-        public MapManager()
+        public MapManager(bool nowindowreposition)
         {
             _formMap = new FormMap();
+            _formMap.Nowindowreposition = nowindowreposition;
         }
 
-        public FormMap Instance
+        public void Prepare(string historysel, string homesys, string centersys, float zoom,
+                            AutoCompleteStringCollection sysname , List<VisitedSystemsClass> visited )
         {
-            get
-            {
-                return _formMap;
-            }
+            _formMap.Prepare(historysel, homesys, centersys, zoom, sysname, visited);
         }
 
-        public void Show(string historysel, string homesys, string centersys, float zoom)
+        public void SetPlanned(List<SystemClass> plannedr)
         {
-            _formMap.Prepare(historysel, homesys, centersys, zoom);
-            _formMap.Show();
-            _formMap.Focus();
-        }
-
-        public void ShowPlanned(string historysel, string homesys, string centersys, float zoom, List<SystemClass> plannedr)
-        {
-            _formMap.Prepare(historysel, homesys, centersys, zoom);
             _formMap.SetPlannedRoute(plannedr);
-            _formMap.Show();
-            _formMap.Focus();
         }
 
-        public void ShowTrilat(string historysel, string homesys, string centersys, float zoom, List<SystemClass> plannedr)
+        public void SetReferenceSystems(List<SystemClass> trir)
         {
-            _formMap.Prepare(historysel, homesys, centersys, zoom);
-            _formMap.SetReferenceSystems(plannedr);
+            _formMap.SetReferenceSystems(trir);
+        }
+
+        public void UpdateVisited(List<VisitedSystemsClass> visited)
+        {
+            _formMap.UpdateVisitedSystems(visited);
+        }
+
+        public void UpdateHistorySystem(string historysel)
+        {
+            _formMap.UpdateHistorySystem(historysel);
+        }
+
+        public void Show()
+        { 
             _formMap.Show();
             _formMap.Focus();
         }

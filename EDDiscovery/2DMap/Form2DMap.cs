@@ -27,14 +27,13 @@ namespace EDDiscovery2
         private DateTimePicker pickerStart, pickerStop;
         ToolStripControlHost host1, host2;
 
+        public bool Nowindowreposition { get; set; } = false;
+        SQLiteDBClass db;
 
         public FormSagCarinaMission(EDDiscoveryForm frm)
         {
             _eddiscoveryForm = frm;
-
-
-
-
+            db = new SQLiteDBClass();
             InitializeComponent();
         }
 
@@ -42,6 +41,18 @@ namespace EDDiscovery2
         bool initdone = false;
         private void FormSagCarinaMission_Load(object sender, EventArgs e)
         {
+            var top = db.GetSettingInt("Map2DFormTop", -1);
+
+            if (top >= 0 && Nowindowreposition == false)
+            {
+                var left = db.GetSettingInt("Map2DFormLeft", 0);
+                var height = db.GetSettingInt("Map2DFormHeight", 800);
+                var width = db.GetSettingInt("Map2DFormWidth", 800);
+                this.Location = new Point(left, top);
+                this.Size = new Size(width, height);
+                //Console.WriteLine("Restore map " + this.Top + "," + this.Left + "," + this.Width + "," + this.Height);
+            }
+
             initdone = false;
             pickerStart = new DateTimePicker();
             pickerStop = new DateTimePicker();
@@ -58,7 +69,6 @@ namespace EDDiscovery2
 
             startDate = new DateTime(2010, 1, 1);
             AddImages();
-            WindowState = FormWindowState.Maximized;
 
             toolStripComboBox1.Items.Clear();
 
@@ -71,6 +81,18 @@ namespace EDDiscovery2
             toolStripComboBoxTime.SelectedIndex = 0;
             initdone = true;
             ShowSelectedImage();
+        }
+
+        private void FormSagCarinaMission_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Visible)
+            {
+                db.PutSettingInt("Map2DFormWidth", this.Width);
+                db.PutSettingInt("Map2DFormHeight", this.Height);
+                db.PutSettingInt("Map2DFormTop", this.Top);
+                db.PutSettingInt("Map2DFormLeft", this.Left);
+                //Console.WriteLine("Save map " + this.Top + "," + this.Left + "," + this.Width + "," + this.Height);
+            }
         }
 
 
@@ -127,20 +149,20 @@ namespace EDDiscovery2
 
             int currentcmdr = EDDiscoveryForm.EDDConfig.CurrentCommander.Nr;
 
-            var history = from systems in _eddiscoveryForm.TravelControl.visitedSystems where systems.time > start && systems.time<endDate  && systems.curSystem!=null && systems.curSystem.HasCoordinate == true  orderby systems.time  select systems;
-            List<SystemPosition> listHistory = history.ToList<SystemPosition>();
+            var history = from systems in _eddiscoveryForm.TravelControl.visitedSystems where systems.Time > start && systems.Time<endDate  && systems.curSystem!=null && systems.curSystem.HasCoordinate == true  orderby systems.Time  select systems;
+            List<VisitedSystemsClass> listHistory = history.ToList<VisitedSystemsClass>();
             Graphics gfx = Graphics.FromImage(imageViewer1.Image);
             
             if (listHistory.Count > 1)
             {
-                Pen pen = new Pen(Color.FromArgb(listHistory[1].vs.MapColour), 2);
+                Pen pen = new Pen(Color.FromArgb(listHistory[1].MapColour), 2);
                 if (pen.Color.A == 0)
                     pen.Color = Color.FromArgb(255, pen.Color);
                 for (int ii = 1; ii < listHistory.Count; ii++)
                 {
-                    if (listHistory[ii].vs.MapColour != listHistory[ii-1].vs.MapColour)
+                    if (listHistory[ii].MapColour != listHistory[ii-1].MapColour)
                     {
-                        pen = new Pen(Color.FromArgb(listHistory[ii].vs.MapColour), 2);
+                        pen = new Pen(Color.FromArgb(listHistory[ii].MapColour), 2);
                         if (pen.Color.A == 0)
                             pen.Color = Color.FromArgb(255, pen.Color);
                         
