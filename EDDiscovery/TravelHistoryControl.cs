@@ -1284,12 +1284,18 @@ namespace EDDiscovery
 
         private void StoreFirstDiscoveredBy()
         {
+            this.Cursor = Cursors.WaitCursor;
             try
             {
                 var tb = textBoxFirstDiscoveredBy;
                 var acitems = tb.AutoCompleteCustomSource;
                 var curSys = currentSysPos.curSystem;
                 string cmdr = tb.Text.Trim().ToUpper();
+
+                IEnumerable<DataGridViewRow> selectedRows = dataGridViewTravel.SelectedCells.Cast<DataGridViewCell>()
+                                                            .Select(cell => cell.OwningRow)
+                                                            .Distinct()
+                                                            .OrderBy(cell => cell.Index);
 
                 // MKW: We pre-populate first_discovered_by using CommanderCreate, so if we
                 // gate storing to database, we stop some updates.  However, always storing
@@ -1299,26 +1305,31 @@ namespace EDDiscovery
                 // the few systems I checked were different between in-game, EDSM, and
                 // CommanderCreate!
                 //if (!curSys.first_discovered_by.Equals(cmdr))
+                foreach (DataGridViewRow r in selectedRows)
                 {
-                    curSys.first_discovered_by = cmdr;
+                    var sys = r.Cells[TravelHistoryColumns.SystemName].Tag as SystemClass;
+                    if (sys == null)
+                    {
+                        sys = SystemData.GetSystem(r.Cells[TravelHistoryColumns.SystemName].Value as string);
+                    }
+
+                    sys.first_discovered_by = cmdr;
 
                     // Save to DB
                     SystemClass sc = null;
-                    if (curSys is SystemClass)
+                    if (sys is SystemClass)
                     {
-                        sc = curSys as SystemClass;
+                        sc = sys as SystemClass;
                     }
                     else
                     {
-                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == currentSysPos.curSystem.id);
+                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == sys.id);
                     }
-                    this.Cursor = Cursors.WaitCursor;
                     // MKW TODO: Do we need to set/update these?
                     //sc.CommanderUpdate = comboBoxCommander.Text;
                     //sc.UpdateDate = DateTime.Now;
                     sc.first_discovered_by = cmdr;
                     sc.Update();
-                    this.Cursor = Cursors.Default;
                 }
 
                 // Update list of AutoComplete items
@@ -1329,8 +1340,14 @@ namespace EDDiscovery
             }
             catch (Exception ex)
             {
-                // Really only expect null-pointer exceptions here
+                // We're now doing more - let's log it.
+                System.Diagnostics.Trace.WriteLine("Exception : " + ex.Message);
+                System.Diagnostics.Trace.WriteLine(ex.StackTrace);
+
+                LogTextHighlight("Exception : " + ex.Message);
+                LogTextHighlight(ex.StackTrace);
             }
+            this.Cursor = Cursors.Default;
         }
 
         private void textBoxFirstDiscoveredBy_Leave(object sender, EventArgs e)
