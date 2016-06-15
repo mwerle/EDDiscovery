@@ -159,6 +159,9 @@ namespace EDDiscovery.DB
                 if (dbver < 15)
                     UpgradeDB15();
 
+                if (dbver < 16)
+                    UpgradeDB16();
+
                 dbUpgraded = true;
                 return true;
             }
@@ -353,7 +356,16 @@ namespace EDDiscovery.DB
             PerformUpgrade(15, true, true, new[] { query1, query2, query3 });
         }
 
+        // MKW - add Commander table and "first_discovered_by" column to "Systems" class
+        private void UpgradeDB16()
+        {
+            //string query1 = "CREATE TABLE Commanders (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT UNIQUE NOT NULL)";
+            //string query2 = "ALTER TABLE Systems ADD COLUMN first_visited_by INTEGER";
+            //string query3 = "ALTER TABLE Systems ADD CONSTRAINT (fk_first_visited_by) FOREIGN KEY(first_visited_by) REFERENCES Commanders(id)";
+            string query1 = "ALTER TABLE Systems ADD COLUMN first_discovered_by TEXT";
 
+            PerformUpgrade(16, true, true, new[] { query1 });
+        }
 
 
         private void ExecuteQuery(string query)
@@ -618,6 +630,51 @@ namespace EDDiscovery.DB
             catch 
             {
                 return false;
+            }
+        }
+
+        public List<string> GetAllFirstDiscoveryCommanders()
+        {
+            try
+            {
+                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                {
+                    using (SQLiteCommand cmd = new SQLiteCommand())
+                    {
+                        DataSet ds = null;
+                        cmd.Connection = cn;
+                        cmd.CommandType = CommandType.Text;
+                        cmd.CommandTimeout = 30;
+                        cmd.CommandText = "SELECT DISTINCT first_discovered_by FROM Systems ORDER BY first_discovered_by ASC";
+
+                        ds = SqlQueryText(cn, cmd);
+                        if (ds.Tables.Count == 0)
+                        {
+                            return null;
+                        }
+                        
+                        if (ds.Tables[0].Rows.Count == 0)
+                        {
+                            return null;
+                        }
+
+                        List<string> retVal = new List<string>();
+                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        {
+                            string value = dr[0] == DBNull.Value ? null : (string)dr[0];
+                            if(!string.IsNullOrEmpty(value))
+                            {
+                                retVal.Add(value);
+                            }
+                        }
+                        return retVal;
+
+                    }
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 

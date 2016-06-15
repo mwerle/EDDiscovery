@@ -31,6 +31,9 @@ namespace EDDiscovery2.DB.InMemory
         public int needs_permit { get; set; }
         public int eddb_updated_at { get; set; }
 
+        public bool first_discovery { get; set; }
+        public string first_discovered_by { get; set; } /**< Foreign key into commanders table */
+
         public bool HasCoordinate
         {
             get
