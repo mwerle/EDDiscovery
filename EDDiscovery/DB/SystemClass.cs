@@ -264,6 +264,9 @@ namespace EDDiscovery.DB
                 o = dr["needs_permit"];
                 needs_permit = o == DBNull.Value ? 0 : (int)((long)o);
 
+                o = dr["FirstDiscovery"];
+                first_discovery = o == DBNull.Value ? false : (bool)o;
+
                 o = dr["first_discovered_by"];
                 first_discovered_by = o == DBNull.Value ? null : ((string)o).ToUpper();
                 if (String.IsNullOrEmpty(first_discovered_by))
