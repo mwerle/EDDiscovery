@@ -177,9 +177,10 @@ namespace EDDiscovery.DB
                 status = SystemStatusEnum.EDDB;
             }
 
-
-
-            first_discovered_by = CommanderCreate.ToUpper();
+            if (!string.IsNullOrEmpty(CommanderCreate))
+            {
+                first_discovered_by = CommanderCreate.ToUpper();
+            }
         }
 
 
