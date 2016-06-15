@@ -85,6 +85,8 @@ namespace EDDiscovery
 
             comboBoxHistoryWindow.SelectedIndex = db.GetSettingInt("EDUIHistory", DefaultTravelHistoryFilterIndex);
             LoadCommandersListBox();
+
+            LoadFirstDiscoveredBy();
         }
 
 
@@ -372,6 +374,8 @@ namespace EDDiscovery
             buttonTrilaterate.Enabled = !syspos.curSystem.HasCoordinate && syspos.curSystem == GetCurrentSystem();
             //buttonTrilaterate.Enabled = true; // FIXME for debugging only
 
+            checkBoxFirstDiscovery.Checked = syspos.curSystem.first_discovery;
+            textBoxFirstDiscoveredBy.Text = syspos.curSystem.first_discovered_by;
 
             ShowClosestSystems(syspos.Name);
         }
@@ -797,7 +801,7 @@ namespace EDDiscovery
 
         private void UpdateNewPosition(string name)
         {
-            LogText("Arrived to system: ");
+            LogText("Arrived at system: ");
             SystemClass sys1 = SystemData.GetSystem(name);
             if (sys1 == null || sys1.HasCoordinate == false)
                 LogTextHighlight(name);
@@ -806,8 +810,8 @@ namespace EDDiscovery
 
             int count = GetVisitsCount(name);
 
-            LogText("  : Vist nr " + count.ToString() + Environment.NewLine);
-            System.Diagnostics.Trace.WriteLine("Arrived to system: " + name + " " + count.ToString() + ":th visit.");
+            LogText(": Visit No. " + count.ToString() + Environment.NewLine);
+            System.Diagnostics.Trace.WriteLine("Arrived at system: " + name + " " + count.ToString() + ":th visit.");
 
             var result = visitedSystems.OrderByDescending(a => a.Time).ToList<VisitedSystemsClass>();
 
@@ -1266,6 +1270,158 @@ namespace EDDiscovery
                     //Process.Start("http://ross.eddb.io/system/update/" + currentSysPos.curSystem.id_eddb.ToString());
                 }
             }
+        }
+
+        private void LoadFirstDiscoveredBy()
+        {
+            SQLiteDBClass db = new SQLiteDBClass();
+            List<string> cmdrs = db.GetAllFirstDiscoveryCommanders();
+
+            AutoCompleteStringCollection col = new AutoCompleteStringCollection();
+            col.AddRange(cmdrs.ToArray());
+            textBoxFirstDiscoveredBy.AutoCompleteCustomSource = col;
+        }
+
+        private void StoreFirstDiscoveredBy()
+        {
+            try
+            {
+                var tb = textBoxFirstDiscoveredBy;
+                var acitems = tb.AutoCompleteCustomSource;
+                var curSys = currentSysPos.curSystem;
+                string cmdr = tb.Text.Trim().ToUpper();
+                bool fd = checkBoxFirstDiscovery.Checked;
+
+                if (!curSys.first_discovered_by.Equals(cmdr) || curSys.first_discovery != fd)
+                {
+                    curSys.first_discovery = fd;
+                    curSys.first_discovered_by = cmdr;
+
+                    // ASSERT: curSys.firstDiscovery == false && curSys.first_discovered_by != comboBoxCommander.Text.ToUpper() 
+                    //         ||
+                    //         curSys.firstDiscovery == true && curSys.first_discovered_by == comboBoxCommander.Text.ToUpper()   
+
+                    // Save to DB
+                    SystemClass sc = null;
+                    if (curSys is SystemClass)
+                    {
+                        sc = curSys as SystemClass;
+                    }
+                    else
+                    {
+                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == currentSysPos.curSystem.id);
+                    }
+                    this.Cursor = Cursors.WaitCursor;
+                    sc.first_discovered_by = cmdr;
+                    //TODO: Should we set the commander and time?
+                    //sc.CommanderUpdate = 
+                    //sc.UpdateDate = DateTime.Now();
+                    sc.Update();
+                    this.Cursor = Cursors.Default;
+                }
+
+                if (!String.IsNullOrEmpty(cmdr) && !acitems.Contains(cmdr))
+                {
+                    acitems.Add(cmdr);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Really only expect null-pointer exceptions here
+            }
+        }
+
+        private void textBoxFirstDiscoveredBy_Leave(object sender, EventArgs e)
+        {
+            try
+            {
+                var tb = sender as ExtendedControls.TextBoxBorder;
+                var acitems = tb.AutoCompleteCustomSource;
+                var curSys = currentSysPos.curSystem;
+                string cmdr = tb.Text.Trim().ToUpper();
+
+                if (!curSys.first_discovered_by.Equals(cmdr))
+                {
+                    curSys.first_discovered_by = cmdr;
+
+                    // Save to DB
+                    SystemClass sc = null;
+                    if (curSys is SystemClass)
+                    {
+                        sc = curSys as SystemClass;
+                    }
+                    else
+                    {
+                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == currentSysPos.curSystem.id);
+                    }
+                    this.Cursor = Cursors.WaitCursor;
+                    sc.first_discovered_by = cmdr;
+                    //TODO: Should we set the commander and time?
+                    //sc.CommanderUpdate = 
+                    //sc.UpdateDate = DateTime.Now();
+                    sc.Update();
+                    this.Cursor = Cursors.Default;
+                }
+                
+                if (!String.IsNullOrEmpty(cmdr) && !acitems.Contains(cmdr))
+                {
+                    acitems.Add(cmdr);
+                }
+
+                if (false) //!sc.first_discovered_by.Equals(cmdr))
+                {
+
+                    /*
+                    this.Cursor = Cursors.WaitCursor;
+                    currentSysPos.Update();
+                    this.Cursor = Cursors.Default;
+                    */
+
+                    /*                    
+                    VisitedSystemsClass sp = (VisitedSystemsClass)dataGridViewTravel.CurrentRow.Cells[TravelHistoryColumns.SystemName].Tag
+                    sp.curSystem.first_discovered_by = cmdr;
+                    sp.Update();
+                    }
+                    */
+
+                    /*
+                    SQLiteDBClass db = new SQLiteDBClass();
+                    SystemClass sc;
+
+                    //sc = SQLiteDBClass.globalSystems[currentSysPos.curSystem.id];
+                    
+                    sc.first_discovered_by = cmdr;
+                    //TODO: Should we set the commander and time?
+                    //sc.CommanderUpdate = 
+                    //sc.UpdateDate = DateTime.Now();
+                    sc.Update();
+                    */
+                }
+            }
+            catch (Exception ex)
+            {
+                // Really only expect null-pointer exceptions here
+            }
+        }
+
+        private void checkBoxFirstDiscovery_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox cb = sender as CheckBox;
+
+            // Only change values; don't save to DB until we leave the control
+            if (cb.Checked)
+            {
+                textBoxFirstDiscoveredBy.Text = comboBoxCommander.Text.ToUpper();
+            }
+            else
+            {
+                textBoxFirstDiscoveredBy.Text = "";
+            }
+        }
+
+        private void checkBoxFirstDiscovery_Leave(object sender, EventArgs e)
+        {
+            StoreFirstDiscoveredBy();
         }
     }
 
