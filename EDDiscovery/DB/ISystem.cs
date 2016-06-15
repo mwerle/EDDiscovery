@@ -33,7 +33,6 @@ namespace EDDiscovery2.DB
         int needs_permit { get; set; }
         int eddb_updated_at { get; set; }
 
-        bool first_discovery { get; set; } /**< Whether current commander was the first discoverer */
         string first_discovered_by { get; set; } /**< Name of commander who first discovered this system */
 
         bool HasCoordinate{ get; }

@@ -264,9 +264,6 @@ namespace EDDiscovery.DB
                 o = dr["needs_permit"];
                 needs_permit = o == DBNull.Value ? 0 : (int)((long)o);
 
-                o = dr["FirstDiscovery"];
-                first_discovery = o == DBNull.Value ? false : (bool)o;
-
                 o = dr["first_discovered_by"];
                 first_discovered_by = o == DBNull.Value ? null : ((string)o).ToUpper();
                 if (String.IsNullOrEmpty(first_discovered_by))
@@ -476,7 +473,7 @@ namespace EDDiscovery.DB
                     cmd.Transaction = transaction;
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandTimeout = 30;
-                    cmd.CommandText = "Insert into Systems (name, x, y, z, cr, commandercreate, createdate, commanderupdate, updatedate, status, FirstDiscovery, first_discovered_by, note, id_eddb, population, faction, government_id, allegiance_id, primary_economy_id, security, eddb_updated_at, state, needs_permit, versiondate) values (@name, @x, @y, @z, @cr, @commandercreate, @createdate, @commanderupdate, @updatedate, @status, @FirstDiscovery, @first_discovered_by, @Note, @id_eddb, @population, @faction, @government_id, @allegiance_id, @primary_economy_id,  @security, @eddb_updated_at, @state, @needs_permit, datetime('now'))";
+                    cmd.CommandText = "Insert into Systems (name, x, y, z, cr, commandercreate, createdate, commanderupdate, updatedate, status, first_discovered_by, note, id_eddb, population, faction, government_id, allegiance_id, primary_economy_id, security, eddb_updated_at, state, needs_permit, versiondate) values (@name, @x, @y, @z, @cr, @commandercreate, @createdate, @commanderupdate, @updatedate, @status, @first_discovered_by, @Note, @id_eddb, @population, @faction, @government_id, @allegiance_id, @primary_economy_id,  @security, @eddb_updated_at, @state, @needs_permit, datetime('now'))";
                     cmd.Parameters.AddWithValue("@name", name);
                     cmd.Parameters.AddWithValue("@x", x);
                     cmd.Parameters.AddWithValue("@y", y);
@@ -487,7 +484,6 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@CommanderUpdate", CommanderCreate);
                     cmd.Parameters.AddWithValue("@updatedate", CreateDate);
                     cmd.Parameters.AddWithValue("@Status", (int)status);
-                    cmd.Parameters.AddWithValue("@first_discovery", first_discovery);
                     cmd.Parameters.AddWithValue("@first_discovered_by", first_discovered_by);
 
                     
@@ -516,7 +512,7 @@ namespace EDDiscovery.DB
                     cmd.Connection = cn;
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandTimeout = 30;
-                    cmd.CommandText = "Insert into Systems (name, x, y, z, cr, commandercreate, createdate, commanderupdate, updatedate, status, FirstDiscovery, first_discovered_by, note, versiondate) values (@name, @x, @y, @z, @cr, @commandercreate, @createdate, @commanderupdate, @updatedate, @status, @first_discovery, @first_discovered_by, @Note, datetime('now'))";
+                    cmd.CommandText = "Insert into Systems (name, x, y, z, cr, commandercreate, createdate, commanderupdate, updatedate, status, first_discovered_by, note, versiondate) values (@name, @x, @y, @z, @cr, @commandercreate, @createdate, @commanderupdate, @updatedate, @status, @first_discovered_by, @Note, datetime('now'))";
                     cmd.Parameters.AddWithValue("@name", name);
                     cmd.Parameters.AddWithValue("@x", x);
                     cmd.Parameters.AddWithValue("@y", y);
@@ -527,7 +523,6 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@CommanderUpdate", CommanderCreate);
                     cmd.Parameters.AddWithValue("@updatedate", CreateDate);
                     cmd.Parameters.AddWithValue("@Status", (int)status);
-                    cmd.Parameters.AddWithValue("@first_discovery", first_discovery);
                     cmd.Parameters.AddWithValue("@first_discovered_by", first_discovered_by);
 
                     if (Note == null)
@@ -558,7 +553,7 @@ namespace EDDiscovery.DB
             {
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandTimeout = 30;
-                cmd.CommandText = "Update Systems set name=@name, x=@x, y=@y, z=@z, cr=@cr, commandercreate=@commandercreate, createdate=@createdate, commanderupdate=@commanderupdate, updatedate=@updatedate, status=@status, FirstDiscovery=@first_discovery, first_discovered_by=@first_discovered_by, note=@Note, id_eddb=@id_eddb, population=@population, faction=@faction, government_id=@government_id, allegiance_id=@allegiance_id, primary_economy_id=@primary_economy_id,  security=@security, eddb_updated_at=@eddb_updated_at, state=@state, needs_permit=@needs_permit, versiondate=datetime('now') where ID=@id";
+                cmd.CommandText = "Update Systems set name=@name, x=@x, y=@y, z=@z, cr=@cr, commandercreate=@commandercreate, createdate=@createdate, commanderupdate=@commanderupdate, updatedate=@updatedate, status=@status, first_discovered_by=@first_discovered_by, note=@Note, id_eddb=@id_eddb, population=@population, faction=@faction, government_id=@government_id, allegiance_id=@allegiance_id, primary_economy_id=@primary_economy_id,  security=@security, eddb_updated_at=@eddb_updated_at, state=@state, needs_permit=@needs_permit, versiondate=datetime('now') where ID=@id";
 
                 cmd.Parameters.AddWithValue("@id", id); 
                 cmd.Parameters.AddWithValue("@name", name);
@@ -571,7 +566,6 @@ namespace EDDiscovery.DB
                 cmd.Parameters.AddWithValue("@CommanderUpdate", CommanderCreate);
                 cmd.Parameters.AddWithValue("@updatedate", CreateDate);
                 cmd.Parameters.AddWithValue("@Status", (int)status);
-                cmd.Parameters.AddWithValue("@first_discovery", first_discovery);
                 cmd.Parameters.AddWithValue("@first_discovered_by", first_discovered_by);
                 if (Note == null)
                     Note = "";

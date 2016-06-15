@@ -374,7 +374,7 @@ namespace EDDiscovery
             buttonTrilaterate.Enabled = !syspos.curSystem.HasCoordinate && syspos.curSystem == GetCurrentSystem();
             //buttonTrilaterate.Enabled = true; // FIXME for debugging only
 
-            checkBoxFirstDiscovery.Checked = syspos.curSystem.first_discovery;
+            checkBoxFirstDiscovery.Checked = comboBoxCommander.Text.Equals(syspos.curSystem.first_discovered_by, StringComparison.OrdinalIgnoreCase);
             textBoxFirstDiscoveredBy.Text = syspos.curSystem.first_discovered_by;
 
             ShowClosestSystems(syspos.Name);
@@ -1290,16 +1290,10 @@ namespace EDDiscovery
                 var acitems = tb.AutoCompleteCustomSource;
                 var curSys = currentSysPos.curSystem;
                 string cmdr = tb.Text.Trim().ToUpper();
-                bool fd = checkBoxFirstDiscovery.Checked;
 
-                if (!curSys.first_discovered_by.Equals(cmdr) || curSys.first_discovery != fd)
+                if (!curSys.first_discovered_by.Equals(cmdr))
                 {
-                    curSys.first_discovery = fd;
                     curSys.first_discovered_by = cmdr;
-
-                    // ASSERT: curSys.firstDiscovery == false && curSys.first_discovered_by != comboBoxCommander.Text.ToUpper() 
-                    //         ||
-                    //         curSys.firstDiscovery == true && curSys.first_discovered_by == comboBoxCommander.Text.ToUpper()   
 
                     // Save to DB
                     SystemClass sc = null;
@@ -1312,14 +1306,14 @@ namespace EDDiscovery
                         sc = SQLiteDBClass.globalSystems.Find(x => x.id == currentSysPos.curSystem.id);
                     }
                     this.Cursor = Cursors.WaitCursor;
-                    sc.first_discovered_by = cmdr;
-                    //TODO: Should we set the commander and time?
-                    //sc.CommanderUpdate = 
-                    //sc.UpdateDate = DateTime.Now();
+                    // MKW TODO: Do we need to set/update these?
+                    //sc.CommanderUpdate = comboBoxCommander.Text;
+                    //sc.UpdateDate = DateTime.Now;
                     sc.Update();
                     this.Cursor = Cursors.Default;
                 }
 
+                // Update list of AutoComplete items
                 if (!String.IsNullOrEmpty(cmdr) && !acitems.Contains(cmdr))
                 {
                     acitems.Add(cmdr);
@@ -1333,6 +1327,7 @@ namespace EDDiscovery
 
         private void textBoxFirstDiscoveredBy_Leave(object sender, EventArgs e)
         {
+            checkBoxFirstDiscovery.Checked = comboBoxCommander.Text.Equals(textBoxFirstDiscoveredBy.Text.Trim(), StringComparison.OrdinalIgnoreCase);
             StoreFirstDiscoveredBy();
         }
 
