@@ -163,28 +163,27 @@ namespace EDDiscovery2.DB
 
                 if (line.Contains("StarPos:")) // new  ED 2.1 format
                 {
-
                     //{(?<Hour>\d+):(?<Minute>\d+):(?<Second>\d+)} System:"(?<SystemName>[^"]+)" StarPos:\((?<Pos>.*?)\)ly( +(?<TravelMode>\w+))?
                     //{(?<Hour>\d+):(?<Minute>\d+):(?<Second>\d+)} System:"(?<SystemName>[^"]+)" StarPos:\((?<Pos>.*?)\)ly( +(?<TravelMode>\w+))?
                     //string rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly( +(?<TravelMode>\\w+))?";
                     string rgexpstr;
 
+                    // MKW : improved efficiency - we're only interested in the first part of the line (for now)
                     //if (line.Contains("Body:"))
                     //    rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly Body:(?<Body>\\d+) RelPos:\\((?<RelPos>.*?)\\)km( +(?<TravelMode>\\w+))?";
                     //else
                     //    rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly( +(?<TravelMode>\\w+))?";
-                    rgexpstr = "{(?<Hour>\\d{2}):(?<Minute>\\d{2}):(?<Second>\\d{2})} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<StarPosX>[^,]+),(?<StarPosY>[^,]+),(?<StarPosZ>[^)]+)\\)ly";
+                    rgexpstr = "{(?<Hour>\\d{2}):(?<Minute>\\d{2}):(?<Second>\\d{2})} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<StarPosX>[^,]+),(?<StarPosY>[^,]+),(?<StarPosZ>[^\\)]+)\\)ly";
 
                     pattern = new Regex(rgexpstr);
 
-
                     Match match = pattern.Match(line);
-
                     if (match != null && match.Success)
                     {
                         hour = int.Parse(match.Groups["Hour"].Value);
                         min = int.Parse(match.Groups["Minute"].Value);
                         sec = int.Parse(match.Groups["Second"].Value);
+                        sp.Name = match.Groups["SystemName"].Value;
 
                         try
                         {
@@ -199,15 +198,12 @@ namespace EDDiscovery2.DB
                             sp.Y = 0;
                             sp.Z = 0;
                         }
-
                     }
                     else
                     {
                         System.Diagnostics.Trace.WriteLine("System parse error 1:" + line);
                     }
-
-
-            }
+                }    
                 else
                 {
                     pattern = new Regex(@"{(?<Hour>\d+):(?<Minute>\d+):(?<Second>\d+)} System:\d+\((?<SystemName>.*?)\) Body:(?<Body>\d+) Pos:\(.*?\)( (?<TravelMode>\w+))?");
