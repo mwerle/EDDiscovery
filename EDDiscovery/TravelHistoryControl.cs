@@ -1291,7 +1291,14 @@ namespace EDDiscovery
                 var curSys = currentSysPos.curSystem;
                 string cmdr = tb.Text.Trim().ToUpper();
 
-                if (!curSys.first_discovered_by.Equals(cmdr))
+                // MKW: We pre-populate first_discovered_by using CommanderCreate, so if we
+                // gate storing to database, we stop some updates.  However, always storing
+                // to DB is not very efficient.
+                // TODO: figure out how best to do this. Perhaps run a query during DB update?
+                // Or perhaps ignore the CommanderCreate? Not sure where it comes from anyway -
+                // the few systems I checked were different between in-game, EDSM, and
+                // CommanderCreate!
+                //if (!curSys.first_discovered_by.Equals(cmdr))
                 {
                     curSys.first_discovered_by = cmdr;
 
@@ -1309,6 +1316,7 @@ namespace EDDiscovery
                     // MKW TODO: Do we need to set/update these?
                     //sc.CommanderUpdate = comboBoxCommander.Text;
                     //sc.UpdateDate = DateTime.Now;
+                    sc.first_discovered_by = cmdr;
                     sc.Update();
                     this.Cursor = Cursors.Default;
                 }
