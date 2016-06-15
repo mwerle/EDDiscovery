@@ -1333,75 +1333,7 @@ namespace EDDiscovery
 
         private void textBoxFirstDiscoveredBy_Leave(object sender, EventArgs e)
         {
-            try
-            {
-                var tb = sender as ExtendedControls.TextBoxBorder;
-                var acitems = tb.AutoCompleteCustomSource;
-                var curSys = currentSysPos.curSystem;
-                string cmdr = tb.Text.Trim().ToUpper();
-
-                if (!curSys.first_discovered_by.Equals(cmdr))
-                {
-                    curSys.first_discovered_by = cmdr;
-
-                    // Save to DB
-                    SystemClass sc = null;
-                    if (curSys is SystemClass)
-                    {
-                        sc = curSys as SystemClass;
-                    }
-                    else
-                    {
-                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == currentSysPos.curSystem.id);
-                    }
-                    this.Cursor = Cursors.WaitCursor;
-                    sc.first_discovered_by = cmdr;
-                    //TODO: Should we set the commander and time?
-                    //sc.CommanderUpdate = 
-                    //sc.UpdateDate = DateTime.Now();
-                    sc.Update();
-                    this.Cursor = Cursors.Default;
-                }
-                
-                if (!String.IsNullOrEmpty(cmdr) && !acitems.Contains(cmdr))
-                {
-                    acitems.Add(cmdr);
-                }
-
-                if (false) //!sc.first_discovered_by.Equals(cmdr))
-                {
-
-                    /*
-                    this.Cursor = Cursors.WaitCursor;
-                    currentSysPos.Update();
-                    this.Cursor = Cursors.Default;
-                    */
-
-                    /*                    
-                    VisitedSystemsClass sp = (VisitedSystemsClass)dataGridViewTravel.CurrentRow.Cells[TravelHistoryColumns.SystemName].Tag
-                    sp.curSystem.first_discovered_by = cmdr;
-                    sp.Update();
-                    }
-                    */
-
-                    /*
-                    SQLiteDBClass db = new SQLiteDBClass();
-                    SystemClass sc;
-
-                    //sc = SQLiteDBClass.globalSystems[currentSysPos.curSystem.id];
-                    
-                    sc.first_discovered_by = cmdr;
-                    //TODO: Should we set the commander and time?
-                    //sc.CommanderUpdate = 
-                    //sc.UpdateDate = DateTime.Now();
-                    sc.Update();
-                    */
-                }
-            }
-            catch (Exception ex)
-            {
-                // Really only expect null-pointer exceptions here
-            }
+            StoreFirstDiscoveredBy();
         }
 
         private void checkBoxFirstDiscovery_CheckedChanged(object sender, EventArgs e)
