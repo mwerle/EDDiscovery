@@ -169,10 +169,11 @@ namespace EDDiscovery2.DB
                     //string rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly( +(?<TravelMode>\\w+))?";
                     string rgexpstr;
 
-                    if (line.Contains("Body:"))
-                        rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly Body:(?<Body>\\d+) RelPos:\\((?<RelPos>.*?)\\)km( +(?<TravelMode>\\w+))?";
-                    else
-                        rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly( +(?<TravelMode>\\w+))?";
+                    //if (line.Contains("Body:"))
+                    //    rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly Body:(?<Body>\\d+) RelPos:\\((?<RelPos>.*?)\\)km( +(?<TravelMode>\\w+))?";
+                    //else
+                    //    rgexpstr = "{(?<Hour>\\d+):(?<Minute>\\d+):(?<Second>\\d+)} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<Pos>.*?)\\)ly( +(?<TravelMode>\\w+))?";
+                    rgexpstr = "{(?<Hour>\\d{2}):(?<Minute>\\d{2}):(?<Second>\\d{2})} System:\"(?<SystemName>[^\"]+)\" StarPos:\\((?<StarPosX>[^,]+),(?<StarPosY>[^,]+),(?<StarPosZ>[^)]+)\\)ly";
 
                     pattern = new Regex(rgexpstr);
 
@@ -185,16 +186,12 @@ namespace EDDiscovery2.DB
                         min = int.Parse(match.Groups["Minute"].Value);
                         sec = int.Parse(match.Groups["Second"].Value);
 
-                        //sp.Nr = int.Parse(match.Groups["Body"].Value);
-                        sp.Name = match.Groups["SystemName"].Value;
-                        string pos = match.Groups["Pos"].Value;
                         try
                         {
-                            string[] xyzpos = pos.Split(',');
                             var culture = new System.Globalization.CultureInfo("en-US");
-                            sp.X = double.Parse(xyzpos[0], culture);
-                            sp.Y = double.Parse(xyzpos[1], culture);
-                            sp.Z = double.Parse(xyzpos[2], culture);
+                            sp.X = double.Parse(match.Groups["StarPosX"].Value, culture);
+                            sp.Y = double.Parse(match.Groups["StarPosY"].Value, culture);
+                            sp.Z = double.Parse(match.Groups["StarPosZ"].Value, culture);
                         }
                         catch
                         {
