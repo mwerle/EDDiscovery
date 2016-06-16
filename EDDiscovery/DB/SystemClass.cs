@@ -17,6 +17,7 @@ namespace EDDiscovery.DB
         EDDiscovery = 3,
         EDDB = 4,
         Inhumierer = 5,
+        EDSM = 6,
 
     }
 
@@ -125,12 +126,13 @@ namespace EDDiscovery.DB
 
                 }
 
+                // MKW TODO: this overwrites the UdpateDate set above; is this on purpose?
                 UpdateDate = jo["date"].Value<DateTime>();
                 if (CreateDate.Year <= 1)
                     CreateDate = UpdateDate;
 
 
-                status = SystemStatusEnum.EDSC;
+                status = SystemStatusEnum.EDSM;
             }
             else if (source == SystemInfoSource.EDDB)
             {
