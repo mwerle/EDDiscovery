@@ -289,6 +289,12 @@ namespace EDDiscovery2.EDDB
                             {
                                 if (sysdb.eddb_updated_at != sys.eddb_updated_at ||sysdb.population!=sys.population)
                                 {
+                                    // MKW Update created commander
+                                    if (sysdb.CreateDate > sys.CreateDate)
+                                    {
+                                        sysdb.CreateDate = sys.CreateDate;
+                                        sysdb.CommanderCreate = sys.CommanderCreate;
+                                    }
                                     sysdb.id_eddb = sys.id_eddb;
                                     sysdb.faction = sys.faction;
                                     sysdb.population = sys.population;

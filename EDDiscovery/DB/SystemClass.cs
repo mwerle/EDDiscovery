@@ -229,8 +229,6 @@ namespace EDDiscovery.DB
                         UpdateDate = (DateTime)dr["updatedate"];
                     else
                         UpdateDate = new DateTime(1980, 1, 1);
-                    
-
                 }
 
                 status = (SystemStatusEnum)((long)dr["status"]);
@@ -608,9 +606,11 @@ namespace EDDiscovery.DB
                 cmd.Parameters.AddWithValue("@CommanderCreate", CommanderCreate);
                 cmd.Parameters.AddWithValue("@Createdate", CreateDate);
                 cmd.Parameters.AddWithValue("@CommanderUpdate", CommanderCreate);
-                cmd.Parameters.AddWithValue("@updatedate", CreateDate);
+                // MKW - if we have a locally-created system, ensure we set an early datetime so it doesn't stop downloading the latest information from the servers
+                DateTime updateDateTime = (status == SystemStatusEnum.EDDiscovery) ? DateTime.MinValue : CreateDate;
+                cmd.Parameters.AddWithValue("@updatedate", updateDateTime);
                 cmd.Parameters.AddWithValue("@Status", (int)status);
-
+                
                 SQLiteDBClass.SqlNonQueryText(cn, cmd);
                 return true;
             }

@@ -1113,6 +1113,8 @@ namespace EDDiscovery
                             systems2Store.Add(system);
                         else if (!sys.name.Equals(system.name) || sys.x != system.x || sys.y != system.y || sys.z != system.z)  // Case or position changed
                             systems2Store.Add(system);
+                        else if( sys.CreateDate > system.CreateDate ) // A locally-created system needs updating with server data
+                            systems2Store.Add(system);
                     }
                     SystemClass.Store(systems2Store);
                     systems.Clear();
