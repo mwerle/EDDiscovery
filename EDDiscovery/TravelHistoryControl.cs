@@ -1277,6 +1277,7 @@ namespace EDDiscovery
             }
         }
 
+        /** Load up the AutoComplete for the First Discovered By textbox */
         private void LoadFirstDiscoveredBy()
         {
             SQLiteDBClass db = new SQLiteDBClass();
@@ -1287,15 +1288,14 @@ namespace EDDiscovery
             textBoxFirstDiscoveredBy.AutoCompleteCustomSource = col;
         }
 
+        /** Store First Discovered By in database */
         private void StoreFirstDiscoveredBy()
         {
             this.Cursor = Cursors.WaitCursor;
             try
             {
-                var tb = textBoxFirstDiscoveredBy;
-                var acitems = tb.AutoCompleteCustomSource;
-                var curSys = currentSysPos.curSystem;
-                string cmdr = tb.Text.Trim().ToUpper();
+                var acitems = textBoxFirstDiscoveredBy.AutoCompleteCustomSource;
+                string cmdr = textBoxFirstDiscoveredBy.Text.Trim().ToUpper();
 
                 IEnumerable<DataGridViewRow> selectedRows = dataGridViewTravel.SelectedCells.Cast<DataGridViewCell>()
                                                             .Select(cell => cell.OwningRow)
@@ -1312,28 +1312,15 @@ namespace EDDiscovery
                 //if (!curSys.first_discovered_by.Equals(cmdr))
                 foreach (DataGridViewRow r in selectedRows)
                 {
-                    var sys = r.Cells[TravelHistoryColumns.SystemName].Tag as SystemClass;
-                    if (sys == null)
-                    {
-                        sys = SystemData.GetSystem(r.Cells[TravelHistoryColumns.SystemName].Value as string);
-                    }
+                    var sys = r.Cells[TravelHistoryColumns.SystemName].Tag as VisitedSystemsClass;
+                    // assert: vsys != null
+                    var sc = sys.curSystem as SystemClass;
+                    // assert: sc != null
 
-                    sys.first_discovered_by = cmdr;
-
-                    // Save to DB
-                    SystemClass sc = null;
-                    if (sys is SystemClass)
-                    {
-                        sc = sys as SystemClass;
-                    }
-                    else
-                    {
-                        sc = SQLiteDBClass.globalSystems.Find(x => x.id == sys.id);
-                    }
                     // MKW TODO: Do we need to set/update these?
                     //sc.CommanderUpdate = comboBoxCommander.Text;
                     //sc.UpdateDate = DateTime.Now;
-                    sc.first_discovered_by = cmdr;
+                    sc.first_discovered_by = String.IsNullOrEmpty(cmdr)? null : cmdr;
                     sc.Update();
                 }
 
