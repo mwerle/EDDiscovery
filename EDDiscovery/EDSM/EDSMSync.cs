@@ -129,6 +129,7 @@ namespace EDDiscovery2.EDSM
                                 tlu = new TravelLogUnit();
 
                                 tlu.type = 2;  // EDSM
+                                // MKW: For testing purposes use http://beta.edsm.net:8080/
                                 tlu.Path = "https://www.edsm.net/api-logs-v1/get-logs";
                                 tlu.Name = "EDSM-" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
                                 tlu.Size = 0;
