@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace EDDiscovery2.DB
 {
+    [DebuggerDisplay("System {Name} ({X,nq},{Y,nq},{Z,nq})")]
     public class VisitedSystemsClass : InMemory.VisitedSystemsClass
     {
         public ISystem curSystem;
