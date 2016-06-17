@@ -233,13 +233,17 @@ namespace EDDiscovery
                     sys1.z = item.Z;
                 }
 
-                // MKW Well, let's also add it to the database!
-                sys1.status = SystemStatusEnum.EDDiscovery;
-                sys1.CommanderCreate = GetCommanderName();
-                sys1.CreateDate = DateTime.Now;
-                //sys1.CommanderUpdate = sys1.CommanderCreate; /* MKW Don't add this as UpdateDate is used when checking against server */
-                //sys1.UpdateDate = DateTime.Now;
-                sys1.Store();
+                // MKW Let's also add it to the database if we're inserting a new system
+                if (insert)
+                {
+                    sys1.status = SystemStatusEnum.EDDiscovery;
+                    sys1.CommanderCreate = GetCommanderName();
+                    sys1.CreateDate = DateTime.Now;
+                    //sys1.CommanderUpdate = sys1.CommanderCreate; /* MKW Don't add this as UpdateDate is used when checking against server */
+                    //sys1.UpdateDate = DateTime.Now;
+                    sys1.Store();
+                    SystemData.AddSystem(sys1);
+                }
             }
             if (item2 != null)
             {
