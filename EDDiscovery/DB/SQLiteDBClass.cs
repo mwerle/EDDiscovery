@@ -635,6 +635,7 @@ namespace EDDiscovery.DB
 
         public List<string> GetAllFirstDiscoveryCommanders()
         {
+            List<string> retVal = new List<string>();
             try
             {
                 using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
@@ -648,17 +649,6 @@ namespace EDDiscovery.DB
                         cmd.CommandText = "SELECT DISTINCT first_discovered_by FROM Systems ORDER BY first_discovered_by ASC";
 
                         ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return null;
-                        }
-                        
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return null;
-                        }
-
-                        List<string> retVal = new List<string>();
                         foreach (DataRow dr in ds.Tables[0].Rows)
                         {
                             string value = dr[0] == DBNull.Value ? null : (string)dr[0];
@@ -667,15 +657,14 @@ namespace EDDiscovery.DB
                                 retVal.Add(value);
                             }
                         }
-                        return retVal;
-
                     }
                 }
             }
             catch
             {
-                return null;
+                // Expect null-pointer or database exceptions here, which we can ignore - we simply return an empty list.
             }
+            return retVal;
         }
 
         public List<WantedSystemClass> GetAllWantedSystems()
