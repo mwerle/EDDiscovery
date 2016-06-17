@@ -1379,8 +1379,15 @@ namespace EDDiscovery
         {
             StoreFirstDiscoveredBy();
         }
-    }
 
+        private void textBoxFirstDiscoveredBy_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                StoreFirstDiscoveredBy();
+            }
+        }
+    }
 
 
     public class SystemDist
