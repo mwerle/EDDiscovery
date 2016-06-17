@@ -18,7 +18,6 @@ namespace EDDiscovery.DB
         EDDB = 4,
         Inhumierer = 5,
         EDSM = 6,
-
     }
 
     [DebuggerDisplay("System {name} ({x,nq},{y,nq},{z,nq})")]
@@ -53,16 +52,13 @@ namespace EDDiscovery.DB
                     name = jo["name"].Value<string>();
                     SearchName = name.ToLower();
 
-
                     cr = 1;
                     status = SystemStatusEnum.RedWizzard;
                 }
                 catch
                 {
-
+                    // Do nothing
                 }
-
-
             }
             else if (source == SystemInfoSource.EDSC)
             {
@@ -86,7 +82,6 @@ namespace EDDiscovery.DB
                     z = double.NaN;
                 }
 
-
                 CommanderCreate = jo["commandercreate"].Value<string>();
                 CreateDate = jo["createdate"].Value<DateTime>();
                 CommanderUpdate = jo["commanderupdate"].Value<string>();
@@ -104,7 +99,6 @@ namespace EDDiscovery.DB
                 x = double.NaN;
                 y = double.NaN;
                 z = double.NaN;
-
 
                 if (coords !=null &&  (coords["x"].Type == JTokenType.Float || coords["x"].Type == JTokenType.Integer))
                 {
@@ -131,13 +125,10 @@ namespace EDDiscovery.DB
                 if (CreateDate.Year <= 1)
                     CreateDate = UpdateDate;
 
-
                 status = SystemStatusEnum.EDSM;
             }
             else if (source == SystemInfoSource.EDDB)
             {
-                
-
                 name = jo["name"].Value<string>();
                 SearchName = name.ToLower();
 
@@ -159,17 +150,13 @@ namespace EDDiscovery.DB
                 if (jo["population"].Type == JTokenType.Integer)
                     population = jo["population"].Value<long>();
 
-
                 government = EliteDangerous.Government2ID(jo["government"]);
                 allegiance = EliteDangerous.Allegiance2ID(jo["allegiance"]);
 
                 state = EliteDangerous.EDState2ID(jo["state"]);
                 security = EliteDangerous.EDSecurity2ID(jo["security"]);
 
-
-
                 primary_economy = EliteDangerous.EDEconomy2ID(jo["primary_economy"]);
-
 
                 if (jo["needs_permit"].Type == JTokenType.Integer)
                     needs_permit = jo["needs_permit"].Value<int>();
@@ -181,9 +168,6 @@ namespace EDDiscovery.DB
         }
 
 
-
-
-
         public SystemClass(DataRow dr)
         {
             try
@@ -193,10 +177,7 @@ namespace EDDiscovery.DB
                 id = (int)(long)dr["id"];
                 name = (string)dr["name"];
 
-
-
                 SearchName = name.ToLower();
-
 
                 cr = (int)(long)dr["cr"];
 
@@ -205,8 +186,6 @@ namespace EDDiscovery.DB
                     x = double.NaN;
                     y = double.NaN;
                     z = double.NaN;
-
-
                 }
                 else
                 {
@@ -267,7 +246,6 @@ namespace EDDiscovery.DB
             {
                 System.Diagnostics.Trace.WriteLine("Exception SystemClass: " + ex.Message);
                 System.Diagnostics.Trace.WriteLine("Trace: " + ex.StackTrace);
-
             }
         }
 
@@ -287,12 +265,8 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@Status", (int)source);
 
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
-
                 }
-
-
                 cn.Close();
-
             }
             return true;
         }
@@ -312,12 +286,8 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@Name", name);
 
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
-
                 }
-
-
                 cn.Close();
-
             }
             return true;
         }
@@ -335,7 +305,6 @@ namespace EDDiscovery.DB
             if (edsc == null)
                 return listSystems;
 
-
             JObject edscdata = (JObject)edsc["d"];
 
             if (edscdata == null)
@@ -345,18 +314,11 @@ namespace EDDiscovery.DB
 
             date = edscdata["date"].Value<string>();
 
-
-
-
             foreach (JObject jo in systems)
             {
                 string name = jo["name"].Value<string>();
 
-
                 SystemClass system = new SystemClass(jo, SystemInfoSource.EDSC);
-
-
-                
 
                 if (system.HasCoordinate)
                     listSystems.Add(system);
@@ -376,13 +338,9 @@ namespace EDDiscovery.DB
             if (edsc == null)
                 return listSystems;
 
-
             DateTime maxdate = DateTime.Parse(date,  new CultureInfo("sv-SE"));
 
 //            date = edscdata["date"].Value<string>();
-
-
-
 
             foreach (JObject jo in edsc)
             {
@@ -393,12 +351,9 @@ namespace EDDiscovery.DB
                 if (system.UpdateDate.Subtract(maxdate).TotalSeconds>0)
                     maxdate = system.UpdateDate;
 
-
-
                 if (system.HasCoordinate)
                     listSystems.Add(system);
             }
-
             date = maxdate.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
             return listSystems;
         }
@@ -421,7 +376,6 @@ namespace EDDiscovery.DB
                     SQLiteTransaction transaction = cn.BeginTransaction();
                     foreach (SystemClass system in systems)
                     {
-
                         SystemClass sys = SystemData.GetSystem(system.name);
                         if (sys != null)
                         {
@@ -432,6 +386,7 @@ namespace EDDiscovery.DB
                             system.Store(cn, transaction);
                             SystemData.AddSystem(system);
                         }
+                            
                     }
 
                     transaction.Commit();
@@ -447,7 +402,6 @@ namespace EDDiscovery.DB
                 System.Diagnostics.Trace.WriteLine("Trace: " + ex.StackTrace);
                 return false;
             }
-
         }
 
         public bool Store()
@@ -480,7 +434,6 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@updatedate", CreateDate);
                     cmd.Parameters.AddWithValue("@Status", (int)status);
                     cmd.Parameters.AddWithValue("@first_discovered_by", first_discovered_by);
-
                     
                     cmd.Parameters.AddWithValue("@id_eddb", id_eddb);
                     cmd.Parameters.AddWithValue("@population", population);
@@ -493,13 +446,11 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@state", state);
                     cmd.Parameters.AddWithValue("@needs_permit", needs_permit);
 
-
                     if (Note == null)
                         Note = "";
                     cmd.Parameters.AddWithValue("@Note", Note);
 
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
-
                     return true;
                 }
                 else
@@ -524,12 +475,8 @@ namespace EDDiscovery.DB
                         Note = "";
                     cmd.Parameters.AddWithValue("@Note", Note);
 
-
-
-
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
                     return true;
-
                 }
             }
         }
@@ -565,7 +512,6 @@ namespace EDDiscovery.DB
                 if (Note == null)
                     Note = "";
                 cmd.Parameters.AddWithValue("@Note", Note);
-
 
                 cmd.Parameters.AddWithValue("@id_eddb", id_eddb);
                 cmd.Parameters.AddWithValue("@population", population);
@@ -609,6 +555,5 @@ namespace EDDiscovery.DB
                 return true;
             }
         }
-
     }
 }

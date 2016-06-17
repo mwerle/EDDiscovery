@@ -217,7 +217,6 @@ namespace EDDiscovery
             SystemClass sys1 = null, sys2;
             double dist;
 
-
             sys1 = SystemData.GetSystem(item.Name);
             if (sys1 == null)
             {
@@ -258,7 +257,6 @@ namespace EDDiscovery
                         sys2.z = item2.Z;
                     }
                 }
-
             }
             else
                 sys2 = null;
@@ -266,17 +264,17 @@ namespace EDDiscovery
             item.curSystem = sys1;
             item.prevSystem = sys2;
 
-
             string diststr = "";
             dist = 0;
             if (sys2 != null)
             {
 
                 if (sys1.HasCoordinate && sys2.HasCoordinate)
+                {
                     dist = SystemData.Distance(sys1, sys2);
+                }
                 else
                 {
-
                     dist = DistanceClass.Distance(sys1, sys2);
                 }
 
@@ -302,8 +300,8 @@ namespace EDDiscovery
                 rownr = dataGridViewTravel.Rows.Count - 1;
             }
 
+            // MKW: Question - why do we attach the current system object to a cell rather than the row?
             var cell = dataGridViewTravel.Rows[rownr].Cells[TravelHistoryColumns.SystemName];
-
             cell.Tag = item;
 
 
