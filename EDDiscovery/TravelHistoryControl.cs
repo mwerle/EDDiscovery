@@ -1329,6 +1329,11 @@ namespace EDDiscovery
                     var sc = sys.curSystem as SystemClass;
                     // assert: sc != null
 
+                    if( cmdr.Equals(sc.first_discovered_by) )
+                    {
+                        continue;
+                    }
+
                     // MKW TODO: Do we need to set/update these?
                     //sc.CommanderUpdate = comboBoxCommander.Text;
                     //sc.UpdateDate = DateTime.Now;

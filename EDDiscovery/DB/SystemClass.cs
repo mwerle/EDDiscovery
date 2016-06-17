@@ -178,11 +178,6 @@ namespace EDDiscovery.DB
 
                 status = SystemStatusEnum.EDDB;
             }
-
-            if (String.IsNullOrEmpty(first_discovered_by) && !String.IsNullOrEmpty(CommanderCreate))
-            {
-                first_discovered_by = CommanderCreate.ToUpper();
-            }
         }
 
 
@@ -267,10 +262,6 @@ namespace EDDiscovery.DB
 
                 o = dr["first_discovered_by"];
                 first_discovered_by = o == DBNull.Value ? null : ((string)o).ToUpper();
-                if (String.IsNullOrEmpty(first_discovered_by) && !String.IsNullOrEmpty(CommanderCreate))
-                {
-                    first_discovered_by = CommanderCreate.ToUpper();
-                }
             }
             catch (Exception ex)
             {
