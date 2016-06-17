@@ -435,7 +435,10 @@ namespace EDDiscovery.DB
                             system.UpdateEDSM(cn, sys.id, transaction);
                         }
                         else
+                        {
                             system.Store(cn, transaction);
+                            SystemData.AddSystem(system);
+                        }
                     }
 
                     transaction.Commit();

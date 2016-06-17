@@ -39,6 +39,14 @@ namespace EDDiscovery
                 return null;
         }
 
+        static public void AddSystem(SystemClass system)
+        {
+            if (!SQLiteDBClass.globalSystems.Contains(system))
+            {
+                SQLiteDBClass.globalSystems.Add(system);
+            }            
+        }
+
         public static double Distance(SystemClass s1, SystemClass s2)
         {
             if (s1 == null || s2== null)
