@@ -277,6 +277,14 @@ namespace EDDiscovery
                 var left = _db.GetSettingInt("FormLeft", 0);
                 var height = _db.GetSettingInt("FormHeight", 800);
                 var width = _db.GetSettingInt("FormWidth", 800);
+
+                // MKW : Adjust so window fits on screen; just in case user unplugged a monitor or something
+                var screen = Screen.FromControl(this).Bounds;
+                if( height > screen.Height ) height = screen.Height;
+                if( top + height > screen.Height) top = screen.Height - height;
+                if( width > screen.Width ) width = screen.Width;
+                if( left + width > screen.Width ) left = screen.Width - width;
+
                 this.Top = top;
                 this.Left = left;
                 this.Height = height;
