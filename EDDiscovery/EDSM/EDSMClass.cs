@@ -32,6 +32,8 @@ namespace EDDiscovery2.EDSM
         public EDSMClass()
         {
             fromSoftware = "EDDiscovery";
+            // MKW: For testing, use http://beta.edsm.net:8080/
+            //_serverAddress = "http://beta.edsm.net:8080/";
             _serverAddress = "https://www.edsm.net/";
 
             var assemblyFullName = Assembly.GetExecutingAssembly().FullName;
