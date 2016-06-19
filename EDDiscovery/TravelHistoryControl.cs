@@ -387,7 +387,8 @@ namespace EDDiscovery
             checkBoxFirstDiscovery.Checked = comboBoxCommander.Text.Equals(syspos.curSystem.first_discovered_by, StringComparison.OrdinalIgnoreCase);
             textBoxFirstDiscoveredBy.Text = syspos.curSystem.first_discovered_by;
 
-            ShowClosestSystems(syspos.Name);
+            // MKW - this is dog-slow, and I don't use it
+            //ShowClosestSystems(syspos.Name);
         }
 
         private string EnumStringFormat(string str)
