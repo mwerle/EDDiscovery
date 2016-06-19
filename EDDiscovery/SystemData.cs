@@ -41,8 +41,9 @@ namespace EDDiscovery
 
         static public void AddSystem(SystemClass system)
         {
-            if (!SQLiteDBClass.globalSystems.Contains(system))
+            if (!SQLiteDBClass.dictSystems.ContainsKey(system.SearchName))
             {
+                SQLiteDBClass.dictSystems[system.SearchName] = system;
                 SQLiteDBClass.globalSystems.Add(system);
             }            
         }
