@@ -27,16 +27,16 @@ namespace EDDiscovery
 
         static public SystemClass GetSystem(string name)
         {
-            if (name==null)
-                return null;
-
-            string lname = name.Trim().ToLower();
-
-
-            if (SQLiteDBClass.dictSystems.ContainsKey(lname))
-                return SQLiteDBClass.dictSystems[lname];
-            else 
-                return null;
+            SystemClass rv = null;
+            try
+            {
+                string lname = name.Trim().ToLower();
+                rv = SQLiteDBClass.dictSystems[lname];
+            } catch(Exception ex)
+            {
+                // Do nothing - we expect either a null-pointer exception if name == null, or a KeyNotFoundException
+            }
+            return rv;
         }
 
         static public void AddSystem(SystemClass system)

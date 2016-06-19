@@ -361,7 +361,7 @@ namespace EDDiscovery.DB
 
         public static bool Store(List<SystemClass> systems)
         {
-            if (systems == null)
+            if (systems == null || systems.Count == 0)
                 return true;
 
             try
