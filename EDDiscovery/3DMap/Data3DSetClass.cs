@@ -272,11 +272,6 @@ namespace EDDiscovery2._3DMap
         {
             get
             {
-                if (index >= NumVertices)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
                 var v = Vertices[index];
                 return new PointData(v.X, v.Y, v.Z) { Color = color, Size = pointSize };
             }
@@ -553,11 +548,6 @@ namespace EDDiscovery2._3DMap
         {
             get
             {
-                if (index >= NumVertices / 2)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
                 var v1 = Vertices[index * 2];
                 var v2 = Vertices[index * 2 + 1];
 

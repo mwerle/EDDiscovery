@@ -156,13 +156,12 @@ namespace EMK.Cartography
 		/// Object.Equals override.
 		/// Tells if two arcs are equal by comparing StartNode and EndNode.
 		/// </summary>
-		/// <exception cref="ArgumentException">Cannot compare an arc with another type.</exception>
 		/// <param name="O">The arc to compare with.</param>
 		/// <returns>'true' if both arcs are equal.</returns>
 		public override bool Equals(object O)
 		{
-			Arc A = (Arc) O;
-			if ( A==null ) throw new ArgumentException("Cannot compare type "+GetType()+" with type "+O.GetType()+" !");
+			Arc A = O as Arc;
+            if (A == null) return false;
 			return _StartNode.Equals(A._StartNode) && _EndNode.Equals(A._EndNode);
 		}
 
