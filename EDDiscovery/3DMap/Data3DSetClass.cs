@@ -72,13 +72,13 @@ namespace EDDiscovery2._3DMap
             Primatives = this;
         }
 
-        public void Dispose()
+        private void DisposeOfGLContext()
         {
             if (GLContext != null)
             {
                 if (GLContext.InvokeRequired)
                 {
-                    GLContext.Invoke(new Action(this.Dispose));
+                    GLContext.Invoke(new Action(this.DisposeOfGLContext));
                 }
                 else
                 {
@@ -88,9 +88,30 @@ namespace EDDiscovery2._3DMap
             }
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing)
+            {
+                // Clear all property values
+                Vertices = null;
+                NumVertices = 0;
+                Primatives.Clear();
+                Primatives = null;
+            }
+            // Clear all non-managed properties
+            DisposeOfGLContext();
+            VtxVboID = 0;
+        }
+
         public override void Add(PointData primative)
         {
-            Dispose();
+            DisposeOfGLContext();
 
             if (Vertices == null)
             {
@@ -108,7 +129,7 @@ namespace EDDiscovery2._3DMap
         {
             if (GLContext != null && GLContext != control)
             {
-                Dispose();
+                DisposeOfGLContext();
             }
 
             if (control.InvokeRequired)
@@ -175,8 +196,6 @@ namespace EDDiscovery2._3DMap
                 throw new IndexOutOfRangeException();
             }
 
-            Dispose();
-
             this.Add(new PointData(0, 0, 0));
             for (int i = NumVertices - 2; i >= index; i--)
             {
@@ -192,7 +211,7 @@ namespace EDDiscovery2._3DMap
                 throw new IndexOutOfRangeException();
             }
 
-            Dispose();
+            DisposeOfGLContext();
 
             for (int i = index; i < NumVertices - 1; i++)
             {
@@ -203,7 +222,7 @@ namespace EDDiscovery2._3DMap
 
         public void Clear()
         {
-            Dispose();
+            DisposeOfGLContext();
             NumVertices = 0;
         }
 
@@ -253,11 +272,6 @@ namespace EDDiscovery2._3DMap
         {
             get
             {
-                if (index >= NumVertices)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
                 var v = Vertices[index];
                 return new PointData(v.X, v.Y, v.Z) { Color = color, Size = pointSize };
             }
@@ -269,7 +283,7 @@ namespace EDDiscovery2._3DMap
                 }
                 else
                 {
-                    Dispose();
+                    DisposeOfGLContext();
                     Vertices[index] = new Vector3d(value.x, value.y, value.z);
                 }
             }
@@ -329,13 +343,13 @@ namespace EDDiscovery2._3DMap
             this.Primatives = this;
         }
 
-        public void Dispose()
+        public void DisposeOfGLContext()
         {
             if (GLContext != null)
             {
                 if (GLContext.InvokeRequired)
                 {
-                    GLContext.Invoke(new Action(this.Dispose));
+                    GLContext.Invoke(new Action(this.DisposeOfGLContext));
                 }
                 else
                 {
@@ -345,9 +359,30 @@ namespace EDDiscovery2._3DMap
             }
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Clear managed members
+                Vertices = null;
+                NumVertices = 0;
+                Primatives.Clear();
+                Primatives = null;
+            }
+            // Dispose of unmanaged members
+            DisposeOfGLContext();
+            VtxVboID = 0;
+        }
+
         public override void Add(LineData primative)
         {
-            Dispose();
+            DisposeOfGLContext();
 
             if (Vertices == null)
             {
@@ -366,7 +401,7 @@ namespace EDDiscovery2._3DMap
         {
             if (GLContext != null && GLContext != control)
             {
-                Dispose();
+                DisposeOfGLContext();
             }
 
             if (control.InvokeRequired)
@@ -513,11 +548,6 @@ namespace EDDiscovery2._3DMap
         {
             get
             {
-                if (index >= NumVertices / 2)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
                 var v1 = Vertices[index * 2];
                 var v2 = Vertices[index * 2 + 1];
 
@@ -902,9 +932,27 @@ namespace EDDiscovery2._3DMap
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // Free native resources
             foreach (var primitive in BaseTextures)
             {
                 primitive.FreeTexture(false);
+            }
+            if (disposing)
+            {
+                // Free managed resources
+                base.Name = null;
+                base.Primatives = null;
+                BaseTextures = null;
+            }
+            else
+            {
+                BaseTextures.Clear();
             }
         }
     }

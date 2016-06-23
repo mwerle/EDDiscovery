@@ -552,7 +552,8 @@ namespace EDDiscovery.DB
                         cmd.Connection = cn;
                         cmd.CommandType = CommandType.Text;
                         cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select * from Distances WHERE status='" + status.ToString() +  "'";
+                        cmd.CommandText = "SELECT * FROM Distances WHERE status='@status'";
+                        cmd.Parameters.AddWithValue("@status", status.ToString());
 
                         ds = SqlQueryText(cn, cmd);
                         if (ds.Tables.Count == 0)

@@ -216,7 +216,7 @@ namespace EDDiscovery2
                 if (coeff_i_i == 0)
                 {
                     throw new ArithmeticException(String.Format(
-                        "There is no unique solution for these points.",
+                        "There is no unique solution for these points. {0}",
                         coeffs.GetUpperBound(0) - 1));
                 }
 

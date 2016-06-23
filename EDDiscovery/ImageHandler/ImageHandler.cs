@@ -234,8 +234,12 @@ namespace EDDiscovery2.ImageHandler
                     croppedbmp.Save(store_name, System.Drawing.Imaging.ImageFormat.Png);
                 }
 
+                if( croppedbmp != bmp )
+                {
+                    // Don't double-dispose
+                    croppedbmp.Dispose();       // and ensure this one is freed of handles to the file.
+                }
                 bmp.Dispose();              // need to free the bmp before any more operations on the file..
-                croppedbmp.Dispose();       // and ensure this one is freed of handles to the file.
 
                 FileInfo fi = new FileInfo(inputfile);
                 File.SetCreationTime(store_name, fi.CreationTime);

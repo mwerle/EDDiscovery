@@ -254,13 +254,12 @@ namespace EMK.Cartography
 		/// Object.Equals override.
 		/// Tells if two nodes are equal by comparing positions.
 		/// </summary>
-		/// <exception cref="ArgumentException">A Node cannot be compared with another type.</exception>
 		/// <param name="O">The node to compare with.</param>
 		/// <returns>'true' if both nodes are equal.</returns>
 		public override bool Equals(object O)
 		{
-			Node N = (Node)O;
-			if ( N==null ) throw new ArgumentException("Type "+O.GetType()+" cannot be compared with type "+GetType()+" !");
+			Node N = O as Node;
+            if (N == null) return false;
 			return Position.Equals(N.Position);
 		}
 

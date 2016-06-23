@@ -161,13 +161,12 @@ namespace EMK.LightGeometry
 		/// Object.Equals override.
 		/// Tells if two points are equal by comparing coordinates.
 		/// </summary>
-		/// <exception cref="ArgumentException">Cannot compare Point3D with another type.</exception>
 		/// <param name="Point">The other 3DPoint to compare with.</param>
 		/// <returns>'true' if points are equal.</returns>
 		public override bool Equals(object Point)
 		{
-			Point3D P = (Point3D)Point;
-			if ( P==null ) throw new ArgumentException("Object must be of type "+GetType());
+			Point3D P = Point as Point3D;
+            if (P == null) return false;
 			bool Resultat = true;
 			for (int i=0; i<3; i++) Resultat &= P[i].Equals(this[i]);
 			return Resultat;
