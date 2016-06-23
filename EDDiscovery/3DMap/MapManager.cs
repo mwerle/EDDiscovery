@@ -9,14 +9,31 @@ using EDDiscovery2.DB;
 
 namespace EDDiscovery2._3DMap
 {
-    public class MapManager
+    public class MapManager : IDisposable
     {
         private FormMap _formMap;
 
-        public MapManager(bool nowindowreposition)
+        public MapManager(Form parent, bool nowindowreposition)
         {
             _formMap = new FormMap();
             _formMap.Nowindowreposition = nowindowreposition;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Free managed resources
+            }
+            // Free native resources
+            _formMap.Dispose();
+            _formMap = null;
         }
 
         public void Prepare(string historysel, string homesys, string centersys, float zoom,

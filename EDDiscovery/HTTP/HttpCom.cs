@@ -359,11 +359,9 @@ namespace EDDiscovery2.HTTP
         }
         private ResponseData getResponseData(HttpWebResponse response)
         {
-            var dataStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(dataStream);
+            StreamReader reader = new StreamReader(response.GetResponseStream());
             var data = new ResponseData(response.StatusCode, reader.ReadToEnd(), response.Headers);
             reader.Close();
-            dataStream.Close();
             return data;
         }
 

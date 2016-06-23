@@ -252,10 +252,6 @@ namespace EDDiscovery.DB
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
 
                 }
-
-
-                cn.Close();
-        
             }
             return true;
         }
@@ -281,7 +277,6 @@ namespace EDDiscovery.DB
                     }
 
                     transaction.Commit();
-                    cn.Close();
                 }
                 sw.Stop();
                 System.Diagnostics.Trace.WriteLine("SQLite Add  "+ dists.Count.ToString()+ " distances: " + sw.Elapsed.TotalSeconds.ToString("0.000s"));

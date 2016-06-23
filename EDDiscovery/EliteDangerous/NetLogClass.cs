@@ -282,17 +282,14 @@ namespace EDDiscovery
             int count = 0, nrsystems=visitedSystems.Count;
             try
             {
-                using (Stream fs = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (StreamReader sr = new StreamReader(fi.FullName))
                 {
-                    using (StreamReader sr = new StreamReader(fs))
-                    {
-                        count = ReadData(fi, visitedSystems, count, sr);
-                    }
+                    count = ReadData(fi, visitedSystems, count, sr);
                 }
             }
             catch
             {
-                return 0;
+                // Do nothing
             }
 
             return count;

@@ -291,12 +291,7 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@Status", (int)source);
 
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
-
                 }
-
-
-                cn.Close();
-
             }
             return true;
         }
@@ -316,12 +311,7 @@ namespace EDDiscovery.DB
                     cmd.Parameters.AddWithValue("@Name", name);
 
                     SQLiteDBClass.SqlNonQueryText(cn, cmd);
-
                 }
-
-
-                cn.Close();
-
             }
             return true;
         }
@@ -436,7 +426,6 @@ namespace EDDiscovery.DB
                     }
 
                     transaction.Commit();
-                    cn.Close();
                 }
                 sw.Stop();
                 System.Diagnostics.Trace.WriteLine("SQLite Add  " + systems.Count.ToString() + " systems: " + sw.Elapsed.TotalSeconds.ToString("0.000s"));
