@@ -304,10 +304,16 @@ namespace EDDiscovery
 
         private void EDDiscoveryForm_Activated(object sender, EventArgs e)
         {
-            /* TODO: Only focus the field if we're on the correct tab! */
+            /* TODO: Make it a Setting and a drop-down allowing the user to select which control should be activated
+             * Sensible options now are:
+             *  - textBoxNote
+             *  - textBoxFirstDiscoveredBy
+             *  - ???
+             */
             if (fastTravelToolStripMenuItem.Checked && tabControl1.SelectedTab == tabPageTravelHistory)
             {
-                travelHistoryControl1.textBoxDistanceToNextSystem.Focus();
+                //travelHistoryControl1.textBoxDistanceToNextSystem.Focus();
+                travelHistoryControl1.textBoxFirstDiscoveredBy.Focus();
             }
         }
 
