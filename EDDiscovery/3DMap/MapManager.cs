@@ -13,7 +13,7 @@ namespace EDDiscovery2._3DMap
     {
         private FormMap _formMap;
 
-        public MapManager(Form parent, bool nowindowreposition)
+        public MapManager(bool nowindowreposition)
         {
             _formMap = new FormMap();
             _formMap.Nowindowreposition = nowindowreposition;

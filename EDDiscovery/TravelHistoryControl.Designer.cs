@@ -33,13 +33,13 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.historyContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.starMapColourToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.hideSystemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.moveToAnotherCommanderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewOnEDSMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToTrilaterationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trilaterationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.wantedSystemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bothToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewOnEDSMToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.moveToAnotherCommanderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hideSystemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label2 = new System.Windows.Forms.Label();
             this.labelclosests = new System.Windows.Forms.Label();
             this.panel_system = new System.Windows.Forms.Panel();
@@ -132,10 +132,10 @@
             // 
             this.historyContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.starMapColourToolStripMenuItem,
-            this.hideSystemToolStripMenuItem,
-            this.moveToAnotherCommanderToolStripMenuItem,
+            this.viewOnEDSMToolStripMenuItem,
             this.addToTrilaterationToolStripMenuItem,
-            this.viewOnEDSMToolStripMenuItem});
+            this.moveToAnotherCommanderToolStripMenuItem,
+            this.hideSystemToolStripMenuItem});
             this.historyContextMenu.Name = "historyContextMenu";
             this.historyContextMenu.Size = new System.Drawing.Size(233, 114);
             // 
@@ -146,19 +146,12 @@
             this.starMapColourToolStripMenuItem.Text = "Star Map Colour...";
             this.starMapColourToolStripMenuItem.Click += new System.EventHandler(this.starMapColourToolStripMenuItem_Click);
             // 
-            // hideSystemToolStripMenuItem
+            // viewOnEDSMToolStripMenuItem
             // 
-            this.hideSystemToolStripMenuItem.Name = "hideSystemToolStripMenuItem";
-            this.hideSystemToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.hideSystemToolStripMenuItem.Text = "Hide system";
-            this.hideSystemToolStripMenuItem.Click += new System.EventHandler(this.hideSystemToolStripMenuItem_Click);
-            // 
-            // moveToAnotherCommanderToolStripMenuItem
-            // 
-            this.moveToAnotherCommanderToolStripMenuItem.Name = "moveToAnotherCommanderToolStripMenuItem";
-            this.moveToAnotherCommanderToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.moveToAnotherCommanderToolStripMenuItem.Text = "Move to another Commander";
-            this.moveToAnotherCommanderToolStripMenuItem.Click += new System.EventHandler(this.moveToAnotherCommanderToolStripMenuItem_Click);
+            this.viewOnEDSMToolStripMenuItem.Name = "viewOnEDSMToolStripMenuItem";
+            this.viewOnEDSMToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.viewOnEDSMToolStripMenuItem.Text = "View on EDSM";
+            this.viewOnEDSMToolStripMenuItem.Click += new System.EventHandler(this.viewOnEDSMToolStripMenuItem_Click);
             // 
             // addToTrilaterationToolStripMenuItem
             // 
@@ -168,7 +161,7 @@
             this.bothToolStripMenuItem});
             this.addToTrilaterationToolStripMenuItem.Name = "addToTrilaterationToolStripMenuItem";
             this.addToTrilaterationToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.addToTrilaterationToolStripMenuItem.Text = "Add to ...";
+            this.addToTrilaterationToolStripMenuItem.Text = "s";
             // 
             // trilaterationToolStripMenuItem
             // 
@@ -191,12 +184,19 @@
             this.bothToolStripMenuItem.Text = "Both";
             this.bothToolStripMenuItem.Click += new System.EventHandler(this.bothToolStripMenuItem_Click);
             // 
-            // viewOnEDSMToolStripMenuItem
+            // moveToAnotherCommanderToolStripMenuItem
             // 
-            this.viewOnEDSMToolStripMenuItem.Name = "viewOnEDSMToolStripMenuItem";
-            this.viewOnEDSMToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
-            this.viewOnEDSMToolStripMenuItem.Text = "View on EDSM";
-            this.viewOnEDSMToolStripMenuItem.Click += new System.EventHandler(this.viewOnEDSMToolStripMenuItem_Click);
+            this.moveToAnotherCommanderToolStripMenuItem.Name = "moveToAnotherCommanderToolStripMenuItem";
+            this.moveToAnotherCommanderToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.moveToAnotherCommanderToolStripMenuItem.Text = "Move to another Commander";
+            this.moveToAnotherCommanderToolStripMenuItem.Click += new System.EventHandler(this.moveToAnotherCommanderToolStripMenuItem_Click);
+            // 
+            // hideSystemToolStripMenuItem
+            // 
+            this.hideSystemToolStripMenuItem.Name = "hideSystemToolStripMenuItem";
+            this.hideSystemToolStripMenuItem.Size = new System.Drawing.Size(232, 22);
+            this.hideSystemToolStripMenuItem.Text = "Hide system";
+            this.hideSystemToolStripMenuItem.Click += new System.EventHandler(this.hideSystemToolStripMenuItem_Click);
             // 
             // label2
             // 
@@ -762,19 +762,19 @@
             this.addToTrilaterationToolStripMenuItem1,
             this.viewOnEDSMToolStripMenuItem1});
             this.closestContextMenu.Name = "closestContextMenu";
-            this.closestContextMenu.Size = new System.Drawing.Size(177, 48);
+            this.closestContextMenu.Size = new System.Drawing.Size(178, 48);
             // 
             // addToTrilaterationToolStripMenuItem1
             // 
             this.addToTrilaterationToolStripMenuItem1.Name = "addToTrilaterationToolStripMenuItem1";
-            this.addToTrilaterationToolStripMenuItem1.Size = new System.Drawing.Size(176, 22);
+            this.addToTrilaterationToolStripMenuItem1.Size = new System.Drawing.Size(177, 22);
             this.addToTrilaterationToolStripMenuItem1.Text = "Add to Trilateration";
             this.addToTrilaterationToolStripMenuItem1.Click += new System.EventHandler(this.addToTrilaterationToolStripMenuItem1_Click);
             // 
             // viewOnEDSMToolStripMenuItem1
             // 
             this.viewOnEDSMToolStripMenuItem1.Name = "viewOnEDSMToolStripMenuItem1";
-            this.viewOnEDSMToolStripMenuItem1.Size = new System.Drawing.Size(176, 22);
+            this.viewOnEDSMToolStripMenuItem1.Size = new System.Drawing.Size(177, 22);
             this.viewOnEDSMToolStripMenuItem1.Text = "View on EDSM";
             this.viewOnEDSMToolStripMenuItem1.Click += new System.EventHandler(this.viewOnEDSMToolStripMenuItem1_Click);
             // 
@@ -1232,7 +1232,7 @@
         private System.Windows.Forms.ToolStripMenuItem viewOnEDSMToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewOnEDSMToolStripMenuItem1;
         private ExtendedControls.ButtonExt buttonEDSM;
-        private ExtendedControls.TextBoxBorder textBoxFirstDiscoveredBy;
+        internal ExtendedControls.TextBoxBorder textBoxFirstDiscoveredBy;
         private ExtendedControls.CheckBoxCustom checkBoxFirstDiscovery;
         private System.Windows.Forms.Label label3;
     }

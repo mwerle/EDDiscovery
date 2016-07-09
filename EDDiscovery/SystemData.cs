@@ -32,7 +32,7 @@ namespace EDDiscovery
             {
                 string lname = name.Trim().ToLower();
                 rv = SQLiteDBClass.dictSystems[lname];
-            } catch(Exception ex)
+            } catch(Exception)
             {
                 // Do nothing - we expect either a null-pointer exception if name == null, or a KeyNotFoundException
             }

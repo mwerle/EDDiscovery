@@ -470,7 +470,7 @@ namespace EDDiscovery2._3DMap
                 throw new IndexOutOfRangeException();
             }
 
-            Dispose();
+            DisposeOfGLContext();
 
             this.Add(new LineData(0, 0, 0, 0, 0, 0));
             for (int i = NumVertices - 3; i >= index * 2; i--)
@@ -488,7 +488,7 @@ namespace EDDiscovery2._3DMap
                 throw new IndexOutOfRangeException();
             }
 
-            Dispose();
+            DisposeOfGLContext();
 
             for (int i = index * 2; i < NumVertices - 2; i++)
             {
@@ -499,7 +499,7 @@ namespace EDDiscovery2._3DMap
 
         public void Clear()
         {
-            Dispose();
+            DisposeOfGLContext();
             NumVertices = 0;
         }
 

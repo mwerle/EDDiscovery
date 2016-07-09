@@ -40,6 +40,8 @@ namespace EDDiscovery
         SQLiteDBClass db=null;
         public List<TravelLogUnit> tlUnits;
 
+        private ExtendedControls.RichTextBoxScroll _msgBox = null;
+
         public string GetNetLogPath()
         {
             try
@@ -128,23 +130,20 @@ namespace EDDiscovery
             string datapath;
             DirectoryInfo dirInfo;
 
+            _msgBox = richTextBox_History;
+
             datapath = GetNetLogPath();
 
             if (datapath == null)
             {
-                AppendText(richTextBox_History, "Netlog directory not found!" + Environment.NewLine + "Specify location in settings tab" + Environment.NewLine, Color.Red);
+                AppendText("Netlog directory not found!" + Environment.NewLine + "Specify location in settings tab" + Environment.NewLine, Color.Red);
                 return null;
             }
 
 
             if (!Directory.Exists(datapath))   // if logfiles directory is not found
             {
-                if (richTextBox_History != null)
-                {
-                    richTextBox_History.Clear();
-                    AppendText(richTextBox_History, "Netlog directory not found!" + Environment.NewLine + "Specify location in settings tab" + Environment.NewLine, Color.Red);
-                    //MessageBox.Show("Netlog directory not found!" + Environment.NewLine + "Specify location in settings tab", "EDDiscovery Error", MessageBoxButtons.OK);
-                }
+                AppendText("Netlog directory not found!" + Environment.NewLine + "Specify location in settings tab" + Environment.NewLine, Color.Red);
                 return null;
             }
             try
@@ -153,7 +152,7 @@ namespace EDDiscovery
             }
             catch (Exception ex)
             {
-                AppendText(richTextBox_History, "Could not create Directory info: " + ex.Message + Environment.NewLine, Color.Red);
+                AppendText("Could not create Directory info: " + ex.Message + Environment.NewLine, Color.Red);
                 return null;
             }
 
@@ -262,7 +261,7 @@ namespace EDDiscovery
 
                         lu.Size = (int)fi.Length;
                         lu.Update();
-                        AppendText(richTextBox_History, fi.Name + " " + nr.ToString() + " added to local database." + Environment.NewLine, Color.Black);
+                        AppendText(fi.Name + " " + nr.ToString() + " added to local database." + Environment.NewLine, Color.Black);
                     }
                 }
 
@@ -270,8 +269,8 @@ namespace EDDiscovery
 
                 NoEvents = false;
             }
-
             //var result = visitedSystems.OrderByDescending(a => a.time).ToList<VisitedSystemsClass>();
+            _msgBox = null;
 
             return visitedSystems;
         }
@@ -280,16 +279,28 @@ namespace EDDiscovery
         private int ParseFile(FileInfo fi, List<VisitedSystemsClass> visitedSystems)
         {
             int count = 0, nrsystems=visitedSystems.Count;
+            Stream fs = null;
             try
             {
-                using (StreamReader sr = new StreamReader(fi.FullName))
+                fs = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using (StreamReader sr = new StreamReader(fs))
                 {
+                    fs = null; // sr will close the stream when it closes
                     count = ReadData(fi, visitedSystems, count, sr);
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 // Do nothing
+                AppendText("Exception while parsing file '" + fi.FullName + "': " + ex.Message + Environment.NewLine, Color.Red);
+                AppendText(ex.StackTrace + Environment.NewLine, Color.Red);
+            }
+            finally
+            {
+                if(fs != null)
+                {
+                    fs.Close();
+                }
             }
 
             return count;
@@ -385,10 +396,13 @@ namespace EDDiscovery
         }
 
 
-        private void AppendText(ExtendedControls.RichTextBoxScroll box, string text, Color color)
+        private void AppendText(string text, Color color)
         {
-            box.AppendText(text, color);
-            Application.DoEvents();
+            if( _msgBox != null)
+            {
+                _msgBox.AppendText(text, color);
+                Application.DoEvents();
+            }
         }
 
         private EDDiscoveryForm _discoveryform;
