@@ -140,54 +140,25 @@ namespace EDDiscovery
             if (visitedSystems == null)
                 return;
 
- 
+            for (int i = 0; i < visitedSystems.Count; i++)  // added, to make sure cursystem is filled in
+            {
+                UpdateVisitedSystemsEntries(visitedSystems[i], (i < visitedSystems.Count - 1) ? visitedSystems[i + 1] : null);
+            }
+
             var filter = (TravelHistoryFilter) comboBoxHistoryWindow.SelectedItem ?? TravelHistoryFilter.NoFilter;
             List<VisitedSystemsClass> result = filter.Filter(visitedSystems);
 
             dataGridViewTravel.Rows.Clear();
 
-//            System.Diagnostics.Trace.WriteLine("SW1: " + (sw1.ElapsedMilliseconds / 1000.0).ToString("0.000"));
+            //            System.Diagnostics.Trace.WriteLine("SW1: " + (sw1.ElapsedMilliseconds / 1000.0).ToString("0.000"));
 
             for (int ii = 0; ii < result.Count; ii++) //foreach (var item in result)
             {
-
                 VisitedSystemsClass item = result[ii];
-                VisitedSystemsClass item2;
-
-                if (ii < result.Count - 1)
-                    item2 = result[ii + 1];
-                else
-                    item2 = null;
-
-                AddHistoryRow(false, item, item2);
+                AddNewHistoryRow(false, item);      // for every one in filter, add a row.
             }
 
-
-            if (result.Count != visitedSystems.Count)
-            {
-                // we didn't put all the systems in the history grid
-                // make sure that the LastKnown system is properly loaded if it's not visible so trilateration can find it...
-                var lastKnown = (from systems
-                                 in visitedSystems
-                                 where systems.curSystem != null && systems.curSystem.HasCoordinate
-                                 orderby systems.Time descending
-                                 select systems.curSystem).FirstOrDefault();
-                if (lastKnown == null)
-                {
-                    for (int ii = visitedSystems.Count - 1; ii > 0; ii--)
-                    {
-                        SystemClass sys = SystemData.GetSystem(visitedSystems[ii].Name);
-                        if (visitedSystems[ii].curSystem == null && sys != null)
-                        {
-                            visitedSystems[ii].curSystem = sys;
-                            if (sys.HasCoordinate) break;
-                        }
-                    }
-                }
-
-            }
-
-//            System.Diagnostics.Trace.WriteLine("SW2: " + (sw1.ElapsedMilliseconds / 1000.0).ToString("0.000"));
+            //            System.Diagnostics.Trace.WriteLine("SW2: " + (sw1.ElapsedMilliseconds / 1000.0).ToString("0.000"));
 
             if (dataGridViewTravel.Rows.Count > 0)
             {
@@ -212,11 +183,10 @@ namespace EDDiscovery
             }
         }
 
-        private void AddHistoryRow(bool insert, VisitedSystemsClass item, VisitedSystemsClass item2)
+        private void UpdateVisitedSystemsEntries(VisitedSystemsClass item, VisitedSystemsClass item2)           // this is a split in two version with the same code of AddHistoryRow..
         {
-            SystemClass sys1 = null, sys2;
+            SystemClass sys1 = null, sys2;                                                                      // fills in cursystem and prevsystem, and calcs distance
             double dist;
-
 
             sys1 = SystemData.GetSystem(item.Name);
             if (sys1 == null)
@@ -258,7 +228,6 @@ namespace EDDiscovery
                         sys2.z = item2.Z;
                     }
                 }
-
             }
             else
                 sys2 = null;
@@ -266,17 +235,14 @@ namespace EDDiscovery
             item.curSystem = sys1;
             item.prevSystem = sys2;
 
-
             string diststr = "";
             dist = 0;
             if (sys2 != null)
             {
-
                 if (sys1.HasCoordinate && sys2.HasCoordinate)
                     dist = SystemData.Distance(sys1, sys2);
                 else
                 {
-
                     dist = DistanceClass.Distance(sys1, sys2);
                 }
 
@@ -285,10 +251,11 @@ namespace EDDiscovery
             }
 
             item.strDistance = diststr;
+        }
 
-            //richTextBox_History.AppendText(item.time + " " + item.Name + Environment.NewLine);
-
-            object[] rowobj = { item.Time, item.Name, diststr, item.curSystem.Note, "█" };
+        private void AddNewHistoryRow(bool insert, VisitedSystemsClass item)            // second part of add history row, adds item to view.
+        { 
+            object[] rowobj = { item.Time, item.Name, item.strDistance, item.curSystem.Note, "█" };
             int rownr;
 
             if (insert)
@@ -306,20 +273,18 @@ namespace EDDiscovery
 
             cell.Tag = item;
 
-
             bool hascoord; 
 
             if (item.HasTravelCoordinates)
-              hascoord  = true;
+                hascoord  = true;
             else 
-                hascoord = sys1.HasCoordinate;
+                hascoord = item.curSystem.HasCoordinate;
 
             dataGridViewTravel.Rows[rownr].DefaultCellStyle.ForeColor = (hascoord) ? _discoveryForm.theme.VisitedSystemColor : _discoveryForm.theme.NonVisitedSystemColor;
 
             cell = dataGridViewTravel.Rows[rownr].Cells[TravelHistoryColumns.Map];
             cell.Style.ForeColor = Color.FromArgb(item.MapColour);
         }
-
 
 
         private void ShowSystemInformation(VisitedSystemsClass syspos)
@@ -605,6 +570,28 @@ namespace EDDiscovery
 
         }
 
+        private void dataGridViewTravel_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)         // right click on travel map, get in before the context menu
+            {
+                if (dataGridViewTravel.SelectedCells.Count < 2 || dataGridViewTravel.SelectedRows.Count == 1)      // if single row completely selected, or 1 cell or less..
+                {
+                    DataGridView.HitTestInfo hti = dataGridViewTravel.HitTest(e.X, e.Y);
+                    if (hti.Type == DataGridViewHitTestType.Cell)
+                    {
+                        dataGridViewTravel.ClearSelection();                // select row under cursor.
+                        dataGridViewTravel.Rows[hti.RowIndex].Selected = true;
+                    }
+                }
+            }
+        }
+
+        private void historyContextMenu_Opening(object sender, CancelEventArgs e)
+        {
+            if (dataGridViewTravel.SelectedCells.Count == 0)      // need something selected  stops context menu opening on nothing..
+                e.Cancel = true;
+        }
+
         private void dataGridViewTravel_CellContentDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -698,7 +685,6 @@ namespace EDDiscovery
                         sn.Add();
                     }
 
-
                     currentSysPos.curSystem.Note = txt;
 
                     if (dataGridViewTravel.SelectedCells.Count > 0)          // if we have selected (we should!)
@@ -709,6 +695,8 @@ namespace EDDiscovery
 
                     if (edsm.commanderName.Length>1 && edsm.apiKey.Length>1)
                         edsm.SetComment(sn);
+
+                    _discoveryForm.Map.UpdateNote();
                 }
 
             }
@@ -881,13 +869,22 @@ namespace EDDiscovery
             textBoxDistanceToNextSystem.Clear();
             textBoxDistanceToNextSystem.Enabled = true;
 
-            AddHistoryRow(true, item, item2);
+            UpdateVisitedSystemsEntries(item, item2);
+            AddNewHistoryRow(true, item);
             StoreSystemNote();
 
             Invoke((MethodInvoker)delegate
             {
                 _discoveryForm.Map.UpdateVisited(visitedSystems);      // update in UI thread.
             });
+
+            // Move focus to new row
+            if (EDDiscoveryForm.EDDConfig.FocusOnNewSystem)
+            {
+                dataGridViewTravel.ClearSelection();
+                dataGridViewTravel.Rows[0].Cells[0].Selected = true; // This won't raise the CellClick handler, which updates the rest of the form
+                dataGridViewTravel_CellClick(dataGridViewTravel, new DataGridViewCellEventArgs(0, 0));
+            }
         }
 
         private int GetVisitsCount(string name)
@@ -1021,6 +1018,25 @@ namespace EDDiscovery
             }
             dataGridViewTravel.Rows.AddRange(theRows);
             dataGridViewTravel.ResumeLayout();
+        }
+
+        private void mapGotoStartoolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!_discoveryForm.Map.Is3DMapsRunning)            // if not running, click the 3dmap button
+                buttonMap_Click(sender, e);
+
+            if (_discoveryForm.Map.Is3DMapsRunning)             // double check here! for paranoia.
+            {
+                if (dataGridViewTravel.SelectedCells.Count > 0)          // if we have selected (we should!)
+                {
+                    string s = (string)dataGridViewTravel.Rows[dataGridViewTravel.SelectedCells[0].OwningRow.Index].Cells[TravelHistoryColumns.SystemName].Value;
+
+                    if (_discoveryForm.Map.MoveToSystem(s))
+                        _discoveryForm.Map.Show();
+                    else
+                        MessageBox.Show("System does not have co-ordinates");
+                }
+            }
         }
 
         private void starMapColourToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1282,6 +1298,23 @@ namespace EDDiscovery
                     //Process.Start("http://ross.eddb.io/system/update/" + currentSysPos.curSystem.id_eddb.ToString());
                 }
             }
+        }
+
+        public bool SetTravelHistoryPosition( string sysname )
+        {
+            foreach (DataGridViewRow item in dataGridViewTravel.Rows)
+            {
+                string s = (string)item.Cells[TravelHistoryColumns.SystemName].Value;
+                if (s.Equals(sysname) && item.Visible )
+                {
+                    dataGridViewTravel.ClearSelection();
+                    item.Selected = true;           // select row
+                    dataGridViewTravel.CurrentCell = item.Cells[TravelHistoryColumns.SystemName];       // and ensure visible.
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /** Load up the AutoComplete for the First Discovered By textbox */
