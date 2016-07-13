@@ -2,126 +2,192 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace EDDiscovery.DB
 {
+    public static class SQLiteDBExtensions
+    {
+        public static void AddParameterWithValue(this DbCommand cmd, string name, object val)
+        {
+            var par = cmd.CreateParameter();
+            par.ParameterName = name;
+            par.Value = val;
+            cmd.Parameters.Add(par);
+        }
+
+        public static void AddParameter(this DbCommand cmd, string name, DbType type)
+        {
+            var par = cmd.CreateParameter();
+            par.ParameterName = name;
+            par.DbType = type;
+            cmd.Parameters.Add(par);
+        }
+
+        public static void SetParameterValue(this DbCommand cmd, string name, object val)
+        {
+            cmd.Parameters[name].Value = val;
+        }
+
+        public static DbDataAdapter CreateDataAdapter(this DbCommand cmd)
+        {
+            DbDataAdapter da = SQLiteDBClass.DbFactory.CreateDataAdapter();
+            da.SelectCommand = cmd;
+            return da;
+        }
+
+        public static DbCommand CreateCommand(this DbConnection conn, string query)
+        {
+            DbCommand cmd = conn.CreateCommand();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandTimeout = 30;
+            cmd.CommandText = query;
+            return cmd;
+        }
+
+        public static DbCommand CreateCommand(this DbConnection conn, string query, DbTransaction transaction)
+        {
+            DbCommand cmd = conn.CreateCommand(query);
+            cmd.Transaction = transaction;
+            return cmd;
+        }
+    }
+
+
+    public class SQLiteConnectionED : IDisposable              // USE this for connections.. 
+    {
+        //static Object monitor = new Object();                 // monitor disabled for now - it will prevent SQLite DB locked errors but 
+                                                                // causes the program to become unresponsive during big DB updates
+        private DbConnection _cn;
+
+        public SQLiteConnectionED()
+        {
+            // System.Threading.Monitor.Enter(monitor);
+            //Console.WriteLine("Connection open " + System.Threading.Thread.CurrentThread.Name);
+            _cn = SQLiteDBClass.CreateCN();
+            _cn.Open();
+        }
+
+        public DbCommand CreateCommand(string cmd, DbTransaction tn = null)
+        {
+            return _cn.CreateCommand(cmd, tn);
+        }
+
+        public DbTransaction BeginTransaction()
+        {
+            return _cn.BeginTransaction();
+        }
+
+        public void Dispose()
+        {
+            _cn.Close();
+            _cn.Dispose();
+            //System.Threading.Monitor.Exit(monitor);
+        }
+
+        public SQLiteConnectionED(SQLiteConnection c )            // ONLY use by class below..
+        {
+            //System.Threading.Monitor.Enter(monitor);
+            _cn = c;
+            _cn.Open();
+        }
+    }
+
+
     public class SQLiteDBClass
     {
-        SQLiteConnection m_dbConnection;
-        internal static string ConnectionString;
-        string dbfile;
-
-        public static List<SystemClass> globalSystems = new List<SystemClass>();
-        public static Dictionary<string, SystemClass> dictSystems = new Dictionary<string, SystemClass>(); 
-        public static Dictionary<string, double> dictDistances = new Dictionary<string, double>();
-        public static Dictionary<string, SystemNoteClass> globalSystemNotes = new Dictionary<string, SystemNoteClass>();
-        public static List<BookmarkClass> bookmarks = new List<BookmarkClass>();
-
-        // This stores the date of the most recently updated or inserted row in the database
-        // We will use it later to only get data that was changed since that date
-        private static DateTime? versionDate = null;
-
-        private static Object lockDBInit = new Object();
-        private static bool dbUpgraded = false;
-        public SQLiteDBClass()
+        private static DbProviderFactory _factory;
+        public static DbProviderFactory DbFactory
         {
-            lock (lockDBInit)
+            get
             {
-                dbfile = GetSQLiteDBFile();
-
-                ConnectionString = "Data Source=" + dbfile + ";Pooling=true;";
-
-                if (!File.Exists(dbfile))
+                if (_factory == null)
                 {
-                    CreateDB(dbfile);
+                    _factory = new SQLiteFactory();
                 }
-                else
-                    UpgradeDB();
-
+                return _factory;
             }
         }
 
-
-        private string GetSQLiteDBFile()
+        public static DbConnection CreateCN()
         {
+            lock (lockDBInit)                                           // one at a time chaps
+            {
+                if (_db == null)                                        // first one to ask for a connection sets the db up
+                {
+                    _db = new SQLiteDBClass();
+                    _db.InitializeDatabase();
+                }
+            }
+
+            DbConnection cn = DbFactory.CreateConnection();
+            cn.ConnectionString = _db.constring;
+            return cn;
+        }
+
+        private static SQLiteDBClass _db = null;                            // one db class for everyone
+        private static Object lockDBInit = new Object();                    // lock to sequence construction
+        private string constring;                                           // connection string to use..
+        SQLiteConnectionED m_SQLiteConnectionED;                            // only used by class constructor
+
+        private SQLiteDBClass()         // non static class functions in here are only used by the construction
+        {                               // so this is private to make sure you don't try and initialise a DB anywhere..
+        }
+
+        private void InitializeDatabase()
+        {
+            string dbfile = GetSQLiteDBFile();
+            constring = "Data Source=" + dbfile + ";Pooling=true;";
             try
             {
-                string datapath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EDDiscovery");
+                bool fileexist = File.Exists(dbfile);
 
+                if (!fileexist)                                         // no file, create it
+                    SQLiteConnection.CreateFile(dbfile);
 
-                if (!Directory.Exists(datapath))
-                    Directory.CreateDirectory(datapath);
+                using (m_SQLiteConnectionED = new SQLiteConnectionED(new SQLiteConnection(constring)))
+                {
+                    if (!fileexist)                                       // first time, create the register
+                        ExecuteQuery("CREATE TABLE Register (ID TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"ValueInt\" INTEGER, \"ValueDouble\" DOUBLE, \"ValueString\" TEXT, \"ValueBlob\" BLOB)");
 
-
-                return Path.Combine(datapath, "EDDiscovery.sqlite");
+                    UpgradeDB();                                            // upgrade it
+                }
             }
             catch (Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show(ex.Message, "GetSQLiteDBFile Exception", System.Windows.Forms.MessageBoxButtons.OK);
-                return null;
-            }
-        }
-
-
-
-        public bool Connect2DB()
-        {
-            m_dbConnection = new SQLiteConnection(ConnectionString);
-            m_dbConnection.Open();
-
-            return true;
-        }
-
-        public bool CreateDB(string file)
-        {
-            try
-            {
-                SQLiteConnection.CreateFile(file);
-                InitDB();
-                UpgradeDB();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Windows.Forms.MessageBox.Show(ex.Message, "GetSQLiteDBFile Exception", System.Windows.Forms.MessageBoxButtons.OK);
-                return false;
+                System.Windows.Forms.MessageBox.Show(ex.Message, "Error creating data base file, Exception", System.Windows.Forms.MessageBoxButtons.OK);
             }
 
             
         }
 
-
-        public bool InitDB()
+        private void ExecuteQuery(string query)
         {
-            string query = "CREATE TABLE Register (ID TEXT PRIMARY KEY  NOT NULL  UNIQUE , \"ValueInt\" INTEGER, \"ValueDouble\" DOUBLE, \"ValueString\" TEXT, \"ValueBlob\" BLOB)";
-            ExecuteQuery(query);
-
-            UpgradeDB();
-            return true;
+            using (DbCommand command = m_SQLiteConnectionED.CreateCommand(query))
+                command.ExecuteNonQuery();
         }
 
-        public bool UpgradeDB()
+        private string GetSQLiteDBFile()
         {
-            if (dbUpgraded)
-                return true;
+            return Path.Combine(Tools.GetAppDataDirectory(), "EDDiscovery.sqlite");
+        }
 
+        private bool UpgradeDB()
+        {
             int dbver;
             try
             {
-                dbver = GetSettingInt("DBVer", 1);
-
+                dbver = GetSettingInt("DBVer", 1, m_SQLiteConnectionED);        // use the constring one, as don't want to go back into ConnectionString code
                 if (dbver < 2)
                     UpgradeDB2();
 
                 if (dbver < 3)
                     UpgradeDB3();
-
 
                 if (dbver < 4)
                     UpgradeDB4();
@@ -164,7 +230,9 @@ namespace EDDiscovery.DB
                 if (dbver < 17)
                     UpgradeDB17();
 
-                dbUpgraded = true;
+                if (dbver < 18)
+                    UpgradeDB18();
+
                 return true;
             }
             catch (Exception ex)
@@ -175,7 +243,7 @@ namespace EDDiscovery.DB
             }
         }
 
-        public void PerformUpgrade(int newVersion, bool catchErrors, bool backupDbFile, string[] queries, Action doAfterQueries = null)
+        private void PerformUpgrade(int newVersion, bool catchErrors, bool backupDbFile, string[] queries, Action doAfterQueries = null)
         {
             if (backupDbFile)
             {
@@ -211,7 +279,7 @@ namespace EDDiscovery.DB
 
             doAfterQueries?.Invoke();
 
-            PutSettingInt("DBVer", newVersion);
+            PutSettingInt("DBVer", newVersion, m_SQLiteConnectionED);
         }
 
         private void UpgradeDB2()
@@ -238,21 +306,7 @@ namespace EDDiscovery.DB
         {
             string query1 = "ALTER TABLE SystemNote ADD COLUMN Note TEXT";
             PerformUpgrade(4, true, true, new[] { query1 }, () =>
-            {
-                GetAllSystems();
-                foreach (SystemClass sys in globalSystems)
-                {
-                    if (!string.IsNullOrEmpty(sys.Note))
-                    {
-                        SystemNoteClass note = new SystemNoteClass();
-
-                        note.Name = sys.name;
-                        note.Note = sys.Note;
-                        note.Time = DateTime.Now;
-                        note.Add();
-                    }
-                }
-            });
+            {  });
         }
 
         private void UpgradeDB5()
@@ -364,560 +418,44 @@ namespace EDDiscovery.DB
             PerformUpgrade(16, true, true, new[] { query });
         }
 
-        // MKW - add Commander table and "first_discovered_by" column to "Systems" class
         private void UpgradeDB17()
+        {
+            string query1 = "ALTER TABLE Systems ADD COLUMN id_edsm Integer";
+            string query2 = "CREATE INDEX Systems_EDSM_ID_Index ON Systems (id_edsm ASC)";
+            string query3 = "CREATE INDEX Systems_EDDB_ID_Index ON Systems (id_eddb ASC)";
+            string query4 = "ALTER TABLE Distances ADD COLUMN id_edsm Integer";
+            string query5 = "CREATE INDEX Distances_EDSM_ID_Index ON Distances (id_edsm ASC)";
+            string query6 = "Update VisitedSystems set x=null, y=null, z=null where x=0 and y=0 and z=0 and name!=\"Sol\"";
+
+            PerformUpgrade(17, true, true, new[] { query1,query2,query3,query4,query5,query6 }, () =>
+            {
+                PutSettingString("EDSMLastSystems", "2010 - 01 - 01 00:00:00", m_SQLiteConnectionED);        // force EDSM sync..
+                PutSettingString("EDDBSystemsTime", "0", m_SQLiteConnectionED);                               // force EDDB
+                PutSettingString("EDSCLastDist", "2010-01-01 00:00:00", m_SQLiteConnectionED);                // force distances
+            });
+        }
+
+        // MKW - add Commander table and "first_discovered_by" column to "Systems" class
+        private void UpgradeDB18()
         {
             //string query1 = "CREATE TABLE Commanders (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT UNIQUE NOT NULL)";
             //string query2 = "ALTER TABLE Systems ADD COLUMN first_visited_by INTEGER";
             //string query3 = "ALTER TABLE Systems ADD CONSTRAINT (fk_first_visited_by) FOREIGN KEY(first_visited_by) REFERENCES Commanders(id)";
             string query1 = "ALTER TABLE Systems ADD COLUMN first_discovered_by TEXT";
 
-            PerformUpgrade(17, true, true, new[] { query1 });
+            PerformUpgrade(18, true, true, new[] { query1 });
         }
 
-        private void ExecuteQuery(string query)
+        ///----------------------------
+        /// STATIC code helpers for other DB classes
+
+        public static DataSet SQLQueryText(SQLiteConnectionED cn, DbCommand cmd)  
         {
-            if (Connect2DB())
-            {
-                SQLiteCommand command = new SQLiteCommand(query, m_dbConnection);
-                command.ExecuteNonQuery();
-            }
-            CloseDB();
-        }
-
-
-        public bool CloseDB()
-        {
-            m_dbConnection.Close();
-            return true;
-        }
-
-        public bool GetAllSystems()
-        {
-            // Get system notes first
-            GetAllSystemNotes();
-            var sw = Stopwatch.StartNew();
-            int numSystemsReturned = 0;
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-
-                        // First run we haven't loaded anything yet, so load the whole table
-                        if (!versionDate.HasValue)
-                        {
-                            cmd.CommandText = "select * from Systems Order By versiondate ASC";
-                        }
-                        else
-                        {
-                            // Load from the last update we have stored in memory up to the latest present in the database
-                            cmd.CommandText = "select * from Systems where versiondate > @versiondate Order By versiondate ASC";
-                            cmd.Parameters.AddWithValue("versiondate", versionDate.Value.AddSeconds(-1)); // This should avoid datetime precision issues
-                        }
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return false;
-                        }
-
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return false;
-                        }
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            numSystemsReturned++;
-                            SystemClass sys = new SystemClass(dr);
-
-                            if (globalSystemNotes.ContainsKey(sys.SearchName))
-                            {
-                                sys.Note = globalSystemNotes[sys.SearchName].Note;
-                            }
-
-                            dictSystems[sys.SearchName] = sys;
-
-                            // If the row that was modified more recently than versionDate, this is the new versionDate
-                            // Next time we get the systems, we will only get the updates since that date and time.
-                            UpdateVersionDate(dr);
-                        }
-
-                        globalSystems = dictSystems.Values.ToList<SystemClass>();
-
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-                return false;
-            }
-            finally
-            {
-                System.Diagnostics.Trace.WriteLine(string.Format("GetAllSystems completed in {0}. Retrieved {1} systems from DB. Version date is now {2}", sw.Elapsed, numSystemsReturned, versionDate));
-            }
-        }
-
-        public static void TouchSystem(SQLiteConnection connection, string systemName)
-        {
-            using (SQLiteCommand cmd = connection.CreateCommand())
-            {
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandTimeout = 30;
-                cmd.CommandText = "update systems set versiondate=datetime('now') where name=@systemName";
-                cmd.Parameters.AddWithValue("systemName", systemName);
-                SqlNonQueryText(connection, cmd);
-            }
-        }
-
-        private static void UpdateVersionDate(DataRow dr)
-        {
-            object vdRaw = dr["versiondate"];
-            var vd = vdRaw != DBNull.Value ? (DateTime?) vdRaw : null;
-            if ((vd.HasValue && !versionDate.HasValue) || (vd > versionDate))
-            {
-                versionDate = vd;
-            }
-        }
-
-        public bool GetAllDistances(bool loadAlldata)
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        if (!loadAlldata)
-                            cmd.CommandText = "select NameA,NameB, Dist from Distances WHERE status='3' or status = '4'";//         EDDiscovery = 3, EDDiscoverySubmitted = 4
-                        else
-                            cmd.CommandText = "select NameA,NameB, Dist from Distances";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return false;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return false;
-                        }
-                        
-                        dictDistances.Clear();
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            string NameA, NameB;
-                            double dist;
-
-                            NameA = (string)dr["NameA"];
-                            NameB = (string)dr["NameB"];
-                            dist = Convert.ToDouble(dr["Dist"]);
-
-                            dictDistances[GetDistanceCacheKey(NameA, NameB)] = dist;
-                        }
-
-                        return true;
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine("Exception : " + ex.Message);
-                System.Diagnostics.Trace.WriteLine(ex.StackTrace);
-
-                return false;
-            }
-        }
-
-
-        public List<DistanceClass> GetDistancesByStatus(int status)
-        {
-            List<DistanceClass> ldist = new List<DistanceClass>();
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select * from Distances WHERE status='" + status.ToString() +  "'";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return ldist;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return ldist;
-                        }
-
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            DistanceClass dist = new DistanceClass(dr);
-                            ldist.Add(dist);
-                        }
-
-                        return ldist;
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine("Exception : " + ex.Message);
-                System.Diagnostics.Trace.WriteLine(ex.StackTrace);
-
-                return ldist;
-            }
-        }
-
-
-
-
-        public bool GetAllSystemNotes()
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select * from SystemNote";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return false;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return false;
-                        }
-
-                        globalSystemNotes.Clear();
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            SystemNoteClass sys = new SystemNoteClass(dr);
-                            globalSystemNotes[sys.Name.ToLower()] = sys;
-                        }
-
-                        return true;
-
-                    }
-                }
-            }
-            catch 
-            {
-                return false;
-            }
-        }
-
-        public List<string> GetAllFirstDiscoveryCommanders()
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "SELECT DISTINCT first_discovered_by FROM Systems ORDER BY first_discovered_by ASC";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return null;
-                        }
-                        
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return null;
-                        }
-
-                        List<string> retVal = new List<string>();
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            string value = dr[0] == DBNull.Value ? null : (string)dr[0];
-                            if(!string.IsNullOrEmpty(value))
-                            {
-                                retVal.Add(value);
-                            }
-                        }
-                        return retVal;
-
-                    }
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public List<WantedSystemClass> GetAllWantedSystems()
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select * from wanted_systems";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return null;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return null;
-                        }
-
-                        List<WantedSystemClass> retVal = new List<WantedSystemClass>();
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            WantedSystemClass sys = new WantedSystemClass(dr);
-                            retVal.Add(sys);
-                        }
-
-                        return retVal;
-
-                    }
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        public List<SavedRouteClass> GetAllSavedRoutes()
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd1 = new SQLiteCommand())
-                    {
-                        DataSet ds1 = null;
-                        cmd1.Connection = cn;
-                        cmd1.CommandType = CommandType.Text;
-                        cmd1.CommandTimeout = 30;
-                        cmd1.CommandText = "select * from routes_expeditions";
-
-                        ds1 = SqlQueryText(cn, cmd1);
-                        if (ds1.Tables.Count == 0)
-                        {
-                            return null;
-                        }
-                        //
-                        if (ds1.Tables[0].Rows.Count == 0)
-                        {
-                            return new List<SavedRouteClass>();
-                        }
-
-                        using (SQLiteCommand cmd2 = new SQLiteCommand())
-                        {
-                            DataSet ds2 = null;
-                            cmd2.Connection = cn;
-                            cmd2.CommandType = CommandType.Text;
-                            cmd2.CommandTimeout = 30;
-                            cmd2.CommandText = "select * from route_systems";
-
-                            ds2 = SqlQueryText(cn, cmd2);
-
-                            List<SavedRouteClass> retVal = new List<SavedRouteClass>();
-
-                            foreach (DataRow dr in ds1.Tables[0].Rows)
-                            {
-                                DataRow[] syslist = new DataRow[0];
-                                if (ds2.Tables.Count != 0)
-                                {
-                                    syslist = ds2.Tables[0].Select(String.Format("routeid = {0}", dr["id"]), "id ASC");
-                                }
-                                SavedRouteClass sys = new SavedRouteClass(dr, syslist);
-                                retVal.Add(sys);
-                            }
-
-                            return retVal;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                return null;
-            }
-
-        }
-
-        public bool GetAllBookmarks()
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select * from Bookmarks";
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return false;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return false;
-                        }
-
-                        bookmarks.Clear();
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
-                        {
-                            BookmarkClass bc = new BookmarkClass(dr);
-                            bookmarks.Add(bc);
-                        }
-
-                        return true;
-
-                    }
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public int QueryValueInt(string query, int defaultvalue)
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = query;
-                        object ob = SqlScalar(cn, cmd);
-
-                        if (ob == null)
-                            return defaultvalue;
-
-                        int val = Convert.ToInt32(ob);
-
-                        return val;
-                    }
-                }
-            }
-            catch 
-            {
-                return defaultvalue;
-            }
-        }
-
-        public Object QueryValue(string query)
-        {
-            try
-            {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
-                {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = query;
-
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return null;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return null;
-                        }
-
-
-                        return ds.Tables[0].Rows[0];
-
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex.Message);
-                return null;
-            }
-        }
-
-        static private void LogLine(string text)
-        {
-            System.Diagnostics.Trace.WriteLine(text);
-        }
-
-        public static DataSet SqlQueryText(SQLiteConnection cn, SQLiteCommand cmd)
-        {
-
-            //LogLine("SqlQueryText: " + cmd.CommandText);
-
             try
             {
                 DataSet ds = new DataSet();
-                SQLiteDataAdapter da = default(SQLiteDataAdapter);
-                cmd.CommandType = CommandType.Text;
-                cmd.Connection = cn;
-                da = new SQLiteDataAdapter(cmd);
-                cn.Open();
+                DbDataAdapter da = cmd.CreateDataAdapter();
                 da.Fill(ds);
-                cn.Close();
                 return ds;
             }
             catch (Exception ex)
@@ -925,98 +463,15 @@ namespace EDDiscovery.DB
                 System.Diagnostics.Debug.WriteLine("SqlQuery Exception: " + ex.Message);
                 throw;
             }
-
         }
 
-        static public DataSet QueryText(SQLiteConnection cn, SQLiteCommand cmd)
-        {
-
-            //LogLine("SqlQueryText: " + cmd.CommandText);
-
-            try
-            {
-                DataSet ds = new DataSet();
-                SQLiteDataAdapter da = default(SQLiteDataAdapter);
-                cmd.CommandType = CommandType.Text;
-                cmd.Connection = cn;
-                da = new SQLiteDataAdapter(cmd);
-                cn.Open();
-                da.Fill(ds);
-                cn.Close();
-                return ds;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("SqlQuery Exception: " + ex.Message);
-                throw;
-            }
-
-        }
-
-
-        public static int SqlNonQuery(SQLiteConnection cn, SQLiteCommand cmd)
+        static public int SQLNonQueryText(SQLiteConnectionED cn, DbCommand cmd)   
         {
             int rows = 0;
 
-            LogLine("SqlNonQuery: " + cmd.CommandText);
-
             try
             {
-                cn.Open();
                 rows = cmd.ExecuteNonQuery();
-                cn.Close();
-                return rows;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("SqlNonQuery Exception: " + ex.Message);
-                throw;
-            }
-
-
-        }
-
-
-        static public object SqlScalar(SQLiteConnection cn, SQLiteCommand cmd)
-        {
-            object ret = null;
-
-            //LogLine("SqlScalar: " + cmd.CommandText);
-            try
-            {
-                cn.Open();
-                ret = cmd.ExecuteScalar();
-                cn.Close();
-                return ret;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("SqlNonQuery Exception: " + ex.Message);
-                throw;
-            }
-
-
-        }
-
-
-        static public int SqlNonQueryText(SQLiteConnection cn, SQLiteCommand cmd)
-        {
-            int rows = 0;
-
-            //LogLine("SqlNonQueryText: " + cmd.CommandText);
-
-            try
-            {
-                if (cn.State == ConnectionState.Open)
-                {
-                    rows = cmd.ExecuteNonQuery();
-                }
-                else
-                {
-                    cn.Open();
-                    rows = cmd.ExecuteNonQuery();
-                    cn.Close();
-                }
                 return rows;
             }
             catch (Exception ex)
@@ -1024,72 +479,79 @@ namespace EDDiscovery.DB
                 System.Diagnostics.Debug.WriteLine("SqlNonQueryText Exception: " + ex.Message);
                 throw;
             }
-
-
         }
 
-// Check if a key exists
-        public bool keyExists(string sKey)
+        static public object SQLScalar(SQLiteConnectionED cn, DbCommand cmd)      
         {
+            object ret = null;
 
             try
             {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                ret = cmd.ExecuteScalar();
+                return ret;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("SqlNonQuery Exception: " + ex.Message);
+                throw;
+            }
+        }
+
+        ///----------------------------
+        /// STATIC functions for discrete values
+
+        static public bool keyExists(string sKey)                   
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                return keyExists(sKey, cn);
+            }
+        }
+
+        static public bool keyExists(string sKey, SQLiteConnectionED cn)
+        {
+            try
+            {
+                using (DbCommand cmd = cn.CreateCommand("select ID from Register WHERE ID=@key"))
                 {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        DataSet ds = null;
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "select ID from Register WHERE ID=@key";
-                        cmd.Parameters.AddWithValue("@key", sKey);
+                    cmd.AddParameterWithValue("@key", sKey);
 
-                        ds = SqlQueryText(cn, cmd);
-                        if (ds.Tables.Count == 0)
-                        {
-                            return false;
-                        }
-                        //
-                        if (ds.Tables[0].Rows.Count == 0)
-                        {
-                            return false;
-                        }
-                        return true;
+                    DataSet ds = SQLQueryText(cn, cmd);
 
-                    }
+                    return (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0);        // got a value, true
                 }
             }
             catch
             {
-                return false;
             }
 
+            return false;
         }
 
-
-        public int GetSettingInt(string key, int defaultvalue)
+        static public int GetSettingInt(string key, int defaultvalue)     
         {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                return GetSettingInt(key, defaultvalue, cn);
+            }
+        }
+
+        static public int GetSettingInt(string key, int defaultvalue, SQLiteConnectionED cn )
+        { 
             try
             {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                using (DbCommand cmd = cn.CreateCommand("SELECT ValueInt from Register WHERE ID = @ID"))
                 {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "SELECT ValueInt from Register WHERE ID = @ID";
-                        cmd.Parameters.AddWithValue("@ID", key);
-                        object ob = SqlScalar(cn, cmd);
+                    cmd.AddParameterWithValue("@ID", key);
 
-                        if (ob == null)
-                            return defaultvalue;
+                    object ob = SQLScalar(cn, cmd);
 
-                        int val = Convert.ToInt32(ob);
+                    if (ob == null)
+                        return defaultvalue;
 
-                        return val;
-                    }
+                    int val = Convert.ToInt32(ob);
+
+                    return val;
                 }
             }
             catch 
@@ -1098,46 +560,40 @@ namespace EDDiscovery.DB
             }
         }
 
+        static public bool PutSettingInt(string key, int intvalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                bool ret = PutSettingInt(key, intvalue, cn);
+                return ret;
+            }
+        }
 
-        public bool PutSettingInt(string key, int intvalue)
+        static public bool PutSettingInt(string key, int intvalue, SQLiteConnectionED cn )
         {
             try
             {
-                if (keyExists(key))
+                if (keyExists(key,cn))
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Update Register set ValueInt = @ValueInt Where ID=@ID"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Update Register set ValueInt = @ValueInt Where ID=@ID";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@ValueInt", intvalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@ValueInt", intvalue);
 
-                            SqlNonQueryText(cn, cmd);
+                        SQLNonQueryText(cn, cmd);
 
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 else
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Insert into Register (ID, ValueInt) values (@ID, @valint)"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Insert into Register (ID, ValueInt) values (@ID, @valint)";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@valint", intvalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@valint", intvalue);
 
-                            SqlNonQueryText(cn, cmd);
-                            return true;
-                        }
+                        SQLNonQueryText(cn, cmd);
+                        return true;
                     }
                 }
             }
@@ -1147,28 +603,30 @@ namespace EDDiscovery.DB
             }
         }
 
-		public double GetSettingDouble(string key, double defaultvalue)
+        static public double GetSettingDouble(string key, double defaultvalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                return GetSettingDouble(key, defaultvalue, cn);
+            }
+        }
+
+        static public double GetSettingDouble(string key, double defaultvalue , SQLiteConnectionED cn )
         {
             try
             {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                using (DbCommand cmd = cn.CreateCommand("SELECT ValueDouble from Register WHERE ID = @ID"))
                 {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "SELECT ValueDouble from Register WHERE ID = @ID";
-                        cmd.Parameters.AddWithValue("@ID", key);
-                        object ob = SqlScalar(cn, cmd);
+                    cmd.AddParameterWithValue("@ID", key);
 
-                        if (ob == null)
-                            return defaultvalue;
+                    object ob = SQLScalar(cn, cmd);
 
-                        double val = Convert.ToDouble(ob);
+                    if (ob == null)
+                        return defaultvalue;
 
-                        return val;
-                    }
+                    double val = Convert.ToDouble(ob);
+
+                    return val;
                 }
             }
             catch
@@ -1177,46 +635,40 @@ namespace EDDiscovery.DB
             }
         }
 
+        static public bool PutSettingDouble(string key, double doublevalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                bool ret = PutSettingDouble(key, doublevalue, cn);
+                return ret;
+            }
+        }
 
-        public bool PutSettingDouble(string key, double doublevalue)
+        static public bool PutSettingDouble(string key, double doublevalue, SQLiteConnectionED cn)
         {
             try
             {
-                if (keyExists(key))
+                if (keyExists(key,cn))
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Update Register set ValueDouble = @ValueDouble Where ID=@ID"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Update Register set ValueDouble = @ValueDouble Where ID=@ID";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@ValueDouble", doublevalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@ValueDouble", doublevalue);
 
-                            SqlNonQueryText(cn, cmd);
+                        SQLNonQueryText(cn, cmd);
 
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 else
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Insert into Register (ID, ValueDouble) values (@ID, @valdbl)"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Insert into Register (ID, ValueDouble) values (@ID, @valdbl)";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@valdbl", doublevalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@valdbl", doublevalue);
 
-                            SqlNonQueryText(cn, cmd);
-                            return true;
-                        }
+                        SQLNonQueryText(cn, cmd);
+                        return true;
                     }
                 }
             }
@@ -1226,32 +678,33 @@ namespace EDDiscovery.DB
             }
         }
 
-        public bool GetSettingBool(string key, bool defaultvalue)
+        static public bool GetSettingBool(string key, bool defaultvalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                return GetSettingBool(key, defaultvalue, cn);
+            }
+        }
+
+        static public bool GetSettingBool(string key, bool defaultvalue,SQLiteConnectionED cn)
         {
             try
             {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                using (DbCommand cmd = cn.CreateCommand("SELECT ValueInt from Register WHERE ID = @ID"))
                 {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "SELECT ValueInt from Register WHERE ID = @ID";
-                        cmd.Parameters.AddWithValue("@ID", key);
-                        object ob = SqlScalar(cn, cmd);
+                    cmd.AddParameterWithValue("@ID", key);
 
-                        if (ob == null)
-                            return defaultvalue;
+                    object ob = SQLScalar(cn, cmd);
 
-                        int val = Convert.ToInt32(ob);
+                    if (ob == null)
+                        return defaultvalue;
 
-                        if (val == 0)
-                            return false;
-                        else
-                            return true;
-                       
-                    }
+                    int val = Convert.ToInt32(ob);
+
+                    if (val == 0)
+                        return false;
+                    else
+                        return true;
                 }
             }
             catch
@@ -1261,7 +714,16 @@ namespace EDDiscovery.DB
         }
 
 
-        public bool PutSettingBool(string key, bool boolvalue)
+        static public bool PutSettingBool(string key, bool boolvalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                bool ret = PutSettingBool(key, boolvalue, cn);
+                return ret;
+            }
+        }
+
+        static public bool PutSettingBool(string key, bool boolvalue, SQLiteConnectionED cn)
         {
             try
             {
@@ -1270,43 +732,27 @@ namespace EDDiscovery.DB
                 if (boolvalue == true)
                     intvalue = 1;
 
-                if (keyExists(key))
+                if (keyExists(key,cn))
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Update Register set ValueInt = @ValueInt Where ID=@ID"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Update Register set ValueInt = @ValueInt Where ID=@ID";
-                            cmd.Parameters.AddWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@ValueInt", intvalue);
 
-                            
-                            cmd.Parameters.AddWithValue("@ValueInt", intvalue);
+                        SQLNonQueryText(cn, cmd);
 
-                            SqlNonQueryText(cn, cmd);
-
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 else
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Insert into Register (ID, ValueInt) values (@ID, @valint)"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Insert into Register (ID, ValueInt) values (@ID, @valint)";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@valint", intvalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@valint", intvalue);
 
-                            SqlNonQueryText(cn, cmd);
-                            return true;
-                        }
+                        SQLNonQueryText(cn, cmd);
+                        return true;
                     }
                 }
             }
@@ -1316,32 +762,32 @@ namespace EDDiscovery.DB
             }
         }
 
+        static public string GetSettingString(string key, string defaultvalue)
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                return GetSettingString(key, defaultvalue, cn);
+            }
+        }
 
-        public string GetSettingString(string key, string defaultvalue)
+        static public string GetSettingString(string key, string defaultvalue, SQLiteConnectionED cn)
         {
             try
             {
-                using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                using (DbCommand cmd = cn.CreateCommand("SELECT ValueString from Register WHERE ID = @ID"))
                 {
-                    using (SQLiteCommand cmd = new SQLiteCommand())
-                    {
-                        cmd.Connection = cn;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandTimeout = 30;
-                        cmd.CommandText = "SELECT ValueString from Register WHERE ID = @ID";
-                        cmd.Parameters.AddWithValue("@ID", key);
-                        object ob = SqlScalar(cn, cmd);
+                    cmd.AddParameterWithValue("@ID", key);
+                    object ob = SQLScalar(cn, cmd);
 
-                        if (ob == null)
-                            return defaultvalue;
+                    if (ob == null)
+                        return defaultvalue;
 
-                        if (ob == System.DBNull.Value)
-                            return defaultvalue;
+                    if (ob == System.DBNull.Value)
+                        return defaultvalue;
 
-                        string val = (string)ob;
+                    string val = (string)ob;
 
-                        return val;
-                    }
+                    return val;
                 }
             }
             catch 
@@ -1350,46 +796,40 @@ namespace EDDiscovery.DB
             }
         }
 
+        static public bool PutSettingString(string key, string strvalue)        // public IF
+        {
+            using (SQLiteConnectionED cn = new SQLiteConnectionED())
+            {
+                bool ret = PutSettingString(key, strvalue, cn);
+                return ret;
+            }
+        }
 
-        public bool PutSettingString(string key, string strvalue)
+        static public bool PutSettingString(string key, string strvalue , SQLiteConnectionED cn )
         {
             try
             {
-                if (keyExists(key))
+                if (keyExists(key,cn))
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Update Register set ValueString = @ValueString Where ID=@ID"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Update Register set ValueString = @ValueString Where ID=@ID";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@ValueString", strvalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@ValueString", strvalue);
 
-                            SqlNonQueryText(cn, cmd);
+                        SQLNonQueryText(cn, cmd);
 
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 else
                 {
-                    using (SQLiteConnection cn = new SQLiteConnection(ConnectionString))
+                    using (DbCommand cmd = cn.CreateCommand("Insert into Register (ID, ValueString) values (@ID, @valint)"))
                     {
-                        using (SQLiteCommand cmd = new SQLiteCommand())
-                        {
-                            cmd.Connection = cn;
-                            cmd.CommandType = CommandType.Text;
-                            cmd.CommandTimeout = 30;
-                            cmd.CommandText = "Insert into Register (ID, ValueString) values (@ID, @valint)";
-                            cmd.Parameters.AddWithValue("@ID", key);
-                            cmd.Parameters.AddWithValue("@valint", strvalue);
+                        cmd.AddParameterWithValue("@ID", key);
+                        cmd.AddParameterWithValue("@valint", strvalue);
 
-                            SqlNonQueryText(cn, cmd);
-                            return true;
-                        }
+                        SQLNonQueryText(cn, cmd);
+                        return true;
                     }
                 }
             }
@@ -1399,34 +839,5 @@ namespace EDDiscovery.DB
             }
         }
 
-
-        public int GetNetLogFileSize(string filename)
-        {
-            string key = "NetLogFileSize_" + Path.GetFileName(filename);
-
-            return GetSettingInt(key, -1);
-        }
-
-        public void SaveNetLogFileSize(string filename, int size)
-        {
-            string key = "NetLogFileSize_" + Path.GetFileName(filename);
-
-
-            PutSettingInt(key, size);
-        }
-
-
-        public static void AddDistanceToCache(DistanceClass distance)
-        {
-            dictDistances[GetDistanceCacheKey(distance.NameA, distance.NameB)] = distance.Dist;
-        }
-
-        public static string GetDistanceCacheKey(string systemA, string systemB)
-        {
-            var systemALower = systemA.ToLower();
-            var systemBLower = systemB.ToLower();
-            var cmp = string.Compare(systemALower, systemBLower, false, CultureInfo.InvariantCulture);
-            return cmp < 0 ? systemALower + ":" + systemBLower : systemBLower + ":" + systemALower;
-        }
     }
 }
