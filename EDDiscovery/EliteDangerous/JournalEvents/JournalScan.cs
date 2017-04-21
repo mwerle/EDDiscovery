@@ -474,48 +474,48 @@ namespace EDDiscovery.EliteDangerous.JournalEvents
 
         public Tuple<System.Drawing.Image, string> GetStarTypeImage()           // give image and description to star class
         {
-            System.Drawing.Image ret = EDDiscovery.Properties.Resources.Star_K1IV;
+            System.Drawing.Image ret = EDDiscovery.Properties.Resources.SO_Star_K1IV;
 
             switch (StarTypeID)       // see journal, section 11.2
             {
                 case EDStar.O:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.O, string.Format("Luminous Hot Main Sequence star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_O, string.Format("Luminous Hot Main Sequence star", StarType));
 
                 case EDStar.B:
                     // also have an B1V
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.B6V_Blueish, string.Format("Luminous Blue Main Sequence star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_B6V_Blueish, string.Format("Luminous Blue Main Sequence star", StarType));
 
                 case EDStar.A:
                     // also have an A3V..
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.A9III_White, string.Format("Bluish-White Main Sequence star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_A9III_White, string.Format("Bluish-White Main Sequence star", StarType));
 
                 case EDStar.F:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.F5VAB, string.Format("White Main Sequence star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_F5VAB, string.Format("White Main Sequence star", StarType));
 
                 case EDStar.G:
                     // also have a G8V
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.G1IV, string.Format("Yellow Main Sequence star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_G1IV, string.Format("Yellow Main Sequence star", StarType));
 
                 case EDStar.K:
                     // also have a K0V
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.Star_K1IV, string.Format("Orange Main Sequence {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_Star_K1IV, string.Format("Orange Main Sequence {0} star", StarType));
                 case EDStar.M:
                     // also have a M1VA
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.M5V, string.Format("Red Main Sequence {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_M5V, string.Format("Red Main Sequence {0} star", StarType));
 
                 // dwarfs
                 case EDStar.L:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.L3V, string.Format("Dark Red Non Main Sequence {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_L3V, string.Format("Dark Red Non Main Sequence {0} star", StarType));
                 case EDStar.T:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.T4V, string.Format("Methane Dwarf star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_T4V, string.Format("Methane Dwarf star", StarType));
                 case EDStar.Y:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.Y2, string.Format("Brown Dwarf star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_Y2, string.Format("Brown Dwarf star", StarType));
 
                 // proto stars
                 case EDStar.AeBe:    // Herbig
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "Herbig Ae/Be");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "Herbig Ae/Be");
                 case EDStar.TTS:     // seen in logs
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "T Tauri");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "T Tauri");
 
                 // wolf rayet
                 case EDStar.W:
@@ -523,7 +523,7 @@ namespace EDDiscovery.EliteDangerous.JournalEvents
                 case EDStar.WNC:
                 case EDStar.WC:
                 case EDStar.WO:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, string.Format("Wolf-Rayet {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, string.Format("Wolf-Rayet {0} star", StarType));
 
                 // Carbon
                 case EDStar.CS:
@@ -531,11 +531,11 @@ namespace EDDiscovery.EliteDangerous.JournalEvents
                 case EDStar.CN:
                 case EDStar.CJ:
                 case EDStar.CHd:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.C7III, string.Format("Carbon {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_C7III, string.Format("Carbon {0} star", StarType));
 
                 case EDStar.MS: //seen in log
                 case EDStar.S:   // seen in log
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, string.Format("Unknown Type {0} star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, string.Format("Unknown Type {0} star", StarType));
 
                 // white dwarf
                 case EDStar.D:
@@ -553,51 +553,51 @@ namespace EDDiscovery.EliteDangerous.JournalEvents
                 case EDStar.DC:
                 case EDStar.DCV:
                 case EDStar.DX:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DA6VII_White, string.Format("White Dwarf ({0}) star", StarType));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DA6VII_White, string.Format("White Dwarf ({0}) star", StarType));
 
                 case EDStar.N:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.Neutron_Star, "Neutron Star");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_Neutron_Star, "Neutron Star");
 
                 case EDStar.H:
 
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.Black_Hole, "Black Hole");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_Black_Hole, "Black Hole");
 
                 case EDStar.X:
                     // currently speculative, not confirmed with actual data... in journal
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "Exotic");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "Exotic");
 
                 // Journal.. really?  need evidence these actually are formatted like this.
 
                 //case EDStar.b"supermassiveblackhole":
                 //   return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.Black_Hole, "Super Massive Black Hole");
                 case EDStar.A_BlueWhiteSuperGiant:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.A9III_White, "Blue White Super Giant");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_A9III_White, "Blue White Super Giant");
                 case EDStar.F_WhiteSuperGiant:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "F White Super Giant");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "F White Super Giant");
                 case EDStar.M_RedSuperGiant:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "M Red Super Giant");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "M Red Super Giant");
                 case EDStar.M_RedGiant:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "M Red Giant");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "M Red Giant");
                 case EDStar.K_OrangeGiant:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "K Orange Giant");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "K Orange Giant");
                 case EDStar.RoguePlanet:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, "Rouge Planet");
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, "Rouge Planet");
 
                 default:
-                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.DefaultStar, string.Format("Class {0} star\n", StarType.Replace("_", " ")));
+                    return new Tuple<System.Drawing.Image, string>(EDDiscovery.Properties.Resources.SO_DefaultStar, string.Format("Class {0} star\n", StarType.Replace("_", " ")));
             }
         }
 
         static public System.Drawing.Image GetStarImageNotScanned()
         {
-            return EDDiscovery.Properties.Resources.Globe_yellow;
+            return EDDiscovery.Properties.Resources.SO_Globe_yellow;
         }
 
         public System.Drawing.Image GetPlanetClassImage()
         {
             if (PlanetClass == null)
             {
-                return EDDiscovery.Properties.Resources.Globe;
+                return EDDiscovery.Properties.Resources.SO_Globe;
             }
 
             string name = PlanetClass.ToLower();
@@ -605,62 +605,62 @@ namespace EDDiscovery.EliteDangerous.JournalEvents
             if (name.Contains("gas"))
             {
                 if (name.Contains("helium"))
-                    return EDDiscovery.Properties.Resources.Helium_Rich_Gas_Giant1;
+                    return EDDiscovery.Properties.Resources.SO_Helium_Rich_Gas_Giant1;
                 else if (name.Contains("water"))
-                    return EDDiscovery.Properties.Resources.Gas_giant_water_based_life_Brown3;
+                    return EDDiscovery.Properties.Resources.SO_Gas_giant_water_based_life_Brown3;
                 else if (name.Contains("ammonia"))
-                    return EDDiscovery.Properties.Resources.Gas_giant_ammonia_based_life1;
+                    return EDDiscovery.Properties.Resources.SO_Gas_giant_ammonia_based_life1;
                 else if (name.Contains("iv"))
-                    return EDDiscovery.Properties.Resources.Class_I_Gas_Giant_Brown2;               // MISSING.
+                    return EDDiscovery.Properties.Resources.SO_Class_I_Gas_Giant_Brown2;               // MISSING.
                 else if (name.Contains("iii"))
-                    return EDDiscovery.Properties.Resources.Class_III_Gas_Giant_Blue3;
+                    return EDDiscovery.Properties.Resources.SO_Class_III_Gas_Giant_Blue3;
                 else if (name.Contains("ii"))
-                    return EDDiscovery.Properties.Resources.Class_II_Gas_Giant_Sand1;
+                    return EDDiscovery.Properties.Resources.SO_Class_II_Gas_Giant_Sand1;
                 else if (name.Contains("v"))
-                    return EDDiscovery.Properties.Resources.Class_I_Gas_Giant_Brown2;               // MISSING.
+                    return EDDiscovery.Properties.Resources.SO_Class_I_Gas_Giant_Brown2;               // MISSING.
                 else
-                    return EDDiscovery.Properties.Resources.Class_I_Gas_Giant_Brown2;
+                    return EDDiscovery.Properties.Resources.SO_Class_I_Gas_Giant_Brown2;
             }
             else if (name.Contains("ammonia"))
-                return EDDiscovery.Properties.Resources.Ammonia_Brown;      // also have orange.
+                return EDDiscovery.Properties.Resources.SO_Ammonia_Brown;      // also have orange.
             else if (name.Contains("earth"))
-                return EDDiscovery.Properties.Resources.Earth_Like_Standard;
+                return EDDiscovery.Properties.Resources.SO_Earth_Like_Standard;
             else if (name.Contains("ice"))
-                return EDDiscovery.Properties.Resources.Rocky_Ice_World_Sol_Titan;
+                return EDDiscovery.Properties.Resources.SO_Rocky_Ice_World_Sol_Titan;
             else if (name.Contains("icy"))
-                return EDDiscovery.Properties.Resources.Icy_Body_Greenish1;
+                return EDDiscovery.Properties.Resources.SO_Icy_Body_Greenish1;
             else if (name.Contains("water"))
             {
                 if (name.Contains("giant"))
-                    return EDDiscovery.Properties.Resources.Water_Giant1;
+                    return EDDiscovery.Properties.Resources.SO_Water_Giant1;
                 else
-                    return EDDiscovery.Properties.Resources.Water_World_Poles_Cloudless4;
+                    return EDDiscovery.Properties.Resources.SO_Water_World_Poles_Cloudless4;
             }
             else if (name.Contains("metal"))
             {
                 if (name.Contains("rich"))
-                    return EDDiscovery.Properties.Resources.metal_rich;
+                    return EDDiscovery.Properties.Resources.SO_metal_rich;
                 else if (nSurfaceTemperature > 400)
-                    return EDDiscovery.Properties.Resources.High_metal_content_world_Lava1;
+                    return EDDiscovery.Properties.Resources.SO_High_metal_content_world_Lava1;
                 else if (nSurfaceTemperature > 250)
-                    return EDDiscovery.Properties.Resources.High_metal_content_world_Mix3;
+                    return EDDiscovery.Properties.Resources.SO_High_metal_content_world_Mix3;
                 else
-                    return EDDiscovery.Properties.Resources.High_metal_content_world_Orange8;
+                    return EDDiscovery.Properties.Resources.SO_High_metal_content_world_Orange8;
             }
             else if (name.Contains("rocky"))
-                return EDDiscovery.Properties.Resources.Rocky_Body_Sand2;
+                return EDDiscovery.Properties.Resources.SO_Rocky_Body_Sand2;
             else
-                return EDDiscovery.Properties.Resources.Globe;
+                return EDDiscovery.Properties.Resources.SO_Globe;
         }
 
         static public System.Drawing.Image GetPlanetImageNotScanned()
         {
-            return EDDiscovery.Properties.Resources.Globe;
+            return EDDiscovery.Properties.Resources.SO_Globe;
         }
 
         static public System.Drawing.Image GetMoonImageNotScanned()
         {
-            return EDDiscovery.Properties.Resources.Globe;
+            return EDDiscovery.Properties.Resources.SO_Globe;
         }
 
         internal double GetMaterial(string v)

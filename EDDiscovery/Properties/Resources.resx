@@ -121,8 +121,8 @@
   <data name="buytradedata" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\buytradedata.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Belt" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Belt.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Belt" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Belt.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="selfdestruct" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\selfdestruct.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -130,14 +130,14 @@
   <data name="engineerprogress" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\engineerprogress.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Globe_yellow" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Globe_yellow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Globe_yellow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Globe_yellow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="missionfailed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\missionfailed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Neutron_Star" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Neutron_Star.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Neutron_Star" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Neutron_Star.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="shieldsdown" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shieldsdown.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -148,8 +148,8 @@
   <data name="powerplayvote" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\powerplayvote.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="O" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\O.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_O" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\O.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="genericevent" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\event.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -157,8 +157,8 @@
   <data name="refuel" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\refuel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="DA6VII_White" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DA6VII_White.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_DA6VII_White" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\DA6VII_White.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="material" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\material.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -166,8 +166,8 @@
   <data name="stats" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stats.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Ammonia_Brown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Ammonia_Brown.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Ammonia_Brown" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Ammonia_Brown.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="collectcargo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\collectcargo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -175,8 +175,8 @@
   <data name="liftoff" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\liftoff.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="F5VAB" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\F5VAB.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_F5VAB" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\F5VAB.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="floppy" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\floppy.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -199,8 +199,8 @@
   <data name="Travelicon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Travelicon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="A9III_White" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\A9III_White.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_A9III_White" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\A9III_White.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="StopNormalRed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\StopNormalRed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -220,11 +220,11 @@
   <data name="screenshot" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\screenshot.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="L3V" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\L3V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_L3V" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\L3V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="C7III" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\C7III.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_C7III" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\C7III.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="modulestore" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\modulestore.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -235,14 +235,14 @@
   <data name="Moon24" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Moon24.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Gas_giant_water_based_life_Brown3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Gas_giant_water_based_life_Brown3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Gas_giant_water_based_life_Brown3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Gas_giant_water_based_life_Brown3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="journal" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\journal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="G8V_and_G9V" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\G8V_and_G9V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_G8V_and_G9V" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\G8V_and_G9V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="commitcrime" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\commitcrime.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -250,8 +250,8 @@
   <data name="bookmarkgreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bookmarkgreen.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Barycentre" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Barycentre.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Barycentre" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Barycentre.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="bookmarkyellow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bookmarkyellow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -268,8 +268,8 @@
   <data name="PauseNormalRed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PauseNormalRed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="High_metal_content_world_Orange8" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\High_metal_content_world_Orange8.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_High_metal_content_world_Orange8" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\High_metal_content_world_Orange8.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SizeSelectorsLarge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SizeSelectorsLarge.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -277,8 +277,8 @@
   <data name="rebootrepair" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rebootrepair.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Ammonia_Orangeish" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Ammonia_Orangeish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Ammonia_Orangeish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Ammonia_Orangeish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="stopflag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stopflag.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -286,8 +286,8 @@
   <data name="dockingcancelled" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dockingcancelled.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="K1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\K1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_K1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\K1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="interdicted" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\interdicted.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -295,8 +295,8 @@
   <data name="supercruiseenter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\supercruiseenter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Class_I_Gas_Giant_Brown2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Class_I_Gas_Giant_Brown2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Class_I_Gas_Giant_Brown2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Class_I_Gas_Giant_Brown2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ressurect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ressurect.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -313,11 +313,11 @@
   <data name="interdiction" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\interdiction.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="RingGap512" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RingGap512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_RingGap512" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\RingGap512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="T4V" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\T4V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_T4V" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\T4V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="bookmarkbrightred" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bookmarkbrightred.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -334,20 +334,20 @@
   <data name="missionabandoned" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\missionabandoned.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="B1V_Blue_SagittariusA" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\B1V_Blue_SagittariusA.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_B1V_Blue_SagittariusA" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\B1V_Blue_SagittariusA.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="save" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\save.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="A3V_Blueish" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\A3V_Blueish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_A3V_Blueish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\A3V_Blueish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="powerplayfasttrack" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\powerplayfasttrack.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Class_II_Gas_Giant_Sand1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Class_II_Gas_Giant_Sand1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Class_II_Gas_Giant_Sand1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Class_II_Gas_Giant_Sand1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="crew" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\crew.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -361,8 +361,8 @@
   <data name="pointofinterest" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pointofinterest.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="planet_landing" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\planet landing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_planet_landing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\planet landing.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="fuelscoop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\fuelscoop.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -397,8 +397,8 @@
   <data name="engineercraft" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\engineercraft.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="G1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\G1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_G1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\G1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="pulsar" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pulsar.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -430,17 +430,17 @@
   <data name="srv" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\srv.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Star_K1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Star_K1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Star_K1IV" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Star_K1IV.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="fighter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\fighter.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="DefaultStar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DefaultStar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_DefaultStar" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\DefaultStar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Gas_giant_ammonia_based_life1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Gas_giant_ammonia_based_life1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Gas_giant_ammonia_based_life1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Gas_giant_ammonia_based_life1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="powerplayjoin" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\powerplayjoin.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -448,8 +448,8 @@
   <data name="modulebuy" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\modulebuy.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Black_Hole" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Black_Hole.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Black_Hole" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Black_Hole.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="marketsell" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\marketsell.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -469,17 +469,17 @@
   <data name="imgCheck" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\imgCheck.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Globe" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Globe.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Globe" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Globe.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="K0V" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\K0V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_K0V" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\K0V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="startflag" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\startflag.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="M5V" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\M5V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_M5V" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\M5V.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="starcluster" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\starcluster.PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -493,8 +493,8 @@
   <data name="SizeSelectorsMedium" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SizeSelectorsMedium.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Rocky_Ice_World_Sol_Titan" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Rocky_Ice_World_Sol_Titan.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Rocky_Ice_World_Sol_Titan" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Rocky_Ice_World_Sol_Titan.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="dockinggranted" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\dockinggranted.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -502,8 +502,8 @@
   <data name="commodities" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\commodities.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="B6V_Blueish" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\B6V_Blueish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_B6V_Blueish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\B6V_Blueish.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="shipyardswap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shipyardswap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -511,14 +511,14 @@
   <data name="rank" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rank.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Icy_Body_Greenish1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Icy_Body_Greenish1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Icy_Body_Greenish1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Icy_Body_Greenish1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Earth_Like_Standard" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Earth_Like_Standard.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Earth_Like_Standard" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Earth_Like_Standard.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="metal_rich" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\metal_rich.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_metal_rich" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\metal_rich.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ArrowRight" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ArrowRight.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -535,14 +535,14 @@
   <data name="shipyardnew" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shipyardnew.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Class_III_Gas_Giant_Blue3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Class_III_Gas_Giant_Blue3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Class_III_Gas_Giant_Blue3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Class_III_Gas_Giant_Blue3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="missioncompleted" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\missioncompleted.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Water_Giant1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Water_Giant1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Water_Giant1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Water_Giant1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="shieldsup" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shieldsup.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -568,8 +568,8 @@
   <data name="maphelp3d" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\3dmaphelp.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="Water_World_Poles_Cloudless4" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Water_World_Poles_Cloudless4.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Water_World_Poles_Cloudless4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Water_World_Poles_Cloudless4.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="selldrones" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\selldrones.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -580,8 +580,8 @@
   <data name="powerplayvoucher" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\powerplayvoucher.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Helium_Rich_Gas_Giant1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Helium_Rich_Gas_Giant1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Helium_Rich_Gas_Giant1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Helium_Rich_Gas_Giant1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="powerplayleave" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\powerplayleave.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -595,8 +595,8 @@
   <data name="shipyardsell" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\shipyardsell.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="High_metal_content_world_Mix3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\High_metal_content_world_Mix3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_High_metal_content_world_Mix3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\High_metal_content_world_Mix3.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="modulesell" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\modulesell.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -607,11 +607,11 @@
   <data name="edsm" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\edsm.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="High_metal_content_world_Lava1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\High_metal_content_world_Lava1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_High_metal_content_world_Lava1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\High_metal_content_world_Lava1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Y2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Y2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Y2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Y2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="materialrare" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\materialrare.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -625,14 +625,14 @@
   <data name="moduleswap" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\moduleswap.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Ring_Only_512" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Ring Only 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Ring_Only_512" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Ring Only 512.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="buyexplorationdata" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\buyexplorationdata.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Rocky_Body_Sand2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Rocky_Body_Sand2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_Rocky_Body_Sand2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\Rocky_Body_Sand2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Log" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Log.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -661,8 +661,8 @@
   <data name="approachsettlement" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\approachsettlement.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="M1VA" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\M1VA.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="SO_M1VA" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StellarObjects\M1VA.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Homeicon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Home-icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

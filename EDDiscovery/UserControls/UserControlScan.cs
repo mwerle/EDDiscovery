@@ -167,7 +167,7 @@ namespace EDDiscovery.UserControls
                 {
                     int offset = 0;
                     Point maxstarpos = DrawNode(starcontrols, starnode,
-                                (starnode.type == StarScan.ScanNodeType.barycentre) ? EDDiscovery.Properties.Resources.Barycentre : JournalScan.GetStarImageNotScanned(),
+                                (starnode.type == StarScan.ScanNodeType.barycentre) ? EDDiscovery.Properties.Resources.SO_Barycentre : JournalScan.GetStarImageNotScanned(),
                                 curpos, starsize, ref offset , false, (planetsize.Height*6/4-starsize.Height)/2);       // the last part nerfs the label down to the right position
 
                     Point maxitemspos = maxstarpos;
@@ -330,7 +330,7 @@ namespace EDDiscovery.UserControls
 
                             curpos.X += 4;      // a little spacing, image is tight
 
-                            endbelt = CreateImageLabel(pc, EDDiscovery.Properties.Resources.Belt, 
+                            endbelt = CreateImageLabel(pc, EDDiscovery.Properties.Resources.SO_Belt, 
                                 new Point( curpos.X, curpos.Y + alignv ), new Size(size.Width/2,size.Height), name,
                                                                 sc.RingInformationMoons(i), alignv + labelvoff, sc.IsEDSMBody, false);
 
@@ -357,10 +357,10 @@ namespace EDDiscovery.UserControls
                             g.DrawImage(nodeimage, size.Width / 2, quarterheight, size.Width, size.Height);
 
                             if (sc.IsLandable)
-                                g.DrawImage(EDDiscovery.Properties.Resources.planet_landing, new Rectangle(quarterheight, 0, quarterheight * 6, quarterheight * 6));
+                                g.DrawImage(EDDiscovery.Properties.Resources.SO_planet_landing, new Rectangle(quarterheight, 0, quarterheight * 6, quarterheight * 6));
 
                             if (sc.HasRings)
-                                g.DrawImage(sc.Rings.Count() > 1 ? EDDiscovery.Properties.Resources.RingGap512 : EDDiscovery.Properties.Resources.Ring_Only_512,
+                                g.DrawImage(sc.Rings.Count() > 1 ? EDDiscovery.Properties.Resources.SO_RingGap512 : EDDiscovery.Properties.Resources.SO_Ring_Only_512,
                                                 new Rectangle(-2, quarterheight, size.Width * 2, size.Height));
 
                             if (indicatematerials)
