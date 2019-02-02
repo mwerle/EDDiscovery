@@ -214,6 +214,7 @@ namespace EDDiscovery.UserControls
                 bool enableedddross = (he.System.EDDBID > 0);  // Only enable eddb/ross for system that it knows about
 
                 buttonRoss.Enabled = buttonEDDB.Enabled = enableedddross;
+                buttonExTool.Enabled = true;
 
                 string allegiance, economy, gov, faction, factionstate, security;
                 hl.ReturnSystemInfo(he, out allegiance, out economy, out gov, out faction, out factionstate, out security);
@@ -304,6 +305,7 @@ namespace EDDiscovery.UserControls
                                 "";
 
                 buttonRoss.Enabled = buttonEDDB.Enabled = false;
+                buttonExTool.Enabled = false;
                 SetNote("");
             }
         }
@@ -334,6 +336,18 @@ namespace EDDiscovery.UserControls
 
                 if (last_he.System.EDDBID > 0)
                     Process.Start(Properties.Resources.URLRossSystem + last_he.System.EDDBID.ToString());
+            }
+        }
+
+        private void buttonExTool_Click(object sender, EventArgs e)
+        {
+            if (last_he != null)
+            {
+                discoveryform.history.FillEDSM(last_he);
+
+                if (!String.IsNullOrEmpty(last_he?.System?.Name)) {
+                    Process.Start(Properties.Resources.URLExToolSystem + last_he.System.Name.ToString());
+                }
             }
         }
 
@@ -604,8 +618,9 @@ namespace EDDiscovery.UserControls
                                         buttonEDSM.Location = new Point(textBoxSystem.Right + hspacing, datapos.Y);
                                         buttonEDDB.Location = new Point(buttonEDSM.Right + hspacing, buttonEDSM.Top);
                                         buttonRoss.Location = new Point(buttonEDDB.Right + hspacing, buttonEDSM.Top);
-                                        buttonEDSM.Visible = buttonEDDB.Visible = buttonRoss.Visible = true;
-                                        buttonEDSM.Tag = buttonEDDB.Tag = buttonRoss.Tag = si;
+                                        buttonExTool.Location = new Point(buttonRoss.Right + hspacing, buttonEDSM.Top);
+                                        buttonEDSM.Visible = buttonEDDB.Visible = buttonRoss.Visible = buttonExTool.Visible = true;
+                                        buttonEDSM.Tag = buttonEDDB.Tag = buttonRoss.Tag = buttonExTool.Tag = si;
                                     }
 
                                     break;
@@ -617,8 +632,9 @@ namespace EDDiscovery.UserControls
                                         buttonEDSM.Location = new Point(datapos.X, datapos.Y);
                                         buttonEDDB.Location = new Point(buttonEDSM.Right + hspacing, buttonEDSM.Top);
                                         buttonRoss.Location = new Point(buttonEDDB.Right + hspacing, buttonEDSM.Top);
-                                        labelOpen.Tag = buttonEDSM.Tag = buttonEDDB.Tag = buttonRoss.Tag = si;
-                                        labelOpen.Visible = buttonEDSM.Visible = buttonEDDB.Visible = buttonRoss.Visible = true;
+                                        buttonExTool.Location = new Point(buttonRoss.Right + hspacing, buttonEDSM.Top);
+                                        labelOpen.Tag = buttonEDSM.Tag = buttonEDDB.Tag = buttonRoss.Tag = buttonExTool.Tag = si;
+                                        labelOpen.Visible = buttonEDSM.Visible = buttonEDDB.Visible = buttonRoss.Visible = buttonExTool.Visible = true;
                                         labpos.Y += vspacing + 4;
                                     }
                                     break;

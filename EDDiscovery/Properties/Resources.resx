@@ -190,4 +190,7 @@
   <data name="URLRossSystem" xml:space="preserve">
     <value>http://ross.eddb.io/system/update/</value>
   </data>
+  <data name="URLExToolSystem" xml:space="preserve">
+    <value>https://elite.laulhere.com/ExTool/index.php?mode=systems&amp;system=</value>
+  </data>
 </root>

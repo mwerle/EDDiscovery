@@ -229,6 +229,15 @@ namespace EDDiscovery.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://elite.laulhere.com/ExTool/index.php?mode=systems&amp;system=.
+        /// </summary>
+        internal static string URLExToolSystem {
+            get {
+                return ResourceManager.GetString("URLExToolSystem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to https://api.github.com/repos/EDDiscovery/EDDiscoveryData/.
         /// </summary>
         internal static string URLGithubDataDownload {

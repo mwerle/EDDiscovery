@@ -83,6 +83,7 @@ namespace EDDiscovery.UserControls
             this.textBoxState = new ExtendedControls.ExtTextBox();
             this.buttonEDDB = new ExtendedControls.ExtPanelDrawn();
             this.buttonRoss = new ExtendedControls.ExtPanelDrawn();
+            this.buttonExTool = new ExtendedControls.ExtPanelDrawn();
             this.textBoxHomeDist = new ExtendedControls.ExtTextBox();
             this.labelHomeDist = new System.Windows.Forms.Label();
             this.buttonEDSM = new ExtendedControls.ExtPanelDrawn();
@@ -678,6 +679,20 @@ namespace EDDiscovery.UserControls
             this.buttonRoss.MouseDown += new System.Windows.Forms.MouseEventHandler(this.controlMouseDown);
             this.buttonRoss.MouseMove += new System.Windows.Forms.MouseEventHandler(this.controlMouseMove);
             this.buttonRoss.MouseUp += new System.Windows.Forms.MouseEventHandler(this.controlMouseUp);
+            // 
+            // buttonExTool
+            // 
+            this.buttonExTool.ImageSelected = ExtendedControls.ExtPanelDrawn.ImageType.InverseText;
+            this.buttonExTool.Location = new System.Drawing.Point(146, 30);
+            this.buttonExTool.Name = "buttonExTool";
+            this.buttonExTool.Padding = new System.Windows.Forms.Padding(2);
+            this.buttonExTool.Size = new System.Drawing.Size(44, 20);
+            this.buttonExTool.TabIndex = 7;
+            this.buttonExTool.Text = "ExTool";
+            this.buttonExTool.Click += new System.EventHandler(this.buttonExTool_Click);
+            this.buttonExTool.MouseDown += new System.Windows.Forms.MouseEventHandler(this.controlMouseDown);
+            this.buttonExTool.MouseMove += new System.Windows.Forms.MouseEventHandler(this.controlMouseMove);
+            this.buttonExTool.MouseUp += new System.Windows.Forms.MouseEventHandler(this.controlMouseUp);
             // 
             // textBoxHomeDist
             // 
@@ -1449,6 +1464,7 @@ namespace EDDiscovery.UserControls
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ContextMenuStrip = this.contextMenuStrip;
+            this.Controls.Add(this.buttonExTool);
             this.Controls.Add(this.textBoxJumpRange);
             this.Controls.Add(this.labelJumpRange);
             this.Controls.Add(this.panelFD);
@@ -1591,5 +1607,6 @@ namespace EDDiscovery.UserControls
         private ExtendedControls.ExtTextBox textBoxJumpRange;
         private System.Windows.Forms.Label labelJumpRange;
         private System.Windows.Forms.ToolStripMenuItem toolStripJumpRange;
+        private ExtendedControls.ExtPanelDrawn buttonExTool;
     }
 }
