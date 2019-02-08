@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2017 EDDiscovery development team
+ * Copyright © 2017-2019 EDDiscovery development team
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -18,9 +18,14 @@ using EliteDangerousCore.DB;
 
 namespace EliteDangerousCore
 {
-    public interface IMaterialCommodityJournalEntry
+    public interface IMaterialJournalEntry
     {
-        void MaterialList(MaterialCommoditiesList mc, SQLiteConnectionUser conn);
+        void UpdateMaterials(MaterialCommoditiesList mc, SQLiteConnectionUser conn);
+    }
+
+    public interface ICommodityJournalEntry
+    {
+        void UpdateCommodities(MaterialCommoditiesList mc, SQLiteConnectionUser conn);
     }
 
     public interface ILedgerJournalEntry

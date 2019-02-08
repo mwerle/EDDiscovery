@@ -27,7 +27,7 @@ namespace EliteDangerousCore
     [DebuggerDisplay("Event {EntryType} {System.Name} ({System.X,nq},{System.Y,nq},{System.Z,nq}) {EventTimeUTC} Inx:{Indexno} JID:{Journalid}")]
     public class HistoryEntry           // DONT store commander ID.. this history is externally filtered on it.
     {
-        #region Variables
+        #region Public Variables
 
         public int Indexno;            // for display purposes.  from 1 to number of records
 
@@ -63,12 +63,13 @@ namespace EliteDangerousCore
         public bool IsShipChange { get { return (EntryType == JournalTypeEnum.LoadGame || EntryType == JournalTypeEnum.Docked) && ShipInformation != null; } }
         public bool IsBetaMessage { get { return journalEntry?.Beta ?? false; } }
 
-        public double TravelledDistance { get; private set; }
-        public TimeSpan TravelledSeconds { get; private set; }
-        public bool isTravelling { get; private set; }
-        public int TravelledMissingjump { get; private set; }
-        public int Travelledjumps { get; private set; }
-        public string TravelledJumpsAndMisses { get { return Travelledjumps.ToStringInvariant() + ((TravelledMissingjump > 0) ? (" (" + TravelledMissingjump.ToStringInvariant() + ")") : ""); } }
+        public double TravelledDistance { get { return TravelStatus.TravelledDistance; } }
+        public TimeSpan TravelledSeconds { get { return TravelStatus.TravelledSeconds; } }
+        public bool isTravelling { get { return TravelStatus.IsTravelling; } }
+        public int TravelledMissingjump { get { return TravelStatus.TravelledMissingjump; } }
+        public int Travelledjumps { get { return TravelStatus.Travelledjumps; } }
+        public string TravelInfo() { return TravelStatus.ToString(StopMarker ? "Travelled" : "Travelling "); }
+        public string TravelledJumpsAndMisses { get { return TravelStatus.TravelledJumpsAndMisses; } }
 
         public bool IsLanded { get { return EntryStatus.TravelState == HistoryEntryStatus.TravelStateType.Landed; } }
         public bool IsDocked { get { return EntryStatus.TravelState == HistoryEntryStatus.TravelStateType.Docked; } }
@@ -116,7 +117,12 @@ namespace EliteDangerousCore
 
         public SystemNoteClass snc;     // system note class found attached to this entry. May be null
 
+        #endregion
+
+        #region Private Variables
+
         private HistoryEntryStatus EntryStatus { get;  set; }
+        private HistoryTravelStatus TravelStatus { get; set; }
 
         #endregion
 
@@ -225,63 +231,21 @@ namespace EliteDangerousCore
                 EntryStatus = HistoryEntryStatus.Update(prev?.EntryStatus, je, isys.Name)
             };
 
-            if (prev != null )
-            {
-                if (prev.StopMarker)            // if we had a stop marker previously, means the next one needs to clear the counters
-                {
-                    he.isTravelling = false;               // still travelling if its a start marker
-                    he.TravelledDistance = 0;
-                    he.TravelledSeconds = new TimeSpan(0);
-                    he.TravelledMissingjump = 0;
-                    he.Travelledjumps = 0;
-                }
-                else
-                {
-                    he.isTravelling = prev.isTravelling;
-                    he.TravelledDistance = prev.TravelledDistance;
-                    he.TravelledSeconds = prev.TravelledSeconds;
-                    he.TravelledMissingjump = prev.TravelledMissingjump;
-                    he.Travelledjumps = prev.Travelledjumps;
-                }
-            }
-
-            if (he.StartMarker)           // start marker, start travelling
-                he.isTravelling = true;
-
-            if ( he.isTravelling )
-            {
-                if (he.IsFSDJump && !he.MultiPlayer)   // if jump, and not multiplayer..
-                {
-                    double dist = ((JournalFSDJump)je).JumpDist;
-                    if (dist <= 0)
-                        he.TravelledMissingjump++;
-                    else
-                    {
-                        he.TravelledDistance += dist;
-                        he.Travelledjumps++;
-                    }
-                }
-
-                if (prev != null)
-                {
-                    TimeSpan diff = he.EventTimeUTC.Subtract(prev.EventTimeUTC);
-
-                    if (he.EntryType != JournalTypeEnum.LoadGame && diff < new TimeSpan(2, 0, 0))   // time between last entry and load game is not real time
-                    {
-                        he.TravelledSeconds += diff;
-                    }
-                }
-            }
-
+            he.TravelStatus = HistoryTravelStatus.Update(prev?.TravelStatus, prev , he);    // need a real he so can't do that as part of the constructor.
+            
             return he;
         }
 
         public void ProcessWithUserDb(JournalEntry je, HistoryEntry prev, HistoryList hl, SQLiteConnectionUser conn)      // called after above with a USER connection
         {
-            MaterialCommodity = MaterialCommoditiesList.Process(je, prev?.MaterialCommodity, conn, EliteConfigInstance.InstanceConfig.ClearMaterials, EliteConfigInstance.InstanceConfig.ClearCommodities);
+            MaterialCommodity = MaterialCommoditiesList.Process(je, prev?.MaterialCommodity, conn);
 
             snc = SystemNoteClass.GetSystemNote(Journalid, IsFSDJump, System);       // may be null
         }
+
+        #endregion
+
+        #region Interaction
 
         public void SetJournalSystemNoteText(string text, bool commit, bool sendtoedsm)
         {
@@ -295,71 +259,9 @@ namespace EliteDangerousCore
                 EDSMClass.SendComments(snc.SystemName, snc.Note, snc.EdsmId);
         }
 
-        #endregion
-
-        public string TravelInfo()          // use to get a summary of travel info.. 
-        {
-            if (StopMarker)
-            {
-                return "Travelled " + TravelledDistance.ToStringInvariant("0.0") + " LY"
-                                     + ", " + Travelledjumps + " jumps"
-                                     + ((TravelledMissingjump > 0) ? ", " + TravelledMissingjump + " unknown distance jumps" : "") +
-                                      ", time " + TravelledSeconds;
-            }
-            else if (isTravelling && IsFSDJump)
-            {
-                return "Travelling distance " + TravelledDistance.ToString("0.0") + " LY"
-                + ", " + Travelledjumps + " jumps"
-                + ((TravelledMissingjump > 0) ? ", " + TravelledMissingjump + " unknown distance jumps" : "") +
-                ", time " + TravelledSeconds;
-            }
-            else
-                return null;
-        }
-
-        public System.Drawing.Image GetIcon
-        {
-            get
-            {
-                if (journalEntry != null)
-                    return journalEntry.Icon;
-                else if (EntryType == JournalTypeEnum.FSDJump)
-                    return JournalEntry.JournalTypeIcons[JournalTypeEnum.FSDJump];
-                else
-                    return JournalEntry.JournalTypeIcons[JournalTypeEnum.Unknown];
-            }
-        }
-
-
-        public void UpdateMapColour(int v)
-        {
-            if (EntryType == JournalTypeEnum.FSDJump)
-                (journalEntry as JournalFSDJump).UpdateMapColour(v);
-        }
-
-        public void UpdateCommanderID(int v)
-        {
-            journalEntry.UpdateCommanderID(v);
-        }
-
-        public void SetEdsmSync(SQLiteConnectionUser cn = null, DbTransaction txn = null)
-        {
-            journalEntry.UpdateSyncFlagBit(SyncFlags.EDSM, true, SyncFlags.NoBit, false, cn, txn);
-        }
-
-        public void SetEddnSync(SQLiteConnectionUser cn = null, DbTransaction txn = null)
-        {
-            journalEntry.UpdateSyncFlagBit(SyncFlags.EDDN, true, SyncFlags.NoBit, false, cn, txn);
-        }
-
-        public void SetEGOSync(SQLiteConnectionUser cn = null, DbTransaction txn = null)
-        {
-            journalEntry.UpdateSyncFlagBit(SyncFlags.EGO, true, SyncFlags.NoBit, false, cn, txn);
-        }
-
         public bool IsJournalEventInEventFilter(string[] events)
         {
-            return events.Contains(EntryType.ToString().SplitCapsWord());
+            return events.Contains(journalEntry.EventFilterName);
         }
 
         public bool IsJournalEventInEventFilter(string eventstr)
@@ -382,5 +284,6 @@ namespace EliteDangerousCore
             return null;
         }
 
+        #endregion
     }
 }

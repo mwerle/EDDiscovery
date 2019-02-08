@@ -87,7 +87,7 @@ namespace EDDiscovery.UserControls
 
         private Dictionary<long, DataGridViewRow> rowsbyjournalid = new Dictionary<long, DataGridViewRow>();
 
-        EventFilterSelector cfs = new EventFilterSelector();
+        FilterSelector cfs;
 
         Timer searchtimer;
         Timer todotimer;
@@ -105,7 +105,9 @@ namespace EDDiscovery.UserControls
         {
             //System.Diagnostics.Debug.WriteLine("Travel grid is " + this.GetHashCode());
 
-            cfs.AddStandardExtraOptions();
+            cfs = new FilterSelector(DbFilterSave);
+            cfs.AddJournalExtraOptions();
+            cfs.AddJournalEntries();
             cfs.Changed += EventFilterChanged;
             TravelHistoryFilter.InitaliseComboBox(comboBoxHistoryWindow, DbHistorySave);
 
@@ -622,7 +624,7 @@ namespace EDDiscovery.UserControls
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
 
-            e.Graphics.DrawImage(he.GetIcon, new Rectangle(hstart, top, size, size));
+            e.Graphics.DrawImage(he.journalEntry.Icon, new Rectangle(hstart, top, size, size));
             hstart += size + padding;
 
             if (he.IsFSDJump && showfsdmapcolour)
@@ -840,7 +842,7 @@ namespace EDDiscovery.UserControls
                 {
                     HistoryEntry sp = (HistoryEntry)r.Cells[TravelHistoryColumns.HistoryTag].Tag;
                     System.Diagnostics.Debug.Assert(sp != null);
-                    sp.UpdateMapColour(mapColorDialog.Color.ToArgb());
+                    sp.journalEntry.UpdateMapColour(mapColorDialog.Color.ToArgb());
                 }
 
                 this.Cursor = Cursors.Default;
@@ -860,7 +862,7 @@ namespace EDDiscovery.UserControls
             {
                 HistoryEntry sp = (HistoryEntry)r.Cells[TravelHistoryColumns.HistoryTag].Tag;
                 System.Diagnostics.Debug.Assert(sp != null);
-                sp.UpdateCommanderID(-1);
+                sp.journalEntry.UpdateCommanderID(-1);
                 rowsbyjournalid.Remove(sp.Journalid);
             }
 
@@ -907,7 +909,7 @@ namespace EDDiscovery.UserControls
             {
                 foreach (HistoryEntry sp in listsyspos)
                 {
-                    sp.UpdateCommanderID(movefrm.selectedCommander.Nr);
+                    sp.journalEntry.UpdateCommanderID(movefrm.selectedCommander.Nr);
                 }
 
                 foreach (DataGridViewRow row in selectedRows)
@@ -1208,11 +1210,10 @@ namespace EDDiscovery.UserControls
         private void buttonFilter_Click(object sender, EventArgs e)
         {
             Button b = sender as Button;
-            cfs.FilterButton(DbFilterSave, b,
-                             discoveryform.theme.TextBackColor, discoveryform.theme.TextBlockColor, discoveryform.theme.GetFontStandardFontSize(), this.FindForm());
+            cfs.Filter(b, this.FindForm());
         }
 
-        private void EventFilterChanged(object sender, EventArgs e)
+        private void EventFilterChanged(object sender, Object e)
         {
             HistoryChanged(current_historylist,true);
         }
@@ -1225,7 +1226,7 @@ namespace EDDiscovery.UserControls
             namelist.AddRange(discoveryform.Globals.NameList);
             frm.InitFilter("History: Filter out fields",
                             System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                            JournalEntry.GetListOfEventsWithOptMethod(false),
+                            JournalEntry.GetNamesOfEventsWithOptMethod(),
                             (s) => { return BaseUtils.TypeHelpers.GetPropertyFieldNames(JournalEntry.TypeOfJournalEntry(s)); },
                             namelist, fieldfilter);
             if (frm.ShowDialog(this.FindForm()) == DialogResult.OK)

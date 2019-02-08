@@ -32,13 +32,10 @@ namespace EDDiscovery.UserControls
     public partial class CaptainsLogEntries : UserControlCommonBase
     {
         private string DbColumnSave { get { return DBName("CaptainsLogPanel", "DGVCol"); } }
-        private string DbSaveTags { get { return "CaptainsLogPanelTagNames"; } }    // global, not panel related
         private string DbStartDate { get { return DBName("CaptainsLogPanel", "SD"); } }
         private string DbStartDateOn { get { return DBName("CaptainsLogPanel", "SDOn"); } }
         private string DbEndDate { get { return DBName("CaptainsLogPanel", "ED"); } }
         private string DbEndDateOn { get { return DBName("CaptainsLogPanel", "EDOn"); } }
-
-        public Dictionary<string, Image> tags;
 
         const int TagHeight = 24;
         const int TagSpacing = 26;
@@ -46,6 +43,8 @@ namespace EDDiscovery.UserControls
 
         Timer searchtimer;
         bool updateprogramatically;
+        ExtendedControls.CheckedIconListBoxFilterForm cfs;
+
 
         #region init
         public CaptainsLogEntries()
@@ -67,8 +66,6 @@ namespace EDDiscovery.UserControls
             dataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView.DefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
 
-            LoadTags();
-
             dateTimePickerStartDate.Value = SQLiteConnectionUser.GetSettingDate(DbStartDate, new DateTime(2014, 12, 14));
             dateTimePickerStartDate.Checked = SQLiteConnectionUser.GetSettingBool(DbStartDateOn, false);
             dateTimePickerEndDate.Value = SQLiteConnectionUser.GetSettingDate(DbEndDate, new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day));
@@ -77,24 +74,10 @@ namespace EDDiscovery.UserControls
             dateTimePickerEndDate.ValueChanged += (s, e) => { if (!updateprogramatically) Display(); };
 
             discoveryform.OnRefreshCommanders += Discoveryform_OnRefreshCommanders;
-        }
 
-        void LoadTags()
-        {
-            tags = new Dictionary<string, Image>();
-
-            string taglist = SQLiteConnectionUser.GetSettingString(DbSaveTags, "Expedition=Journal.FSDJump;Died=Journal.Died");
-            string[] tagdefs = taglist.Split(';');
-            foreach (var s in tagdefs)
-            {
-                string[] parts = s.Split('=');
-                // valid number, valid length, image exists
-                if (parts.Length == 2 && parts[0].Length>0 && parts[1].Length>0 && EDDiscovery.Icons.IconSet.Icons.ContainsKey(parts[1])) 
-                {
-                    Image img = EDDiscovery.Icons.IconSet.Icons[parts[1]];      // image.tag has name - defined by icon system
-                    tags[parts[0]] = img;
-                }
-            }
+            cfs = new ExtendedControls.CheckedIconListBoxFilterForm();
+            cfs.AllOrNoneBack = false;      // we want the whole list, makes it easier.
+            cfs.SaveBack += TagsChanged;
         }
 
         public override void LoadLayout()
@@ -105,9 +88,6 @@ namespace EDDiscovery.UserControls
         public override void Closing()
         {
             DGVSaveColumnLayout(dataGridView, DbColumnSave);
-
-            string[] list = (from x in tags select (x.Key + "=" + (string)x.Value.Tag)).ToArray();
-            SQLiteConnectionUser.PutSettingString(DbSaveTags, string.Join(";",list));
 
             SQLiteConnectionUser.PutSettingDate(DbStartDate, dateTimePickerStartDate.Value);
             SQLiteConnectionUser.PutSettingDate(DbEndDate, dateTimePickerEndDate.Value);
@@ -209,9 +189,9 @@ namespace EDDiscovery.UserControls
                 int tagscount = 0;
                 for (int i = 0; i < tagstring.Count; i++)
                 {
-                    if (tags.ContainsKey(tagstring[i]))
+                    if (EDDConfig.Instance.CaptainsLogTagImage.ContainsKey(tagstring[i]))
                     {
-                        e.Graphics.DrawImage(tags[tagstring[i]], area);
+                        e.Graphics.DrawImage(EDDConfig.Instance.CaptainsLogTagImage[tagstring[i]], area);
                         area.Y += 26;
                         tagscount++;
                     }
@@ -310,60 +290,31 @@ namespace EDDiscovery.UserControls
             }
         }
 
-        ExtendedControls.CheckedListBoxForm dropdown;
+
 
         private void EditTags(DataGridViewRow rw)
         {
-            List<string> Dickeys = new List<string>(tags.Keys);
+            List<string> Dickeys = new List<string>(EDDConfig.Instance.CaptainsLogTagImage.Keys);
             Dickeys.Sort();
-            List<Image> images = (from x in Dickeys select tags[x]).ToList();
-
-            dropdown = new ExtendedControls.CheckedListBoxForm();
-            dropdown.Items.Add("All".Tx());       // displayed, translate
-            dropdown.Items.Add("None".Tx());
-
-            dropdown.Items.AddRange(Dickeys.ToArray());
+            List<Image> images = (from x in Dickeys select EDDConfig.Instance.CaptainsLogTagImage[x]).ToList();
 
             List<string> curtags = rw.Cells[4].Tag as List<string>;     // may be null
+            string taglist = curtags != null ? string.Join(";", curtags) : "";
             System.Diagnostics.Debug.WriteLine("Cur keys" + curtags);
-            dropdown.SetChecked(curtags);   // null allowed
-            SetAllOrNone();
-
-            //dropdown.FormClosed += FilterClosed;
-            dropdown.CheckedChanged += (sv, ev) =>
-            {
-                dropdown.SetChecked(ev.NewValue == CheckState.Checked, ev.Index, 1);        // force check now (its done after it) so our functions work..
-
-                if (ev.Index == 0 && ev.NewValue == CheckState.Checked)                     // all, and checked
-                    dropdown.SetChecked(true, 2);                                           // rest go on..
-
-                if ((ev.Index == 1 && ev.NewValue == CheckState.Checked) )                  // none is checked..
-                    dropdown.SetChecked(false, 2);                                          // rest off
-
-                SetAllOrNone();
-            };
-
-            dropdown.FormClosed += (sv, ev) =>
-            {
-                List<string> newtags = dropdown.GetCheckedList(2, allornone:false);         // we don't use all or none to store - too difficult!
-                rw.Cells[4].Tag = newtags;
-                rw.MinimumHeight = Math.Max(newtags.Count * TagSpacing, MinRowSize);
-                StoreRow(rw);
-                dataGridView.InvalidateRow(rw.Index);
-            };
 
             Point loc = dataGridView.PointToScreen(dataGridView.GetCellDisplayRectangle(4, rw.Index, false).Location);
 
-            dropdown.PositionSize(loc, new Size(400, 400));
-            EDDTheme.Instance.ApplyToControls(dropdown);
-            dropdown.Show(this.FindForm());
+            cfs.Filter(taglist, loc, new Size(250, 600), this.FindForm(), Dickeys, images, tag:rw);
         }
 
-        private void SetAllOrNone()
+        private void TagsChanged(string newtags, Object tag)
         {
-            string list = dropdown.GetChecked(2);       // here we use All or None to find out list extent
-            dropdown.SetChecked(list.Equals("All"), 0, 1);
-            dropdown.SetChecked(list.Equals("None"), 1, 1);
+            var slist = newtags.Split(';').ToList();            // ; at end due to definition..
+            DataGridViewRow rwtagedited = tag as DataGridViewRow;
+            rwtagedited.Cells[4].Tag = slist;
+            rwtagedited.MinimumHeight = Math.Max((slist.Count-1) * TagSpacing, MinRowSize);
+            StoreRow(rwtagedited);
+            dataGridView.InvalidateRow(rwtagedited.Index);
         }
 
         private void StoreRow( DataGridViewRow rw)
@@ -486,10 +437,12 @@ namespace EDDiscovery.UserControls
         private void buttonTags_Click(object sender, EventArgs e)
         {
             TagsForm tg = new TagsForm();
-            tg.Init("Set Tags".Tx(this), this.FindForm().Icon, tags);
+            tg.Init("Set Tags".Tx(this), this.FindForm().Icon, EDDConfig.Instance.CaptainsLogTagImage);
 
             if (tg.ShowDialog() == DialogResult.OK)
-                tags = tg.Result;
+            {
+                EDDConfig.Instance.CaptainsLogTagImage = tg.Result;
+            }
         }
 
         #endregion

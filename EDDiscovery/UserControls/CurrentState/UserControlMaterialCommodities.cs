@@ -31,7 +31,10 @@ namespace EDDiscovery.UserControls
     {
         public bool materials = false;
 
-        private string DbColumnSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid" ,  "DGVCol"); } }
+        FilterSelector cfs;
+        private string DbColumnSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid",  "DGVCol"); } }
+        private string DbFilterSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid", "Filter"); } }
+        private string DbClearZeroSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid", "ClearZero"); } }
 
         #region Init
 
@@ -50,11 +53,26 @@ namespace EDDiscovery.UserControls
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
 
+            cfs = new FilterSelector(DbFilterSave);
+
+            MaterialCommodityData[] items;
+            string[] types;
+
             if (materials)
             {
                 dataGridViewMC.Columns.Remove(dataGridViewMC.Columns[5]);       // to give name,shortname abv,category,type,number
                 labelItems1.Text = "Data".Tx(this);
                 labelItems2.Text = "Mats".Tx(this);
+
+                items = MaterialCommodityData.GetMaterials(true);
+                types = MaterialCommodityData.GetTypes((x) => !x.IsCommodity, true);
+
+                MaterialCommodityData[] raw = items.Where(x => x.IsRaw).ToArray();
+                cfs.AddGroupOption("Raw", String.Join(";", raw.Select(x => x.Name).ToArray()) + ";");
+                MaterialCommodityData[] enc = items.Where(x => x.IsEncoded).ToArray();
+                cfs.AddGroupOption("Encoded", String.Join(";", enc.Select(x => x.Name).ToArray()) + ";");
+                MaterialCommodityData[] manu = items.Where(x => x.IsManufactured).ToArray();
+                cfs.AddGroupOption("Manufactured", String.Join(";", manu.Select(x => x.Name).ToArray()) + ";");
             }
             else
             {
@@ -62,9 +80,28 @@ namespace EDDiscovery.UserControls
                 dataGridViewMC.Columns.Remove(dataGridViewMC.Columns[1]);       //then category to give name,type,number, avg price
                 labelItems1.Text = "Total".Tx(this);
                 textBoxItems2.Visible = labelItems2.Visible = false;
+                checkBoxClear.Location = new Point(textBoxItems1.Right + 8, checkBoxClear.Top);
+
+                items = MaterialCommodityData.GetCommodities(true);
+                types = MaterialCommodityData.GetTypes((x) => x.IsCommodity, true);
+
+                MaterialCommodityData[] rare = items.Where(x => x.IsRareCommodity).ToArray();
+                cfs.AddGroupOption("Rare", String.Join(";", rare.Select(x => x.Name).ToArray()) + ";");
             }
 
-            SetCheckBoxes();
+            foreach (string t in types)
+            {
+                string[] members = MaterialCommodityData.GetMembersOfType(t, true);
+                cfs.AddGroupOption(t, String.Join(";", members) + ";");
+            }
+
+            foreach (var x in items)
+                cfs.AddStandardOption(x.Name);
+
+            checkBoxClear.Checked = EliteDangerousCore.DB.SQLiteDBClass.GetSettingBool(DbClearZeroSave, true);
+            checkBoxClear.CheckedChanged += CheckBoxClear_CheckedChanged;
+
+            cfs.Changed += FilterChanged;
         }
 
         public override void ChangeCursorType(IHistoryCursor thc)
@@ -87,29 +124,17 @@ namespace EDDiscovery.UserControls
             uctg.OnTravelSelectionChanged -= Display;
         }
 
-        void SetCheckBoxes()
-        {
-            checkBoxClear.Enabled = false;
-            checkBoxClear.Checked = (materials) ? EDDiscoveryForm.EDDConfig.ClearMaterials : EDDiscoveryForm.EDDConfig.ClearCommodities;
-            checkBoxClear.Enabled = true;
-        }
-
         #endregion
 
         #region Display
 
         public override void InitialDisplay()
         {
-            Display(uctg.GetCurrentHistoryEntry, discoveryform.history);
+            Display(uctg.GetCurrentHistoryEntry, discoveryform.history, true);
         }
-
-        private void Display(HistoryEntry he, HistoryList hl) =>
-            Display(he, hl, true);
 
         private void Display(HistoryEntry he, HistoryList hl, bool selectedEntry)
         {
-            //if ( he != null ) System.Diagnostics.Debug.WriteLine("Hash displayed" + he.MaterialCommodity.DataHash());
-
             Display(he?.MaterialCommodity);
         }
 
@@ -121,67 +146,76 @@ namespace EDDiscovery.UserControls
             if (mcl == null)
                 return;
 
-            System.Diagnostics.Trace.WriteLine(BaseUtils.AppTicks.TickCountLap(this,true) + " MC " + displaynumber + " Begin Display");
+            string[] filter = EliteDangerousCore.DB.SQLiteDBClass.GetSettingString(DbFilterSave, "All").SplitNoEmptyStartFinish(';');
+            bool all = filter.Length > 0 && filter[0] == "All";
+            bool clearzero = checkBoxClear.Checked;
 
-            List<MaterialCommodities> mc = mcl.Sort(!materials);
+            MaterialCommodityData[] allitems = materials ? MaterialCommodityData.GetMaterials(true) : MaterialCommodityData.GetCommodities(true);
 
-            if (mc.Count > 0)
+            foreach ( MaterialCommodityData mcd in allitems)        // we go thru all items..
             {
-                labelNoItems.Visible = false;
-
-                foreach (MaterialCommodities m in mc)
+                if (all || filter.Contains(mcd.Name) )      // and see if they are in the filter
                 {
                     object[] rowobj;
 
-                    if (materials)
+                    MaterialCommodities m = mcl.List.Find(x => x.Details.Name == mcd.Name);     // and we see if we actually have some at this time
+
+                    if (!clearzero || (m != null && m.Count > 0))       // if display zero, or we have some..
                     {
-                        rowobj = new[] { m.Details.Name, m.Details.Shortname, m.Details.TranslatedCategory, m.Details.TranslatedType + " (" + (m.Details.MaterialLimit()??0).ToString() + ")" ,
-                            m.Count.ToString() };
+                        if (materials)
+                        {
+                            int limit = mcd.MaterialLimit() ?? 0;
+
+                            rowobj = new[] { mcd.Name, mcd.Shortname, mcd.TranslatedCategory,
+                                                mcd.TranslatedType + ( limit>0 ? " (" + limit.ToString() + ")" : "") ,
+                                                m != null ? m.Count.ToString() : "0"
+                            };
+                        }
+                        else
+                        {
+                            rowobj = new[] { mcd.Name, mcd.TranslatedType,
+                                                m != null ? m.Count.ToString() : "0",
+                                                m != null ? m.Price.ToString("0.#") : "-" };
+                        }
+
+                        dataGridViewMC.Rows.Add(rowobj);
                     }
-                    else
-                    {
-                        rowobj = new[] { m.Details.Name, m.Details.TranslatedType, m.Count.ToString(), m.Price.ToString("0.#") };
-                    }
-
-                    int idx = dataGridViewMC.Rows.Add(rowobj);
-                    //dataGridViewMC.Rows[idx].Tag = m;
                 }
+            }
 
-                if (dataGridViewMC.SortedColumn != null && dataGridViewMC.SortOrder != SortOrder.None)
-                {
-                    dataGridViewMC.Sort(dataGridViewMC.SortedColumn, dataGridViewMC.SortOrder == SortOrder.Descending ? ListSortDirection.Descending : ListSortDirection.Ascending);
-                }
+            if (dataGridViewMC.SortedColumn != null && dataGridViewMC.SortOrder != SortOrder.None)
+            {
+                dataGridViewMC.Sort(dataGridViewMC.SortedColumn, dataGridViewMC.SortOrder == SortOrder.Descending ? ListSortDirection.Descending : ListSortDirection.Ascending);
+            }
 
-                if (materials)
-                {
-                    textBoxItems1.Text = mcl.DataCount.ToStringInvariant();
-                    textBoxItems2.Text = mcl.MaterialsCount.ToStringInvariant();
-                }
-                else
-                    textBoxItems1.Text = mcl.CargoCount.ToStringInvariant();
+            if (materials)
+            {
+                textBoxItems1.Text = mcl.DataCount.ToStringInvariant();
+                textBoxItems2.Text = mcl.MaterialsCount.ToStringInvariant();
             }
             else
             {
-                labelNoItems.Visible = true;
+                textBoxItems1.Text = mcl.CargoCount.ToStringInvariant();
             }
-
-            System.Diagnostics.Trace.WriteLine(BaseUtils.AppTicks.TickCountLap(this) + " MC " + displaynumber + " Load Finished");
         }
 
         #endregion
 
-
-        private void checkBoxClear_CheckStateChanged(object sender, EventArgs e)
+        private void buttonFilter_Click(object sender, EventArgs e)
         {
-            if (checkBoxClear.Enabled)
-            {
-                if (materials)
-                    EDDiscoveryForm.EDDConfig.ClearMaterials = checkBoxClear.Checked;
-                else
-                    EDDiscoveryForm.EDDConfig.ClearCommodities = checkBoxClear.Checked;
+            Button b = sender as Button;
+            cfs.Filter(b, this.FindForm());
+        }
 
-                discoveryform.RecalculateHistoryDBs();
-            }
+        private void FilterChanged(object sender, Object e)
+        {
+            Display(uctg.GetCurrentHistoryEntry, discoveryform.history, true);
+        }
+
+        private void CheckBoxClear_CheckedChanged(object sender, EventArgs e)
+        {
+            EliteDangerousCore.DB.SQLiteDBClass.PutSettingBool(DbClearZeroSave, checkBoxClear.Checked);
+            Display(uctg.GetCurrentHistoryEntry, discoveryform.history, true);
         }
 
         private void dataGridViewMC_SortCompare(object sender, DataGridViewSortCompareEventArgs e)
@@ -191,6 +225,7 @@ namespace EDDiscovery.UserControls
                 e.SortDataGridViewColumnNumeric();
             }
         }
+
     }
 
     public class UserControlMaterials : UserControlMaterialCommodities

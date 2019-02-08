@@ -841,17 +841,11 @@ namespace EliteDangerousCore
                 if (hs == he)
                 {
                     if (he.StartMarker || he.StopMarker)
-                    {
-                        hs.journalEntry.UpdateSyncFlagBit(SyncFlags.StartMarker, false, SyncFlags.StopMarker, false);
-                    }
+                        hs.journalEntry.ClearStartStopMarker();
                     else if (started == false)
-                    {
-                        hs.journalEntry.UpdateSyncFlagBit(SyncFlags.StartMarker, true, SyncFlags.StopMarker, false);
-                    }
+                        hs.journalEntry.SetStartMarker();
                     else
-                    {
-                        hs.journalEntry.UpdateSyncFlagBit(SyncFlags.StartMarker, false, SyncFlags.StopMarker, true);
-                    }
+                        hs.journalEntry.SetStopMarker();
 
                     break;
                 }
@@ -971,11 +965,11 @@ namespace EliteDangerousCore
             
             if ( fullhistoryloaddaylimit >0 )
             {
-                var list = (essentialitems == nameof(JournalEntry.JumpScanEssentialEvents)) ? JournalEntry.JumpScanEssentialEvents :
-                           (essentialitems == nameof(JournalEntry.JumpEssentialEvents)) ? JournalEntry.JumpEssentialEvents :
-                           (essentialitems == nameof(JournalEntry.NoEssentialEvents)) ? JournalEntry.NoEssentialEvents :
-                           (essentialitems == nameof(JournalEntry.FullStatsEssentialEvents)) ? JournalEntry.FullStatsEssentialEvents :
-                            JournalEntry.EssentialEvents;
+                var list = (essentialitems == nameof(JournalEssentialEvents.JumpScanEssentialEvents)) ? JournalEssentialEvents.JumpScanEssentialEvents :
+                           (essentialitems == nameof(JournalEssentialEvents.JumpEssentialEvents)) ? JournalEssentialEvents.JumpEssentialEvents :
+                           (essentialitems == nameof(JournalEssentialEvents.NoEssentialEvents)) ? JournalEssentialEvents.NoEssentialEvents :
+                           (essentialitems == nameof(JournalEssentialEvents.FullStatsEssentialEvents)) ? JournalEssentialEvents.FullStatsEssentialEvents :
+                            JournalEssentialEvents.EssentialEvents;
 
                 jlist = JournalEntry.GetAll(CurrentCommander, 
                     ids: list,
@@ -1135,7 +1129,7 @@ namespace EliteDangerousCore
         // true if merged back to previous..
         public static bool MergeEntries(JournalEntry prev, JournalEntry je)
         {
-            if (prev != null)
+            if (prev != null && !EliteConfigInstance.InstanceOptions.DisableMerge)
             {
                 bool prevsame = je.EventTypeID == prev.EventTypeID;
 

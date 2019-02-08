@@ -85,7 +85,7 @@ namespace EliteDangerousCore.JournalEvents
             public string State { get; set; }
         }
 
-        protected JournalLocOrJump(DateTime utc, ISystem sys, int synced, JournalTypeEnum jtype) : base(utc, synced, jtype)
+        protected JournalLocOrJump(DateTime utc, ISystem sys, JournalTypeEnum jtype, bool edsmsynced ) : base(utc, jtype, edsmsynced)
         {
             StarSystem = sys.Name;
             StarPos = new EMK.LightGeometry.Vector3((float)sys.X, (float)sys.Y, (float)sys.Z);
@@ -303,14 +303,19 @@ namespace EliteDangerousCore.JournalEvents
         public JournalDocked.Economies[] StationEconomyList { get; set; }        // may be null
 
         public override string SummaryName(ISystem sys) 
+        {
+            if (Docked)
+                return string.Format("At {0}".Tx(this, "AtStat"), StationName);
+            else
             {
-                if (Docked)
-                    return string.Format("At {0}".Tx(this, "AtStat"), StationName);
-                else if (Latitude.HasValue && Longitude.HasValue)
-                    return string.Format("Landed on {0}".Tx(this, "LND"), Body);
+                string bodyname = Body.HasChars() ? Body.ReplaceIfStartsWith(StarSystem) : StarSystem;
+                if (Latitude.HasValue && Longitude.HasValue)
+                    return string.Format("Landed on {0}".Tx(this, "LND"), bodyname);
                 else
-                    return string.Format("At {0}".Tx(this, "AtStar"), StarSystem);
+                    return string.Format("At {0}".Tx(this, "AtStar"), bodyname);
             }
+
+        }
 
         public override void FillInformation(out string info, out string detailed) 
         {
@@ -363,7 +368,7 @@ namespace EliteDangerousCore.JournalEvents
             }
             else
             {
-                info = BaseUtils.FieldBuilder.Build("In space near ".Txb(this), Body, "< of type ".Txb(this), BodyType);
+                info = "In space near ".Txb(this) + BodyType + " " + Body;
                 detailed = "";
             }
         }
@@ -394,7 +399,7 @@ namespace EliteDangerousCore.JournalEvents
             EDSMFirstDiscover = evt["EDD_EDSMFirstDiscover"].Bool(false);
         }
 
-        public JournalFSDJump(DateTime utc, ISystem sys, int colour, bool first, int synced) : base(utc, sys, synced, JournalTypeEnum.FSDJump)
+        public JournalFSDJump(DateTime utc, ISystem sys, int colour, bool first, bool edsmsynced) : base(utc, sys, JournalTypeEnum.FSDJump, edsmsynced)
         {
             MapColor = colour;
             EDSMFirstDiscover = first;
@@ -485,7 +490,7 @@ namespace EliteDangerousCore.JournalEvents
             shp.FSDJump(this);
         }
 
-        public void UpdateMapColour(int mapcolour)
+        public void SetMapColour(int mapcolour)
         {
             using (SQLiteConnectionUser cn = new SQLiteConnectionUser(utc: true))
             {
