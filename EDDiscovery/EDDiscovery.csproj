@@ -180,6 +180,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Controls.resx</DependentUpon>
     </None>
+    <Compile Include="Actions\ActionsEDDCmds\ActionCommanders.cs" />
     <Compile Include="Actions\ActionsEDDCmds\ActionCaptainsLog.cs" />
     <Compile Include="Actions\ActionsEDDCmds\ActionGMO.cs" />
     <Compile Include="Actions\ActionsEDDCmds\ActionTarget.cs" />
@@ -190,6 +191,9 @@
     <Compile Include="DLL\EDDDLLCaller.cs" />
     <Compile Include="DLL\EDDDLLManager.cs" />
     <Compile Include="DLL\EDDInterface.cs" />
+    <Compile Include="EDDiscoveryControllerNewEntry.cs" />
+    <Compile Include="EDDiscoveryControllerHistory.cs" />
+    <Compile Include="EDDiscoveryControllerSync.cs" />
     <Compile Include="Forms\DraggableFormPos.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -265,6 +269,7 @@
     <Compile Include="ScreenShots\ScreenShotConverter.cs" />
     <Compile Include="ScreenShots\ScreenShotDirectoryWatcher.cs" />
     <Compile Include="ScreenShots\ScreenShotImageConverter.cs" />
+    <Compile Include="UserControls\Helpers\Outliner.cs" />
     <Compile Include="UserControls\Helpers\ScanDisplayForm.cs" />
     <Compile Include="UserControls\Helpers\RecipeFilterSelector.cs" />
     <Compile Include="UserControls\Helpers\TagsForm.cs">
@@ -403,7 +408,7 @@
     <Compile Include="UserControls\Helpers\FilterHelpers.cs" />
     <Compile Include="UserControls\Helpers\TargetClassHelpers.cs" />
     <Compile Include="EDDApplicationContext.cs" />
-    <Compile Include="EDDiscoveryController.cs" />
+    <Compile Include="EDDiscoveryControllerMain.cs" />
     <Compile Include="Forms\CommanderForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -425,12 +430,6 @@
     <Compile Include="Forms\VersioningManager.cs" />
     <Compile Include="Actions\ActionsFromInputDevices.cs" />
     <Compile Include="PanelAndPopOuts.cs" />
-    <Compile Include="Forms\AssignTravelLogSystemForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\AssignTravelLogSystemForm.Designer.cs">
-      <DependentUpon>AssignTravelLogSystemForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Forms\BookmarkForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -727,6 +726,9 @@
     <EmbeddedResource Include="UserControls\Helpers\TagsForm.resx">
       <DependentUpon>TagsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UserControls\History\UserControlStarList.resx">
+      <DependentUpon>UserControlStarList.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UserControls\LogsBookmarks\CaptainsLogDiary.resx">
       <DependentUpon>CaptainsLogDiary.cs</DependentUpon>
     </EmbeddedResource>
@@ -901,9 +903,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\AssignTravelLogSystemForm.resx">
-      <DependentUpon>AssignTravelLogSystemForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\BookmarkForm.resx">
       <DependentUpon>BookmarkForm.cs</DependentUpon>

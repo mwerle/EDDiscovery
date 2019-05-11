@@ -1433,6 +1433,16 @@ namespace EDDiscovery.Icons {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Scan_DisplaySystemAlways {
+            get {
+                object obj = ResourceManager.GetObject("Scan_DisplaySystemAlways", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Scan_ExportToExcel {
             get {
                 object obj = ResourceManager.GetObject("Scan_ExportToExcel", resourceCulture);
@@ -1563,6 +1573,16 @@ namespace EDDiscovery.Icons {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap Scan_Star {
+            get {
+                object obj = ResourceManager.GetObject("Scan_Star", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap SPanel_ResizeColumn {
             get {
                 object obj = ResourceManager.GetObject("SPanel_ResizeColumn", resourceCulture);
@@ -1653,9 +1673,39 @@ namespace EDDiscovery.Icons {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap TravelGrid_CursorToTop {
+            get {
+                object obj = ResourceManager.GetObject("TravelGrid_CursorToTop", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap TravelGrid_EventFilter {
+            get {
+                object obj = ResourceManager.GetObject("TravelGrid_EventFilter", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap TravelGrid_ExportToExcel {
             get {
                 object obj = ResourceManager.GetObject("TravelGrid_ExportToExcel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap TravelGrid_FieldFilter {
+            get {
+                object obj = ResourceManager.GetObject("TravelGrid_FieldFilter", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -1676,6 +1726,16 @@ namespace EDDiscovery.Icons {
         public static System.Drawing.Bitmap TravelGrid_FlagStop {
             get {
                 object obj = ResourceManager.GetObject("TravelGrid_FlagStop", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap TravelGrid_Outlines {
+            get {
+                object obj = ResourceManager.GetObject("TravelGrid_Outlines", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -83,6 +83,7 @@ namespace EDDiscovery.UserControls
 
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
+            BaseUtils.Translator.Instance.Translate(contextMenuStrip, this);
 
             // retrieve context menu entries check state from DB
             circumstellarZoneToolStripMenuItem.Checked = SQLiteDBClass.GetSettingBool(DbSave + "showStellarZones", true);
@@ -278,8 +279,6 @@ namespace EDDiscovery.UserControls
 
                             var cur = dataGridViewScangrid.Rows[dataGridViewScangrid.Rows.Count - 1];
 
-                            sn.ScanData.EstimateScanValue(sn.IsMapped, sn.WasMappedEfficiently);        // ensure its up to date
-
                             cur.Tag = img;
                             cur.Cells[0].Tag = null;
                             cur.Cells[4].Tag = cur.Cells[0].ToolTipText = cur.Cells[1].ToolTipText = cur.Cells[2].ToolTipText = cur.Cells[3].ToolTipText = cur.Cells[4].ToolTipText =
@@ -386,7 +385,8 @@ namespace EDDiscovery.UserControls
                                 bdClass.Append(" ").Append("Moon".Tx(this));
 
                                 // moon distances from center body are measured from in SemiMajorAxis
-                                bdDist.AppendFormat("{0:0.0}ls ({1:0}km)", sn.ScanData.nSemiMajorAxis.Value / JournalScan.oneLS_m, sn.ScanData.nSemiMajorAxis.Value / 1000);
+                                if (sn.ScanData.nSemiMajorAxis.HasValue)
+                                    bdDist.AppendFormat("{0:0.0}ls ({1:0}km)", sn.ScanData.nSemiMajorAxis.Value / JournalScan.oneLS_m, sn.ScanData.nSemiMajorAxis.Value / 1000);
                             }
 
                             if (sn.ScanData.PlanetClass != null && sn.ScanData.PlanetClass.Contains("Giant"))
@@ -434,7 +434,7 @@ namespace EDDiscovery.UserControls
                                 overlays.volcanism = true;
                             }
 
-                            if (sn.IsMapped)
+                            if (sn.ScanData.Mapped)
                             {
                                 bdDetails.Append(Environment.NewLine).Append("Surface mapped".Tx(this)).Append(". ");
                                 overlays.mapped = true;
@@ -501,9 +501,9 @@ namespace EDDiscovery.UserControls
                         //! for all relevant bodies:
 
                         // give estimated value
-                        var value = sn.ScanData.EstimateScanValue(sn.IsMapped, sn.WasMappedEfficiently);
                         if (showValues)
                         {
+                            var value = sn.ScanData.EstimatedValue;
                             bdDetails.Append(Environment.NewLine).Append("Value".Tx(this)).Append(" ").Append(value.ToString("N0"));
                         }
 
@@ -527,12 +527,12 @@ namespace EDDiscovery.UserControls
 
                 if (isGreenSystem)
                 {
-                    toolStripProgressBar.ToolTipText = "This is a green system, as it has all existing jumponium materials available!";
+                    toolStripProgressBar.ToolTipText = "This is a green system, as it has all existing jumponium materials available!".Tx(this,"GS");
                     toolStripStatusGreen.Visible = true;
                 }
                 else if (!isGreenSystem)
                 {
-                    toolStripProgressBar.ToolTipText = toolStripProgressBar.Value + " jumponium materials found in system.";
+                    toolStripProgressBar.ToolTipText = toolStripProgressBar.Value + " jumponium materials found in system.".Tx("JS");
                 }
 
                 // set a meaningful title for the controller            
@@ -540,7 +540,7 @@ namespace EDDiscovery.UserControls
                 if (firstdisplayedrow >= 0 && firstdisplayedrow < dataGridViewScangrid.RowCount)
                     dataGridViewScangrid.FirstDisplayedScrollingRowIndex = firstdisplayedrow;
 
-                toolStripStatusTotalValue.Text = BuildScanValue(scannode);
+                toolStripStatusTotalValue.Text = "~"+ scannode.ScanValue(true).ToString() + " cr";
             }
         }
 
@@ -599,20 +599,6 @@ namespace EDDiscovery.UserControls
             }                        
         }
 
-        private string BuildScanValue(StarScan.SystemNode system)
-        {
-            var value = 0;
-
-            foreach (var body in system.Bodies)
-            {
-                if (body.ScanData != null)
-                { 
-                    value += body.ScanData.EstimateScanValue(body.IsMapped, body.WasMappedEfficiently);
-                }
-            }
-
-            return string.Format("Estimated total scan value: {0:N0}".Tx(this, "AV"), value);
-        }
 
         #endregion
 
@@ -693,9 +679,9 @@ namespace EDDiscovery.UserControls
 
         void dataGridViewScangrid_MouseClick(object sender, MouseEventArgs e)
         {
-            contextMenuStrip1.Visible |= e.Button == MouseButtons.Right;
-            contextMenuStrip1.Top = MousePosition.Y;
-            contextMenuStrip1.Left = MousePosition.X;
+            contextMenuStrip.Visible |= e.Button == MouseButtons.Right;
+            contextMenuStrip.Top = MousePosition.Y;
+            contextMenuStrip.Left = MousePosition.X;
         }
 
         void circumstellarZoneToolStripMenuItem_CheckStateChanged(object sender, EventArgs e)

@@ -37,7 +37,7 @@ namespace EDDiscovery.UserControls
         private BaseUtils.ConditionLists fieldfilter = new BaseUtils.ConditionLists();
         private Dictionary<long, DataGridViewRow> rowsbyjournalid = new Dictionary<long, DataGridViewRow>();
 
-        private string DbFilterSave { get { return DBName("JournalGridControlEventFilter" ); } }
+        private string DbFilterSave { get { return DBName("JournalGridControlEventFilter2" ); } }
         private string DbColumnSave { get { return DBName("JournalGrid", "DGVCol"); } }
         private string DbHistorySave { get { return DBName("JournalEDUIHistory" ); } }
         private string DbFieldFilter { get { return DBName("JournalGridControlFieldFilter" ); } }
@@ -84,12 +84,12 @@ namespace EDDiscovery.UserControls
             dataGridViewJournal.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;     // NEW! appears to work https://msdn.microsoft.com/en-us/library/74b2wakt(v=vs.110).aspx
 
             cfs = new FilterSelector(DbFilterSave);
+            cfs.AddAllNone();
             cfs.AddJournalExtraOptions();
             cfs.AddJournalEntries();
-            cfs.Changed += EventFilterChanged;
-            TravelHistoryFilter.InitaliseComboBox(comboBoxJournalWindow, DbHistorySave);
+            cfs.Closing += EventFilterChanged;
 
-            checkBoxMoveToTop.Checked = SQLiteConnectionUser.GetSettingBool(DbAutoTop, true);
+            checkBoxCursorToTop.Checked = SQLiteConnectionUser.GetSettingBool(DbAutoTop, true);
 
             string filter = SQLiteDBClass.GetSettingString(DbFieldFilter, "");
             if (filter.Length > 0)
@@ -107,6 +107,8 @@ namespace EDDiscovery.UserControls
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(historyContextMenu, this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
+
+            TravelHistoryFilter.InitaliseComboBox(comboBoxJournalWindow, DbHistorySave);
         }
 
         public override void LoadLayout()
@@ -122,7 +124,7 @@ namespace EDDiscovery.UserControls
             DGVSaveColumnLayout(dataGridViewJournal, DbColumnSave);
             discoveryform.OnHistoryChange -= Display;
             discoveryform.OnNewEntry -= AddNewEntry;
-            SQLiteConnectionUser.PutSettingBool(DbAutoTop, checkBoxMoveToTop.Checked);
+            SQLiteConnectionUser.PutSettingBool(DbAutoTop, checkBoxCursorToTop.Checked);
             searchtimer.Dispose();
         }
 
@@ -194,14 +196,14 @@ namespace EDDiscovery.UserControls
             {
                 todo.Enqueue(() =>
                 {
-                    dataGridViewJournal.SuspendLayout();
+                    dataViewScrollerPanel.Suspend();
                     foreach (var item in chunk)
                     {
                         var row = CreateHistoryRow(item, filtertext);
                         if (row != null)
                             dataGridViewJournal.Rows.Add(row);
                     }
-                    dataGridViewJournal.ResumeLayout();
+                    dataViewScrollerPanel.Resume();
                 });
             }
 
@@ -307,7 +309,7 @@ namespace EDDiscovery.UserControls
                     }
                 }
 
-                if (checkBoxMoveToTop.Checked && dataGridViewJournal.DisplayedRowCount(false) > 0)   // Move focus to new row
+                if (checkBoxCursorToTop.Checked && dataGridViewJournal.DisplayedRowCount(false) > 0)   // Move focus to new row
                 {
                     dataGridViewJournal.ClearSelection();
                     int rowno = dataGridViewJournal.Rows.GetFirstRow(DataGridViewElementStates.Visible);
@@ -363,9 +365,10 @@ namespace EDDiscovery.UserControls
             cfs.Filter(b, this.FindForm());
         }
 
-        private void EventFilterChanged(object sender, Object e)
+        private void EventFilterChanged(object sender, bool same, Object e)
         {
-            Display(current_historylist);
+            if (!same)
+                Display(current_historylist);
         }
 
         private void textBoxFilter_TextChanged(object sender, EventArgs e)
@@ -390,17 +393,10 @@ namespace EDDiscovery.UserControls
 
         private void buttonField_Click(object sender, EventArgs e)
         {
-            ExtendedConditionsForms.ConditionFilterForm frm = new ExtendedConditionsForms.ConditionFilterForm();
-            List<string> namelist = new List<string>() { "Note" };
-            namelist.AddRange(discoveryform.Globals.NameList);
-            frm.InitFilter("Journal: Filter out fields",
-                            Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                            JournalEntry.GetNamesOfEventsWithOptMethod() ,
-                            (s) => { return BaseUtils.TypeHelpers.GetPropertyFieldNames(JournalEntry.TypeOfJournalEntry(s)); },
-                            namelist, fieldfilter);
-            if (frm.ShowDialog(this.FindForm()) == DialogResult.OK)
+            BaseUtils.ConditionLists res = FilterHelpers.ShowDialog(FindForm(), fieldfilter, discoveryform, "Journal: Filter out fields".Tx(this, "JHF"));
+            if ( res != null )
             {
-                fieldfilter = frm.Result;
+                fieldfilter = res;
                 SQLiteDBClass.PutSettingString(DbFieldFilter, fieldfilter.GetJSON());
                 Display(current_historylist);
             }

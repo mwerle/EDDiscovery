@@ -28,7 +28,7 @@ namespace EDDiscovery.Actions
     {
         public override bool AllowDirectEditingOfUserData { get { return true; } }
 
-        public override bool ConfigurationMenu(System.Windows.Forms.Form parent, ActionCoreController cp, List<string> eventvars)
+        public override bool ConfigurationMenu(System.Windows.Forms.Form parent, ActionCoreController cp, List<BaseUtils.TypeHelpers.PropertyNameInfo> eventvars)
         {
             string promptValue = ExtendedControls.PromptSingleLine.ShowDialog(parent, "Command string", UserData, "Configure Captains Log Command" , cp.Icon);
             if (promptValue != null)
@@ -142,7 +142,7 @@ namespace EDDiscovery.Actions
                         string taglist = sp.NextQuotedWord();
 
                         if ( systemname != null && bodyname != null && dte != null )
-                        { 
+                        {
                             GlobalCaptainsLogList.Instance.AddOrUpdate(null, cmdrid, systemname, bodyname, dte.Value, note ?? "", taglist);
                         }
                         else
@@ -164,8 +164,16 @@ namespace EDDiscovery.Actions
                         else
                             ap.ReportError("Missing tag list");
                     }
-                    else
+                    else if (cmdname.Equals("APPENDTAGLIST", StringComparison.InvariantCultureIgnoreCase))
                     {
+                        string tags = sp.NextQuotedWord();
+                        if (tags != null)
+                            EDDConfig.Instance.CaptainsLogTags = EDDConfig.Instance.CaptainsLogTags.AppendPrePad(tags,";");
+                        else
+                            ap.ReportError("Missing tag list");
+                    }
+                    else
+                    {   // ********************** Iterator forms, FROM/LAST/FIRST/TIME [Forward|Backward]
                         long? cid = -1;
 
                         if (cmdname.Equals("From", StringComparison.InvariantCultureIgnoreCase))
@@ -229,25 +237,80 @@ namespace EDDiscovery.Actions
                             {
                                 if (indexof >= 0)   // don't ruin -1 if set
                                     indexof++;
+
+                                nextcmd = sp.NextWord();
                             }
                             else if (nextcmd.Equals("BACKWARD", StringComparison.InvariantCultureIgnoreCase))
                             {
                                 indexof--;      // if -1, its okay to make it -2.
-                            }
-                            else if (nextcmd != null)
-                            {
-                                ap.ReportError("Unknown iterator");
-                                return true;
+
+                                nextcmd = sp.NextWord();
                             }
                         }
 
-                        if ( indexof >= 0 && indexof < cllist.Count )
+                        bool validindex = indexof >= 0 && indexof < cllist.Count;
+
+                        if (nextcmd != null)
                         {
-                            DumpCL(ap, prefix, cllist[indexof]);
+                            if (!validindex)     // these must have a valid target..
+                            {
+                                ap.ReportError("Entry is not found");
+                            }
+                            else
+                            {
+                                CaptainsLogClass cl = cllist[indexof];
+
+                                if (nextcmd.Equals("DELETE", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    GlobalCaptainsLogList.Instance.Delete(cl);
+                                }
+                                else
+                                {
+                                    string text = sp.NextQuotedWord();
+
+                                    if (text != null && sp.IsEOL)
+                                    {
+                                        if (nextcmd.Equals("NOTE", StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            GlobalCaptainsLogList.Instance.AddOrUpdate(cl, cl.Commander, cl.SystemName, cl.BodyName, cl.TimeUTC,
+                                                                                       text, cl.Tags, cl.Parameters);
+                                        }
+                                        else if (nextcmd.Equals("SYSTEM", StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            GlobalCaptainsLogList.Instance.AddOrUpdate(cl, cl.Commander, text, cl.BodyName, cl.TimeUTC,
+                                                                                       cl.Note, cl.Tags, cl.Parameters);
+                                        }
+                                        else if (nextcmd.Equals("BODY", StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            GlobalCaptainsLogList.Instance.AddOrUpdate(cl, cl.Commander, cl.SystemName, text, cl.TimeUTC,
+                                                                                       cl.Note, cl.Tags, cl.Parameters);
+                                        }
+                                        else
+                                            ap.ReportError("Unknown command " + nextcmd);
+                                    }
+                                    else
+                                        ap.ReportError("Missing text or unquoted spaced text after " + nextcmd);
+                                }
+                            }
+
+                            return true;
+                        }
+                        
+                                   
+                        if (nextcmd != null)
+                        {
+                            ap.ReportError("Unknown iterator or command " + nextcmd);
                         }
                         else
-                        {
-                            ap[prefix + "Id"] = "-1";
+                        {       // straight report
+                            if (validindex)
+                            {
+                                DumpCL(ap, prefix, cllist[indexof]);
+                            }
+                            else
+                            {
+                                ap[prefix + "Id"] = "-1";
+                            }
                         }
 
                         return true;
@@ -293,9 +356,5 @@ namespace EDDiscovery.Actions
         {
             return cl.Tags != null && cl.Tags.WildCardMatch(match);
         }
-
-
     }
-
-
 }

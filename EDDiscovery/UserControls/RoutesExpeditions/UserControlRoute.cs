@@ -48,15 +48,13 @@ namespace EDDiscovery.UserControls
             for (int i = 0; i < RoutePlotter.metric_options.Length; i++)
                 comboBoxRoutingMetric.Items.Add(RoutePlotter.metric_options[i]);
 
-            textBox_From.SetAutoCompletor(SystemClassDB.ReturnSystemListForAutoComplete);
-            textBox_To.SetAutoCompletor(SystemClassDB.ReturnSystemListForAutoComplete);
+            textBox_From.SetAutoCompletor(SystemCache.ReturnSystemAdditionalListForAutoComplete, true);
+            textBox_To.SetAutoCompletor(SystemCache.ReturnSystemAdditionalListForAutoComplete , true);
 
             textBox_From.Text = SQLiteDBClass.GetSettingString(DbSave("RouteFrom"), "");
             textBox_To.Text = SQLiteDBClass.GetSettingString(DbSave("RouteTo"), "");
             //Console.WriteLine("Load {0} {1}", textBox_From.Text, textBox_To.Text);
-            textBox_Range.Text = SQLiteDBClass.GetSettingString(DbSave("RouteRange"), "30");
-            if (textBox_Range.Text == "")
-                textBox_Range.Text = "30";
+            textBox_Range.Value = SQLiteDBClass.GetSettingInt(DbSave("RouteRange"), 30);
             textBox_FromX.Text = SQLiteDBClass.GetSettingString(DbSave("RouteFromX"), "");
             textBox_FromY.Text = SQLiteDBClass.GetSettingString(DbSave("RouteFromY"), "");
             textBox_FromZ.Text = SQLiteDBClass.GetSettingString(DbSave("RouteFromZ"), "");
@@ -67,13 +65,12 @@ namespace EDDiscovery.UserControls
             bool tostate = SQLiteDBClass.GetSettingBool(DbSave("RouteToState"), false);
 
             int metricvalue = SQLiteDBClass.GetSettingInt(DbSave("RouteMetric"), 0);
-            comboBoxRoutingMetric.SelectedIndex = (metricvalue >= 0 && metricvalue < comboBoxRoutingMetric.Items.Count) ? metricvalue : SystemClassDB.metric_waypointdev2;
+            comboBoxRoutingMetric.SelectedIndex = (metricvalue >= 0 && metricvalue < comboBoxRoutingMetric.Items.Count) ? metricvalue : SystemsDB.metric_waypointdev2;
 
             SelectToMaster(tostate);
             UpdateTo(true);
             SelectFromMaster(fromstate);
             UpdateFrom(true);
-            textBox_Range.ReadOnly = false;
             comboBoxRoutingMetric.Enabled = true;
 
             BaseUtils.Translator.Instance.Translate(this);
@@ -90,7 +87,7 @@ namespace EDDiscovery.UserControls
         {
             SQLiteDBClass.PutSettingString(DbSave("RouteFrom"), textBox_From.Text);
             SQLiteDBClass.PutSettingString(DbSave("RouteTo"), textBox_To.Text);
-            SQLiteDBClass.PutSettingString(DbSave("RouteRange"), textBox_Range.Text);
+            SQLiteDBClass.PutSettingInt(DbSave("RouteRange"), (int)textBox_Range.Value);
             SQLiteDBClass.PutSettingString(DbSave("RouteFromX"), textBox_FromX.Text);
             SQLiteDBClass.PutSettingString(DbSave("RouteFromY"), textBox_FromY.Text);
             SQLiteDBClass.PutSettingString(DbSave("RouteFromZ"), textBox_FromZ.Text);
@@ -128,8 +125,7 @@ namespace EDDiscovery.UserControls
         private RoutePlotter CreateRoutePlotter()
         {
             RoutePlotter p = new RoutePlotter();
-            string maxrangetext = textBox_Range.Text;
-            if (!float.TryParse(maxrangetext, out p.maxrange)) p.maxrange = 30;
+            p.maxrange = textBox_Range.Value;
             p.usingcoordsfrom = textBox_From.ReadOnly == true;
             p.usingcoordsto = textBox_To.ReadOnly == true;
             GetCoordsFrom(out p.coordsfrom);                      // will be valid for a system or a co-ords box
@@ -241,7 +237,7 @@ namespace EDDiscovery.UserControls
             if (plotter.possiblejumps > 100)
             {
                 DialogResult res = ExtendedControls.MessageBoxTheme.Show(FindForm(), 
-                    string.Format(("This will result in a large number ({0})) of jumps" + Environment.NewLine + "Confirm please").Tx(this,"Confirm"), 
+                    string.Format(("This will result in a large number ({0}) of jumps" + Environment.NewLine + "Confirm please").Tx(this,"Confirm"), 
                     plotter.possiblejumps), "Warning".Tx(), MessageBoxButtons.YesNo);
                 if (res != System.Windows.Forms.DialogResult.Yes)
                 {
@@ -281,12 +277,6 @@ namespace EDDiscovery.UserControls
         private void comboBoxRoutingMetric_SelectedIndexChanged(object sender, EventArgs e)
         {
             button_Route.Enabled = IsValid();
-        }
-
-        private void textBox_Range_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            ExtendedControls.ExtTextBox tbb = sender as ExtendedControls.ExtTextBox;
-            tbb.NumericKeyPressHandler(e);
         }
 
         #endregion
@@ -349,7 +339,7 @@ namespace EDDiscovery.UserControls
                 Point3D curpos;
                 if (GetCoordsFrom(out curpos))
                 {
-                    ISystem nearest = SystemClassDB.FindNearestSystemTo(curpos.X, curpos.Y, curpos.Z);
+                    ISystem nearest = SystemCache.FindNearestSystemTo(curpos.X, curpos.Y, curpos.Z,100);
 
                     if (nearest != null)
                     {
@@ -514,7 +504,7 @@ namespace EDDiscovery.UserControls
                 Point3D curpos;
                 if (GetCoordsTo(out curpos))
                 {
-                    ISystem nearest = SystemClassDB.FindNearestSystemTo(curpos.X, curpos.Y, curpos.Z);
+                    ISystem nearest = SystemCache.FindNearestSystemTo(curpos.X, curpos.Y, curpos.Z,100);
 
                     if (nearest != null)
                     {

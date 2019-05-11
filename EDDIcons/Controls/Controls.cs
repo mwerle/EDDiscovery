@@ -169,6 +169,7 @@ namespace EDDiscovery.Icons
         public static Image Scan_Bodies_RingGap { get { return IconSet.GetIcon("Controls.Scan.Bodies.RingGap"); } }
         public static Image Scan_Bodies_MaterialMore { get { return IconSet.GetIcon("Controls.Scan.Bodies.MaterialMore"); } }
         public static Image Scan_Bodies_Material { get { return IconSet.GetIcon("Controls.Scan.Bodies.Material"); } }
+        public static Image Scan_DisplaySystemAlways { get { return IconSet.GetIcon("Controls.Scan.DisplaySystemAlways"); } }
         public static Image Scan_ExportToExcel { get { return IconSet.GetIcon("Controls.Scan.ExportToExcel"); } }
         public static Image Scan_FetchEDSMBodies { get { return IconSet.GetIcon("Controls.Scan.FetchEDSMBodies"); } }
         public static Image Scan_ShowAllMaterials { get { return IconSet.GetIcon("Controls.Scan.ShowAllMaterials"); } }
@@ -182,6 +183,7 @@ namespace EDDiscovery.Icons
         public static Image Scan_SizeTiny { get { return IconSet.GetIcon("Controls.Scan.SizeTiny"); } }
         public static Image Scan_SizeTinyTiny { get { return IconSet.GetIcon("Controls.Scan.SizeTinyTiny"); } }
         public static Image Scan_SizeMinuscule { get { return IconSet.GetIcon("Controls.Scan.SizeMinuscule"); } }
+        public static Image Scan_Star { get { return IconSet.GetIcon("Controls.Scan.Star"); } }
         #endregion
         #region EDDiscovery.UserControls.UserControlScanGrid
         public static Image ScanGrid_Belt { get { return IconSet.GetIcon("Controls.ScanGrid.Belt"); } }
@@ -205,6 +207,10 @@ namespace EDDiscovery.Icons
         public static Image TravelGrid_ExportToExcel { get { return IconSet.GetIcon("Controls.TravelGrid.ExportToExcel"); } }
         public static Image TravelGrid_FlagStart { get { return IconSet.GetIcon("Controls.TravelGrid.FlagStart"); } }
         public static Image TravelGrid_FlagStop { get { return IconSet.GetIcon("Controls.TravelGrid.FlagStop"); } }
+        public static Image TravelGrid_CursorToTop { get { return IconSet.GetIcon("Controls.TravelGrid.CursorToTop"); } }
+        public static Image TravelGrid_Outlines { get { return IconSet.GetIcon("Controls.TravelGrid.Outlines"); } }
+        public static Image TravelGrid_FieldFilter { get { return IconSet.GetIcon("Controls.TravelGrid.FieldFilter"); } }
+        public static Image TravelGrid_EventFilter { get { return IconSet.GetIcon("Controls.TravelGrid.EventFilter"); } }
         #endregion
         #region EDDiscovery.UserControls.UserControlTrilateration
         public static Image Trilateration_RemoveAll { get { return IconSet.GetIcon("Controls.Trilateration.RemoveAll"); } }

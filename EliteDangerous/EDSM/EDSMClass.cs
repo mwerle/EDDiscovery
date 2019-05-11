@@ -265,12 +265,14 @@ namespace EliteDangerousCore.EDSM
             try
             {
                 string edsmhiddensystems = Path.Combine(EliteConfigInstance.InstanceOptions.AppDataDirectory, "edsmhiddensystems.json");
-                bool newfile = false;
-                BaseUtils.DownloadFileHandler.DownloadFile(base.httpserveraddress + "api-v1/hidden-systems?showId=1", edsmhiddensystems, out newfile);
 
-                string json = BaseUtils.FileHelpers.TryReadAllTextFromFile(edsmhiddensystems);
-
-                return json;
+                if (BaseUtils.DownloadFile.HTTPDownloadFile(base.httpserveraddress + "api-v1/hidden-systems?showId=1", edsmhiddensystems, false, out bool newfile))
+                {
+                    string json = BaseUtils.FileHelpers.TryReadAllTextFromFile(edsmhiddensystems);
+                    return json;
+                }
+                else
+                    return null;
             }
             
             catch (Exception ex)
@@ -460,7 +462,8 @@ namespace EliteDangerousCore.EDSM
                             bool firstdiscover = jo["firstDiscover"].Value<bool>();
                             DateTime etutc = DateTime.ParseExact(ts, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal); // UTC time
 
-                            ISystem sc = SystemClassDB.GetSystem(id, cn, SystemClassDB.SystemIDType.EdsmId, name: name);
+                            ISystem sc = DB.SystemCache.FindSystem(id,cn);
+
                             if (sc == null)
                             {
                                 if (DateTime.UtcNow.Subtract(etutc).TotalHours < 6) // Avoid running into the rate limit
@@ -990,6 +993,8 @@ namespace EliteDangerousCore.EDSM
                               "&fromSoftware=" + Uri.EscapeDataString(fromSoftware) +
                               "&fromSoftwareVersion=" + Uri.EscapeDataString(fromSoftwareVersion) +
                               "&message=" + EscapeLongDataString(message.ToString(Newtonsoft.Json.Formatting.None));
+
+          //  BaseUtils.HttpCom.WriteLog(message.ToString(Newtonsoft.Json.Formatting.Indented), "");
 
             MimeType = "application/x-www-form-urlencoded";
             var response = RequestPost(postdata, "api-journal-v1", handleException: true);

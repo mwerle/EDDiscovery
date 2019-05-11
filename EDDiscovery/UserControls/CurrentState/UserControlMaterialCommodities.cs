@@ -33,7 +33,7 @@ namespace EDDiscovery.UserControls
 
         FilterSelector cfs;
         private string DbColumnSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid",  "DGVCol"); } }
-        private string DbFilterSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid", "Filter"); } }
+        private string DbFilterSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid", "Filter2"); } }
         private string DbClearZeroSave { get { return DBName((materials) ? "MaterialsGrid" : "CommoditiesGrid", "ClearZero"); } }
 
         #region Init
@@ -56,7 +56,9 @@ namespace EDDiscovery.UserControls
             cfs = new FilterSelector(DbFilterSave);
 
             MaterialCommodityData[] items;
-            string[] types;
+            Tuple<string, string>[] types;
+
+            cfs.AddAllNone();
 
             if (materials)
             {
@@ -67,12 +69,13 @@ namespace EDDiscovery.UserControls
                 items = MaterialCommodityData.GetMaterials(true);
                 types = MaterialCommodityData.GetTypes((x) => !x.IsCommodity, true);
 
-                MaterialCommodityData[] raw = items.Where(x => x.IsRaw).ToArray();
-                cfs.AddGroupOption("Raw", String.Join(";", raw.Select(x => x.Name).ToArray()) + ";");
-                MaterialCommodityData[] enc = items.Where(x => x.IsEncoded).ToArray();
-                cfs.AddGroupOption("Encoded", String.Join(";", enc.Select(x => x.Name).ToArray()) + ";");
-                MaterialCommodityData[] manu = items.Where(x => x.IsManufactured).ToArray();
-                cfs.AddGroupOption("Manufactured", String.Join(";", manu.Select(x => x.Name).ToArray()) + ";");
+                Tuple<string, string>[] cats = MaterialCommodityData.GetCategories((x) => !x.IsCommodity, true);
+
+                foreach (var t in cats)
+                {
+                    string[] members = MaterialCommodityData.GetFDNameMembersOfCategory(t.Item1, true);
+                    cfs.AddGroupOption(String.Join(";", members) + ";", t.Item2);
+                }
             }
             else
             {
@@ -86,22 +89,22 @@ namespace EDDiscovery.UserControls
                 types = MaterialCommodityData.GetTypes((x) => x.IsCommodity, true);
 
                 MaterialCommodityData[] rare = items.Where(x => x.IsRareCommodity).ToArray();
-                cfs.AddGroupOption("Rare", String.Join(";", rare.Select(x => x.Name).ToArray()) + ";");
+                cfs.AddGroupOption(String.Join(";", rare.Select(x => x.FDName).ToArray()) + ";", "Rare".Tx(this));
             }
 
-            foreach (string t in types)
+            foreach (var t in types)
             {
-                string[] members = MaterialCommodityData.GetMembersOfType(t, true);
-                cfs.AddGroupOption(t, String.Join(";", members) + ";");
+                string[] members = MaterialCommodityData.GetFDNameMembersOfType(t.Item1, true);
+                cfs.AddGroupOption(String.Join(";", members) + ";", t.Item2);
             }
 
             foreach (var x in items)
-                cfs.AddStandardOption(x.Name);
+                cfs.AddStandardOption(x.FDName,x.Name);
 
             checkBoxClear.Checked = EliteDangerousCore.DB.SQLiteDBClass.GetSettingBool(DbClearZeroSave, true);
             checkBoxClear.CheckedChanged += CheckBoxClear_CheckedChanged;
 
-            cfs.Changed += FilterChanged;
+            cfs.Closing += FilterChanged;
         }
 
         public override void ChangeCursorType(IHistoryCursor thc)
@@ -154,7 +157,7 @@ namespace EDDiscovery.UserControls
 
             foreach ( MaterialCommodityData mcd in allitems)        // we go thru all items..
             {
-                if (all || filter.Contains(mcd.Name) )      // and see if they are in the filter
+                if (all || filter.Contains(mcd.FDName) )      // and see if they are in the filter
                 {
                     object[] rowobj;
 
@@ -207,9 +210,10 @@ namespace EDDiscovery.UserControls
             cfs.Filter(b, this.FindForm());
         }
 
-        private void FilterChanged(object sender, Object e)
+        private void FilterChanged(object sender, bool same, Object e)
         {
-            Display(uctg.GetCurrentHistoryEntry, discoveryform.history, true);
+            if (!same)
+                Display(uctg.GetCurrentHistoryEntry, discoveryform.history, true);
         }
 
         private void CheckBoxClear_CheckedChanged(object sender, EventArgs e)

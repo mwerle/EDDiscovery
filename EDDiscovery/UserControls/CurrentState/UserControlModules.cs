@@ -34,6 +34,9 @@ namespace EDDiscovery.UserControls
         private string DbColumnSave { get { return DBName("ModulesGrid",  "DGVCol"); } }
         private string DbShipSave { get { return DBName("ModulesGridShipSelect" ); } }
 
+        private string storedmoduletext;
+        private string travelhistorytext;
+
         #region Init
 
         public UserControlModules()
@@ -44,6 +47,10 @@ namespace EDDiscovery.UserControls
 
         public override void Init()
         {
+            BaseUtils.Translator.Instance.Translate(this);
+            BaseUtils.Translator.Instance.Translate(toolTip, this);
+            storedmoduletext = "Stored Modules".Tx(this);
+            travelhistorytext = "Travel History Entry".Tx(this);
             dataGridViewModules.MakeDoubleBuffered();
             dataGridViewModules.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             dataGridViewModules.RowTemplate.Height = 26;
@@ -52,6 +59,7 @@ namespace EDDiscovery.UserControls
 
             discoveryform.OnHistoryChange += Discoveryform_OnHistoryChange; ;
             discoveryform.OnNewEntry += Discoveryform_OnNewEntry;
+            discoveryform.OnNewUIEvent += Discoveryform_OnNewUIEvent;
         }
 
         public override void ChangeCursorType(IHistoryCursor thc)
@@ -73,6 +81,7 @@ namespace EDDiscovery.UserControls
             uctg.OnTravelSelectionChanged -= Display;
             discoveryform.OnNewEntry -= Discoveryform_OnNewEntry;
             discoveryform.OnHistoryChange -= Discoveryform_OnHistoryChange;
+            discoveryform.OnNewUIEvent -= Discoveryform_OnNewUIEvent;
         }
 
 
@@ -96,8 +105,8 @@ namespace EDDiscovery.UserControls
             string cursel = comboBoxShips.Text;
 
             comboBoxShips.Items.Clear();
-            comboBoxShips.Items.Add("Travel History Entry");
-            comboBoxShips.Items.Add("Stored Modules");
+            comboBoxShips.Items.Add(travelhistorytext);
+            comboBoxShips.Items.Add(storedmoduletext);
 
             var ownedships = (from x1 in shm.Ships where x1.Value.State == ShipInformation.ShipState.Owned && !ShipModuleData.IsSRVOrFighter(x1.Value.ShipFD) select x1.Value);
             var notownedships = (from x1 in shm.Ships where x1.Value.State != ShipInformation.ShipState.Owned && !ShipModuleData.IsSRVOrFighter(x1.Value.ShipFD) select x1.Value);
@@ -116,11 +125,17 @@ namespace EDDiscovery.UserControls
                 cursel = SQLiteDBClass.GetSettingString(DbShipSave, "");
 
             if (cursel == "" || !comboBoxShips.Items.Contains(cursel))
-                cursel = "Travel History Entry";
+                cursel = travelhistorytext;
 
             comboBoxShips.Enabled = false;
             comboBoxShips.SelectedItem = cursel;
             comboBoxShips.Enabled = true;
+        }
+
+        private void Discoveryform_OnNewUIEvent(UIEvent obj)
+        {
+            if (obj is EliteDangerousCore.UIEvents.UIFuel) // fuel UI update the SI information globally.
+                Display(last_he, discoveryform.history);
         }
 
         public override void InitialDisplay()
@@ -155,11 +170,11 @@ namespace EDDiscovery.UserControls
 
             last_si = null;     // no ship info
 
-            dataGridViewModules.Columns[2].HeaderText = "Slot".Tx(this);
-            dataGridViewModules.Columns[3].HeaderText = "Info".Tx(this);
+            dataGridViewModules.Columns[2].HeaderText = "SlotCol".Tx(this);
+            dataGridViewModules.Columns[3].HeaderText = "ItemInfo".Tx(this);
             dataGridViewModules.Columns[6].HeaderText = "Value".Tx(this);
 
-            if (comboBoxShips.Text.Contains("Stored"))
+            if (comboBoxShips.Text == storedmoduletext)
             {
                 if (last_he != null && last_he.StoredModules != null)
                 {
@@ -174,7 +189,7 @@ namespace EDDiscovery.UserControls
                     dataGridViewModules.Columns[6].HeaderText = "Cost".Tx(this);
                 }
             }
-            else if (comboBoxShips.Text.Contains("Travel") || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
+            else if (comboBoxShips.Text == travelhistorytext || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
             {
                 if (last_he != null && last_he.ShipInformation != null)
                 {
@@ -340,7 +355,7 @@ namespace EDDiscovery.UserControls
         {
             ShipInformation si = null;
 
-            if (comboBoxShips.Text.Contains("Travel") || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
+            if (comboBoxShips.Text == travelhistorytext || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
             {
                 if (last_he != null && last_he.ShipInformation != null)
                     si = last_he.ShipInformation;
@@ -381,7 +396,7 @@ namespace EDDiscovery.UserControls
         {
             ShipInformation si = null;
 
-            if (comboBoxShips.Text.Contains("Travel") || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
+            if (comboBoxShips.Text == travelhistorytext || comboBoxShips.Text.Length == 0)  // second is due to the order History gets called vs this on start
             {
                 if (last_he != null && last_he.ShipInformation != null)
                     si = last_he.ShipInformation;

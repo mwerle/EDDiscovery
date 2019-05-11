@@ -354,16 +354,7 @@ namespace EliteDangerousCore
                 .Select(h => h.journalEntry as JournalScan)
                 .Distinct(new ScansAreForSameBody()).ToList();
 
-            var mappings = historylist.Where(s => s.EntryType == JournalTypeEnum.SAAScanComplete).Select(h => h.journalEntry as JournalSAAScanComplete).ToList();
-
-            long total = scans.Select(scan =>
-            {
-                var mapping = mappings.FirstOrDefault(m => m.BodyName == scan.BodyName);
-                if (mapping == null)
-                    return (long)scan.EstimateScanValue(false, false);
-                else
-                    return (long)scan.EstimateScanValue(true, mapping.ProbesUsed <= mapping.EfficiencyTarget);
-            }).Sum();
+            long total = scans.Select(scan => (long)scan.EstimatedValue).Sum();
 
             return total;
         }
@@ -612,38 +603,31 @@ namespace EliteDangerousCore
             {
                 ISystem oldsys = syspos.System;
 
-                bool updateedsmid = oldsys.EDSMID <= 0 && edsmsys.EDSMID > 0;
-                bool updatesyspos = !oldsys.HasCoordinate && edsmsys.HasCoordinate;
-                bool updatename = oldsys.HasCoordinate && edsmsys.HasCoordinate &&
-                                  oldsys.Distance(edsmsys) < 0.1 &&
-                                  !String.Equals(edsmsys.Name, oldsys.Name, StringComparison.InvariantCultureIgnoreCase) &&
-                                  edsmsys.UpdateDate > syspos.EventTimeUTC;
+                bool updateedsmid = oldsys.EDSMID != edsmsys.EDSMID;
+                bool updatesyspos = edsmsys.HasCoordinate && edsmsys.Xi != oldsys.Xi && edsmsys.Yi != oldsys.Yi && edsmsys.Zi != oldsys.Zi;
 
                 ISystem newsys = new SystemClass
                 {
-                    Name = updatename ? edsmsys.Name : oldsys.Name,
+                    EDSMID = updateedsmid ? edsmsys.EDSMID : oldsys.EDSMID,
+                    Name = edsmsys.Name,
                     X = updatesyspos ? edsmsys.X : oldsys.X,
                     Y = updatesyspos ? edsmsys.Y : oldsys.Y,
                     Z = updatesyspos ? edsmsys.Z : oldsys.Z,
-                    EDSMID = updateedsmid ? edsmsys.EDSMID : oldsys.EDSMID,
-                    SystemAddress = oldsys.SystemAddress ?? edsmsys.SystemAddress,
-                    Allegiance = oldsys.Allegiance == EDAllegiance.Unknown ? edsmsys.Allegiance : oldsys.Allegiance,
-                    Government = oldsys.Government == EDGovernment.Unknown ? edsmsys.Government : oldsys.Government,
-                    Population = oldsys.Government == EDGovernment.Unknown ? edsmsys.Population : oldsys.Population,
-                    PrimaryEconomy = oldsys.PrimaryEconomy == EDEconomy.Unknown ? edsmsys.PrimaryEconomy : oldsys.PrimaryEconomy,
-                    Security = oldsys.Security == EDSecurity.Unknown ? edsmsys.Security : oldsys.Security,
-                    State = oldsys.State == EDState.Unknown ? edsmsys.State : oldsys.State,
-                    Faction = oldsys.Faction ?? edsmsys.Faction,
-                    CommanderCreate = edsmsys.CommanderCreate,
-                    CommanderUpdate = edsmsys.CommanderUpdate,
-                    CreateDate = edsmsys.CreateDate,
-                    EDDBID = edsmsys.EDDBID,
-                    EDDBUpdatedAt = edsmsys.EDDBUpdatedAt,
                     GridID = edsmsys.GridID,
+                    SystemAddress = oldsys.SystemAddress ?? edsmsys.SystemAddress,
+
+                    EDDBID = edsmsys.EDDBID,
+                    Population = oldsys.Government == EDGovernment.Unknown ? edsmsys.Population : oldsys.Population,
+                    Faction = oldsys.Faction ?? edsmsys.Faction,
+                    Government = oldsys.Government == EDGovernment.Unknown ? edsmsys.Government : oldsys.Government,
+                    Allegiance = oldsys.Allegiance == EDAllegiance.Unknown ? edsmsys.Allegiance : oldsys.Allegiance,
+                    State = oldsys.State == EDState.Unknown ? edsmsys.State : oldsys.State,
+                    Security = oldsys.Security == EDSecurity.Unknown ? edsmsys.Security : oldsys.Security,
+                    PrimaryEconomy = oldsys.PrimaryEconomy == EDEconomy.Unknown ? edsmsys.PrimaryEconomy : oldsys.PrimaryEconomy,
+                    Power = !oldsys.Power.HasChars() ? edsmsys.Power : oldsys.Power,
+                    PowerState = !oldsys.PowerState.HasChars() ? edsmsys.PowerState : oldsys.PowerState,
                     NeedsPermit = edsmsys.NeedsPermit,
-                    RandomID = edsmsys.RandomID,
-                    UpdateDate = edsmsys.UpdateDate,
-                    SystemNote = edsmsys.SystemNote,
+                    EDDBUpdatedAt = edsmsys.EDDBUpdatedAt,
                     status = SystemStatusEnum.EDSM
                 };
 
@@ -668,23 +652,21 @@ namespace EliteDangerousCore
 
         #region General Info
 
+        // Add in any systems we have to the distlist 
+
         public void CalculateSqDistances(BaseUtils.SortedListDoubleDuplicate<ISystem> distlist, double x, double y, double z, 
-                        int maxitems, double mindistance, double maxdistance , bool spherical )
+                                         int maxitems, double mindistance, double maxdistance , bool spherical )
         {
-            HashSet<long> listids = new HashSet<long>();
             HashSet<string> listnames = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
             foreach (ISystem sys in distlist.Values.ToList())
-            {
-                listids.Add(sys.ID);
                 listnames.Add(sys.Name);
-            }
 
             mindistance *= mindistance;
 
             foreach (HistoryEntry pos in historylist)
             {
-                if (pos.System.HasCoordinate && !listnames.Contains(pos.System.Name) && !listids.Contains(pos.System.ID) )
+                if (pos.System.HasCoordinate && !listnames.Contains(pos.System.Name) )
                 {
                     double dx = (pos.System.X - x);
                     double dy = (pos.System.Y - y);
@@ -725,17 +707,17 @@ namespace EliteDangerousCore
 
             if (ds1 == null)
             {
-                HistoryEntry vs = FindByName(name);
+                HistoryEntry vs = FindByName(name);         // else try and find in our list
 
                 if (vs != null)
                     ds1 = vs.System;
-                else if (glist != null)
+                else if (glist != null)                     // if we have a galmap
                 {
                     EDSM.GalacticMapObject gmo = glist.Find(name, true, true);
 
                     if (gmo != null && gmo.points.Count > 0)
                     {
-                        ds1 = SystemClassDB.GetSystem(gmo.galMapSearch);
+                        ds1 = SystemCache.FindSystem(gmo.galMapSearch);
 
                         if (ds1 != null)
                         {
@@ -841,11 +823,11 @@ namespace EliteDangerousCore
                 if (hs == he)
                 {
                     if (he.StartMarker || he.StopMarker)
-                        hs.journalEntry.ClearStartStopMarker();
+                        hs.journalEntry.ClearStartEndFlag();
                     else if (started == false)
-                        hs.journalEntry.SetStartMarker();
+                        hs.journalEntry.SetStartFlag();
                     else
-                        hs.journalEntry.SetStopMarker();
+                        hs.journalEntry.SetEndFlag();
 
                     break;
                 }
@@ -918,7 +900,7 @@ namespace EliteDangerousCore
             }
             else if (je is JournalSAAScanComplete)
             {
-                starscan.AddScanToBestSystem((JournalSAAScanComplete)je, Count - 1, EntryOrder);
+                starscan.AddSAAScanToBestSystem((JournalSAAScanComplete)je, Count - 1, EntryOrder);
             }
             else if (je is JournalFSSDiscoveryScan && he.System != null)
             {
@@ -926,9 +908,7 @@ namespace EliteDangerousCore
             }
             else if (je is IBodyNameAndID)
             {
-                JournalLocOrJump jl;
-                HistoryEntry jlhe;
-                starscan.AddBodyToBestSystem((IBodyNameAndID)je, Count - 1, EntryOrder, out jlhe, out jl);
+                starscan.AddBodyToBestSystem((IBodyNameAndID)je, Count - 1, EntryOrder);
             }
 
             return he;
@@ -939,7 +919,6 @@ namespace EliteDangerousCore
                                     bool ForceNetLogReload = false,
                                     bool ForceJournalReload = false,
                                     int CurrentCommander = Int32.MinValue,
-                                    bool Keepuievents = true,
                                     int fullhistoryloaddaylimit = 0,
                                     string essentialitems = ""
                                     )
@@ -998,14 +977,13 @@ namespace EliteDangerousCore
                         continue;
                     }
 
-                    if (je.IsUIEvent && !Keepuievents)              // filter out any UI events
-                    {
+                    if ( je is EliteDangerousCore.JournalEvents.JournalMusic )      // remove music.. not shown.. now UI event. remove it for backwards compatibility
+                    { 
                         //System.Diagnostics.Debug.WriteLine("**** Filter out " + je.EventTypeStr + " on " + je.EventTimeLocal.ToString());
                         continue;
                     }
 
-                    bool journalupdate = false;
-                    HistoryEntry he = HistoryEntry.FromJournalEntry(je, prev, out journalupdate, conn);
+                    HistoryEntry he = HistoryEntry.FromJournalEntry(je, prev, out bool journalupdate, conn);
 
                     prev = he;
                     jprev = je;
@@ -1098,7 +1076,7 @@ namespace EliteDangerousCore
                     }
                     else if (je.EventTypeID == JournalTypeEnum.SAAScanComplete)
                     {
-                        this.starscan.AddScanToBestSystem((JournalSAAScanComplete)je, i, hl);
+                        this.starscan.AddSAAScanToBestSystem((JournalSAAScanComplete)je, i, hl);
                     }
                     else if (je.EventTypeID == JournalTypeEnum.FSSDiscoveryScan && he.System != null)
                     {

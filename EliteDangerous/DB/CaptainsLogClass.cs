@@ -41,7 +41,7 @@ namespace EliteDangerousCore.DB
         {
         }
 
-        public CaptainsLogClass(DataRow dr)
+        public CaptainsLogClass(DbDataReader dr)
         {
             ID = (long)dr["Id"];
             Commander = (int)(long)dr["Commander"];
@@ -86,11 +86,11 @@ namespace EliteDangerousCore.DB
                 cmd.AddParameterWithValue("@n", Note);
                 cmd.AddParameterWithValue("@g", Tags);
                 cmd.AddParameterWithValue("@p", Parameters);
-                cn.SQLNonQueryText( cmd);
+                cmd.ExecuteNonQuery();
 
                 using (DbCommand cmd2 = cn.CreateCommand("Select Max(id) as id from CaptainsLog"))
                 {
-                    ID = (long)cn.SQLScalar( cmd2);
+                    ID = (long)cmd2.ExecuteScalar();
                 }
 
                 return true;
@@ -117,26 +117,26 @@ namespace EliteDangerousCore.DB
                 cmd.AddParameterWithValue("@n", Note);
                 cmd.AddParameterWithValue("@g", Tags);
                 cmd.AddParameterWithValue("@p", Parameters);
-                cn.SQLNonQueryText( cmd);
+                cmd.ExecuteNonQuery();
 
                 return true;
             }
         }
 
-        internal bool Delete()
+        public bool Delete()
         {
             using (SQLiteConnectionUser cn = new SQLiteConnectionUser())
             {
-                return Delete(cn);
+                return Delete(cn,ID);
             }
         }
 
-        private bool Delete(SQLiteConnectionUser cn)
+        static private bool Delete(SQLiteConnectionUser cn, long id)
         {
             using (DbCommand cmd = cn.CreateCommand("DELETE FROM CaptainsLog WHERE id = @id"))
             {
-                cmd.AddParameterWithValue("@id", ID);
-                cn.SQLNonQueryText( cmd);
+                cmd.AddParameterWithValue("@id", id);
+                cmd.ExecuteNonQuery();
                 return true;
             }
         }
@@ -179,22 +179,29 @@ namespace EliteDangerousCore.DB
                 {
                     using (DbCommand cmd = cn.CreateCommand("select * from CaptainsLog"))
                     {
-                        DataSet ds = null;
+                        List<CaptainsLogClass> logs = new List<CaptainsLogClass>();
 
-                        ds = cn.SQLQueryText(cmd);
+                        using (DbDataReader rdr = cmd.ExecuteReader())
+                        {
+                            while (rdr.Read())
+                            {
+                                logs.Add(new CaptainsLogClass(rdr));
+                            }
+                        }
 
-                        if (ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                        if (logs.Count == 0)
                         {
                             return false;
                         }
-
-                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        else
                         {
-                            CaptainsLogClass bc = new CaptainsLogClass(dr);
-                            gbl.globallog.Add(bc);
-                        }
+                            foreach (var bc in logs)
+                            {
+                                gbl.globallog.Add(bc);
+                            }
 
-                        return true;
+                            return true;
+                        }
                     }
                 }
             }
@@ -212,29 +219,6 @@ namespace EliteDangerousCore.DB
             else
                 return (from x in LogEntries where x.TimeLocal >= start && x.TimeLocal <= end && x.Commander == cmdr select x).ToArray();
         }
-
-        //{
-        //    CaptainsLogClass bc = globallog.Find(x => x.BodyName.Equals(bodyname, StringComparison.InvariantCultureIgnoreCase) && x.SystemName.Equals(systemname, StringComparison.InvariantCultureIgnoreCase));
-        //    return bc;
-        //}
-
-        //public List<CaptainsLogClass> FindNoteOnSystem(string systemname)
-        //{
-        //    CaptainsLogClass bc = globallog.Find(x => x.SystemName.Equals(systemname, StringComparison.InvariantCultureIgnoreCase));
-        //    return bc;
-        //}
-
-        //public CaptainsLogClass FindNoteOnBodyName(string bodyname)
-        //{
-        //    CaptainsLogClass bc = globallog.Find(x => x.BodyName.Equals(bodyname, StringComparison.InvariantCultureIgnoreCase));
-        //    return bc;
-        //}
-
-        //public CaptainsLogClass EnsureNoteOnSystem(string systemname, string bodyname,   DateTime tme, string note, string tags = null, string parameters = null )
-        //{
-        //    CaptainsLogClass bk = FindNote(systemname, bodyname);
-        //    return bk != null ? bk : AddOrUpdate(null, systemname, bodyname, tme, note, tags, parameters);
-        //}
 
         // bk = null, new note, else update. Note systemname/bodyname are not unique.  Id it the only unique property
 

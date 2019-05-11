@@ -38,10 +38,13 @@ namespace EDDiscovery.UserControls
 
         public override void Init()
         {
+            BaseUtils.Translator.Instance.Translate(this);
+            BaseUtils.Translator.Instance.Translate(toolTip, this);
+
             ResetThemeList();
             SetEntryThemeComboBox();
 
-            textBoxHomeSystem.SetAutoCompletor(SystemClassDB.ReturnSystemListForAutoComplete);
+            textBoxHomeSystem.SetAutoCompletor(SystemCache.ReturnSystemAutoCompleteList, true);
             
             btnDeleteCommander.Enabled = EDCommander.NumberOfCommanders > 1;
 
@@ -67,7 +70,6 @@ namespace EDDiscovery.UserControls
             checkBoxPanelSortOrder.Checked = EDDConfig.Instance.SortPanelsByName;
             checkBoxUseNotifyIcon.Checked = EDDiscoveryForm.EDDConfig.UseNotifyIcon;
             checkBoxUTC.Checked = EDDiscoveryForm.EDDConfig.DisplayUTC;
-            checkBoxShowUIEvents.Checked = EDDiscoveryForm.EDDConfig.ShowUIEvents;
             checkBoxCustomResize.Checked = EDDiscoveryForm.EDDConfig.DrawDuringResize;
 
             checkBoxOrderRowsInverted.CheckedChanged += checkBoxOrderRowsInverted_CheckedChanged;
@@ -76,7 +78,6 @@ namespace EDDiscovery.UserControls
             checkBoxPanelSortOrder.CheckedChanged += checkBoxPanelSortOrder_CheckedChanged;
             checkBoxUseNotifyIcon.CheckedChanged += checkBoxUseNotifyIcon_CheckedChanged;
             checkBoxUTC.CheckedChanged += checkBoxUTC_CheckedChanged;
-            checkBoxShowUIEvents.CheckedChanged += checkBoxShowUIEvents_CheckedChanged;
             checkBoxCustomResize.CheckedChanged += checkBoxCustomResize_CheckedChanged;
 
             checkBoxMinimizeToNotifyIcon.Enabled = EDDiscoveryForm.EDDConfig.UseNotifyIcon;
@@ -125,9 +126,6 @@ namespace EDDiscovery.UserControls
             ix = Array.FindIndex(eetn, x => x == EDDConfig.Instance.EssentialEventTypes);
             comboBoxCustomEssentialEntries.SelectedIndex = ix >= 0 ? ix : 0;
             comboBoxCustomEssentialEntries.SelectedIndexChanged += ComboBoxCustomEssentialEntries_SelectedIndexChanged;
-
-            BaseUtils.Translator.Instance.Translate(this);
-            BaseUtils.Translator.Instance.Translate(toolTip,this);
         }
 
         public override void InitialDisplay()
@@ -239,11 +237,6 @@ namespace EDDiscovery.UserControls
         #endregion
 
         #region History
-
-        private void checkBoxShowUIEvents_CheckedChanged(object sender, EventArgs e)
-        {
-            EDDConfig.Instance.ShowUIEvents = checkBoxShowUIEvents.Checked;
-        }
 
         private void checkBoxOrderRowsInverted_CheckedChanged(object sender, EventArgs e)
         {
@@ -477,7 +470,7 @@ namespace EDDiscovery.UserControls
         private void ValidateAndSaveHomeSystem()
         {
             string t = textBoxHomeSystem.Text.Trim();
-            ISystem s = SystemClassDB.GetSystem(t);
+            ISystem s = SystemCache.FindSystem(t);
 
             if (s != null)
             {
@@ -594,12 +587,10 @@ namespace EDDiscovery.UserControls
 
         public static void RemoveSectors(List<int> sectors, Action<string> inform)
         {
-            inform("Removing Names" + Environment.NewLine);
-            SystemClassDB.RemoveGridNames(sectors, inform);     // MUST do first as relies on system grid for info
-            inform("Removing System Information" + Environment.NewLine);
-            SystemClassDB.RemoveGridSystems(sectors, inform);
+            inform("Removing Grids" + Environment.NewLine);
+            SystemsDB.RemoveGridSystems(sectors.ToArray(), inform);     // MUST do first as relies on system grid for info
             inform("Vacuum Database for size" + Environment.NewLine);
-            SystemClassDB.Vacuum();
+            SystemsDB.Vacuum();
         }
 
         private Task taskremovesectors = null;

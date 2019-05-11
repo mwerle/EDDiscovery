@@ -27,7 +27,7 @@ namespace EDDiscovery.Actions
     {
         public override bool AllowDirectEditingOfUserData { get { return true; } }
 
-        public override bool ConfigurationMenu(System.Windows.Forms.Form parent, ActionCoreController cp, List<string> eventvars)
+        public override bool ConfigurationMenu(System.Windows.Forms.Form parent, ActionCoreController cp, List<BaseUtils.TypeHelpers.PropertyNameInfo> eventvars)
         {
             string promptValue = ExtendedControls.PromptSingleLine.ShowDialog(parent, "Command string", UserData, "Configure Target Command" , cp.Icon);
             if (promptValue != null)
@@ -54,12 +54,14 @@ namespace EDDiscovery.Actions
 
                     if (prefix == null)
                     {
-                        ap.ReportError("Missing name after Prefix in Target");
+                        ap.ReportError("Missing name after Prefix in Target");                        
                         return true;
                     }
 
                     cmdname = sp.NextWord();
                 }
+
+                EDDiscoveryForm discoveryform = (ap.actioncontroller as ActionController).DiscoveryForm;
 
                 if (cmdname != null )
                 {
@@ -82,13 +84,22 @@ namespace EDDiscovery.Actions
                             }
                         }
                     }
+                    else if (cmdname.Equals("CLEAR", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        bool tset = EliteDangerousCore.DB.TargetClass.IsTargetSet();
+                        ap[prefix + "TargetClear"] = tset.ToStringIntValue();
+                        if (tset)
+                        {
+                            TargetClass.ClearTarget();
+                            discoveryform.NewTargetSet(this);
+                        }
+                    }
                     else
                     {
                         string name = sp.NextQuotedWord();
 
                         if (name != null)
                         {
-                            EDDiscoveryForm discoveryform = (ap.actioncontroller as ActionController).DiscoveryForm;
 
                             if (cmdname.Equals("BOOKMARK", StringComparison.InvariantCultureIgnoreCase))
                             {

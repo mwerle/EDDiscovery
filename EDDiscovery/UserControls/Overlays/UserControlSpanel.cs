@@ -35,7 +35,7 @@ namespace EDDiscovery.UserControls
     public partial class UserControlSpanel : UserControlCommonBase
     {
         private string DbSave { get { return DBName("SPanel" ); } }
-        private string DbFilterSave { get { return DBName("SPanelEventFilter" ); } }
+        private string DbFilterSave { get { return DBName("SPanelEventFilter2" ); } }
         private string DbFieldFilter { get { return DBName("SPanelFieldFilter" ); } }
 
         FilterSelector cfs;
@@ -56,8 +56,7 @@ namespace EDDiscovery.UserControls
         private int dividercapture = -2;        //-2 not shown, -1 shown, >=0 captured
         private int divideroriginalxpos = -1;
 
-        enum UIState { Normal, SystemMap, GalMap };
-        UIState uistate = UIState.Normal;
+        EliteDangerousCore.UIEvents.UIGUIFocus.Focus uistate = EliteDangerousCore.UIEvents.UIGUIFocus.Focus.NoFocus;
 		
         class Configuration         // SO many now we need to prepare for a Long
         {
@@ -92,8 +91,7 @@ namespace EDDiscovery.UserControls
 
             public const long showSystemInformation = 1L << 32;
             public const long showHabInformation = 1L << 33;
-            public const long showNothingWhenSysmap = 1L << 34;
-            public const long showNothingWhenGalmap = 1L << 35;
+            public const long showNothingWhenPanel = 1L << 34;
 			public const long showNoTitleWhenHidden = 1L << 36;
 			public const long showMetalRichZone = 1L << 40;
 			public const long showWaterWrldZone = 1L << 41;
@@ -142,8 +140,7 @@ namespace EDDiscovery.UserControls
 			showEarthLikeToolStripMenuItem.Checked = Config(Configuration.showEarthLikeZone);
 			showAmmoniaWorldsToolStripMenuItem.Checked = Config(Configuration.showAmmonWrldZone);
 			showIcyPlanetsToolStripMenuItem.Checked = Config(Configuration.showIcyPlanetZone);
-            dontshowwhenInGalaxyPanelToolStripMenuItem.Checked = Config(Configuration.showNothingWhenGalmap);
-            dontshowwhenInSystemMapPanelToolStripMenuItem.Checked = Config(Configuration.showNothingWhenSysmap);
+            dontshowwhenInPanelToolStripMenuItem.Checked = Config(Configuration.showNothingWhenPanel);
 			completelyHideThePanelToolStripMenuItem.Checked = Config(Configuration.showNoTitleWhenHidden);
 
             SetSurfaceScanBehaviour(null);
@@ -178,9 +175,10 @@ namespace EDDiscovery.UserControls
                 fieldfilter.FromJSON(filter);        // load filter
 
             cfs = new FilterSelector(DbFilterSave);
+            cfs.AddAllNone();
             cfs.AddJournalExtraOptions();
             cfs.AddJournalEntries();
-            cfs.Changed += EventFilterChanged;
+            cfs.Closing += EventFilterChanged;
 
             dividers = new ExtButton[] { buttonExt0, buttonExt1, buttonExt2, buttonExt3, buttonExt4, buttonExt5, buttonExt6, buttonExt7, buttonExt8, buttonExt9, buttonExt10, buttonExt11, buttonExt12 };
 
@@ -273,13 +271,11 @@ namespace EDDiscovery.UserControls
 									   textcolour, backcolour, null);
 						}
 					}
-                    else if ( ( uistate == UIState.GalMap && Config(Configuration.showNothingWhenGalmap)) 
-							  || ( uistate == UIState.SystemMap && Config(Configuration.showNothingWhenSysmap)))
+                    else if ( uistate != EliteDangerousCore.UIEvents.UIGUIFocus.Focus.NoFocus && Config(Configuration.showNothingWhenPanel))
                     {
 						if (!Config(Configuration.showNoTitleWhenHidden))
 						{
-							AddColText(0, 0, rowpos, rowheight,
-									   (uistate == UIState.GalMap) ? "Galaxy Map" : "System Map", 
+							AddColText(0, 0, rowpos, rowheight, uistate.ToString().SplitCapsWord(),
 									   textcolour, backcolour, null);
 						}
 					}
@@ -568,31 +564,15 @@ namespace EDDiscovery.UserControls
 
         private void OnNewUIEvent(UIEvent uievent)       // UI event in, see if we want to hide.  UI events come before any onNew
         {
-            EliteDangerousCore.UIEvents.UIJournalMusic jm = uievent as EliteDangerousCore.UIEvents.UIJournalMusic;
+            EliteDangerousCore.UIEvents.UIGUIFocus gui = uievent as EliteDangerousCore.UIEvents.UIGUIFocus;
 
-            if (jm != null)
+            if (gui != null)
             {
-                string ev = jm.Track;
-
-                bool refresh = false;
-                if (ev.Contains("GalaxyMap"))
-                {
-                    refresh = (uistate != UIState.GalMap);
-                    uistate = UIState.GalMap;
-                }
-                else if (ev.Contains("SystemMap"))
-                {
-                    refresh = (uistate != UIState.SystemMap);
-                    uistate = UIState.SystemMap;
-                }
-                else
-                {
-                    refresh = (uistate != UIState.Normal);
-                    uistate = UIState.Normal;
-                }
+                bool refresh = gui.GUIFocus != uistate;
+                uistate = gui.GUIFocus;
 
                 //System.Diagnostics.Debug.WriteLine("UI event " + obj + " " + uistate + " shown " + shown);
-                if (refresh && !jm.Shown)      // if we materially changed, and we are not showing ui events, need to update here
+                if (refresh )      
                     Display(current_historylist);
             }
         }
@@ -953,12 +933,7 @@ namespace EDDiscovery.UserControls
         }
         private void dontshowwhenInGalaxyPanelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FlipConfig(Configuration.showNothingWhenGalmap, ((ToolStripMenuItem)sender).Checked, true);
-        }
-
-        private void dontshowwhenInSystemPanelToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            FlipConfig(Configuration.showNothingWhenSysmap, ((ToolStripMenuItem)sender).Checked, true);
+            FlipConfig(Configuration.showNothingWhenPanel, ((ToolStripMenuItem)sender).Checked, true);
         }
 
 		private void completelyHideThePanelToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1043,24 +1018,18 @@ namespace EDDiscovery.UserControls
             cfs.Filter(contextMenuStrip.PointToScreen(new Point(0, 0)), new Size(300,800), this.FindForm());
         }
 
-        private void EventFilterChanged(object sender, Object e)
+        private void EventFilterChanged(object sender, bool same, Object e)
         {
-            Display(current_historylist);
+            if (!same)
+                Display(current_historylist);
         }
 
         private void configureFieldFilterToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ExtendedConditionsForms.ConditionFilterForm frm = new ExtendedConditionsForms.ConditionFilterForm();
-            List<string> namelist = new List<string>() { "Note" };
-            namelist.AddRange(discoveryform.Globals.NameList);
-            frm.InitFilter("Summary Panel: Filter out fields".Tx(this,"SPF"),
-                            Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                            JournalEntry.GetNamesOfEventsWithOptMethod() ,
-                            (s) => { return BaseUtils.TypeHelpers.GetPropertyFieldNames(JournalEntry.TypeOfJournalEntry(s)); },
-                            namelist, fieldfilter);
-            if (frm.ShowDialog(this.FindForm()) == DialogResult.OK)
+            BaseUtils.ConditionLists res = FilterHelpers.ShowDialog(FindForm(), fieldfilter, discoveryform, "Summary Panel: Filter out fields".Tx(this, "SPF"));
+            if (res != null)
             {
-                fieldfilter = frm.Result;
+                fieldfilter = res;
                 SQLiteDBClass.PutSettingString(DbFieldFilter, fieldfilter.GetJSON());
                 Display(current_historylist);
             }

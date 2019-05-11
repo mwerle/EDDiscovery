@@ -19,71 +19,86 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace EDDiscovery.UserControls
 {
     // Extends the filter form to know how to save back to DB.  and to add some standard option lists in
 
-    public class FilterSelector : ExtendedControls.CheckedIconListBoxFilterForm
+    public class FilterSelector : ExtendedControls.CheckedIconListBoxSelectionForm
     {
         private string dbstring;
+
+        public new Action<string, bool, Object> Closing;                       // Action on close, string is the settings, bool is true if same as before, object is sender
 
         public FilterSelector(string db) : base()
         {
             dbstring = db;
-            SaveBack += (x,t)=> SQLiteDBClass.PutSettingString(dbstring, x);
+            base.Closing += (x, t) =>                                          // use the base class closing, and work out if we changed anything
+            {
+                string org = SQLiteDBClass.GetSettingString(dbstring,"All");
+                SQLiteDBClass.PutSettingString(dbstring, x);
+                this.Closing?.Invoke(x, x.Equals(org), t);
+            };
         }
 
         public void AddJournalExtraOptions()
         {
-            // must be in alpha order..
-            AddGroupOption("Travel".Tx(), "Docked;FSD Jump;Undocked;", JournalEntry.JournalTypeIcons[JournalTypeEnum.FSDJump]);
-            //AddGroupOption("Missions".Tx(), "Mission Abandoned;Mission Accepted;Mission Completed;Mission Failed;Mission Redirected;", JournalEntry.JournalTypeIcons[JournalTypeEnum.Missions]);
+            AddGroupOption("ApproachBody;Docked;FSDJump;Location;Undocked;", "Travel".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.FSDJump]);
 
-            var mile = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "UpdateMissions" });
+            AddGroupOption("Scan;Scan Auto;Scan Basic;Scan Nav;NavBeaconScan;SAAScanComplete;FSSAllBodiesFound;FSSSignalDiscovered;FSSDiscoveryScan;DiscoveryScan", "Scan".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.Scan]);
+
+            var mile = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "UpdateMissions" });
             string miltype = string.Join(";", mile.Select(x => x.Item1)) + ";";
-            AddGroupOption("Missions".Tx(), miltype, JournalEntry.JournalTypeIcons[JournalTypeEnum.Missions]);
+            AddGroupOption(miltype, "Missions".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.Missions]);
 
-            var mle = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "UpdateMaterials" });
+            var mle = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "UpdateMaterials" });
+            mle.Add(EliteDangerousCore.JournalEntry.GetNameImageOfEvent(JournalTypeEnum.MaterialDiscovered));
             string mattype = string.Join(";", mle.Select(x => x.Item1)) + ";";
-            AddGroupOption("Materials".Tx(), mattype, JournalEntry.JournalTypeIcons[JournalTypeEnum.Materials]);
+            AddGroupOption(mattype, "Materials".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.Materials]);
 
-            var cle = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "UpdateCommodities" });
+            var cle = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "UpdateCommodities" });
             string comtype = string.Join(";", cle.Select(x => x.Item1)) + ";";
-            AddGroupOption("Commodities".Tx(), comtype, JournalEntry.JournalTypeIcons[JournalTypeEnum.Market]);
+            AddGroupOption(comtype, "Commodities".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.Market]);
 
-            var lle = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "Ledger", "LedgerNC" });
+            var lle = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "Ledger", "LedgerNC" });
             string legtype = string.Join(";", lle.Select(x => x.Item1)) + ";";
-            AddGroupOption("Ledger".Tx(), legtype, EDDiscovery.Icons.IconSet.GetIcon("Panels.Ledger"));
+            AddGroupOption(legtype, "Ledger".Tx(this), EDDiscovery.Icons.IconSet.GetIcon("Panels.Ledger"));
 
-            var sle = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "ShipInformation" });
+            var sle = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "ShipInformation" });
             string shiptype = string.Join(";", sle.Select(x => x.Item1)) + ";";
-            AddGroupOption("Ship".Tx(), shiptype, JournalEntry.JournalTypeIcons[JournalTypeEnum.Shipyard]);
+            AddGroupOption(shiptype, "Ship".Tx(this), JournalEntry.JournalTypeIcons[JournalTypeEnum.Shipyard]);
         }
 
         public void AddJournalEntries(string[] methods = null)
         {
-            var items = JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(methods);
+            var items = JournalEntry.GetNameImageOfEvents(methods);
 
             AddStandardOption(items);
 
-            var scanitems = EliteDangerousCore.JournalEvents.JournalScan.FilterItems();
-            AddStandardOption(scanitems);
+            var list = JournalEntry.GetEnumOfEvents(new string[] { "FilterItems" });
+            foreach( var e in list)
+            {
+                Type t = JournalEntry.TypeOfJournalEntry(e);
+                MethodInfo info = t.GetMethod("FilterItems", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+                List<Tuple<string, string, Image>> retlist = info.Invoke(null, new object[] { }) as List<Tuple<string, string, Image>>;
+                AddStandardOption(retlist);
+            }
 
-            SortStandardOptions();
+            SortStandardOptions();  // sorted by text
         }
 
         // do not use base Filter options - use these.
 
-        public void Filter(Control ctr, Form parent)
+        public void Filter(Control ctr, Form parent, int width = 300)
         {
-            Filter(SQLiteDBClass.GetSettingString(dbstring, "All"), ctr, parent);
+            Show(SQLiteDBClass.GetSettingString(dbstring, "All"), ctr, parent, width);
         }
 
         public void Filter(Point p, Size s, Form parent)
         {
-            Filter(SQLiteDBClass.GetSettingString(dbstring, "All"), p, s, parent);
+            Show(SQLiteDBClass.GetSettingString(dbstring, "All"), p, s, parent);
         }
 
     }

@@ -14,7 +14,9 @@
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace EliteDangerousCore.JournalEvents
@@ -27,11 +29,13 @@ namespace EliteDangerousCore.JournalEvents
             To = evt["To"].Str();
             To_Localised = JournalFieldNaming.CheckLocalisation(evt["To_Localised"].Str(),To);
             Message = evt["Message"].Str();
+            Command = Message.StartsWith("/") && To.Equals("Local", StringComparison.InvariantCultureIgnoreCase);
         }
 
         public string To { get; set; }
         public string To_Localised { get; set; }
         public string Message { get; set; }
+        public bool Command { get; set; }
 
         public override void FillInformation(out string info, out string detailed) 
         {
@@ -51,6 +55,13 @@ namespace EliteDangerousCore.JournalEvents
             Message = evt["Message"].Str();
             MessageLocalised = JournalFieldNaming.CheckLocalisation(evt["Message_Localised"].Str(), Message);
             Channel = evt["Channel"].Str();
+
+            string[] specials = new string[] { "$COMMS_entered:", "$CHAT_intro;" };
+
+            if ( specials.StartsWith(Message, System.StringComparison.InvariantCultureIgnoreCase)>=0)
+            {
+                Channel = "Info";
+            }
         }
 
         public string From { get; set; }

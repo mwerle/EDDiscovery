@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2016 - 2017 EDDiscovery development team
+ * Copyright © 2016 - 2019 EDDiscovery development team
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -29,11 +29,6 @@ using EliteDangerousCore.DB;
 using EliteDangerousCore;
 using EliteDangerousCore.JournalEvents;
 
-// save splitter
-// save query
-// load query list from db
-// query list is generic across all searches..
-
 namespace EDDiscovery.UserControls
 {
     // Search UCs use the UCCB template BUT are not directly inserted into the normal panels.. they are inserted into the Search UCCB
@@ -54,10 +49,49 @@ namespace EDDiscovery.UserControls
 
             public List<Tuple<string, string>> Searches = new List<Tuple<string, string>>()
             {
+                new Tuple<string, string>("Body Name","BodyName contains <name>"),
+                new Tuple<string, string>("Scan Type","ScanType contains Detailed"),
+                new Tuple<string, string>("Distance (ls)","DistanceFromArrivalLS >= 20"),
+                new Tuple<string, string>("Rotation Period (s)","nRotationPeriod >= 30"),
+                new Tuple<string, string>("Rotation Period (days)","nRotationPeriodDays >= 1"),
+                new Tuple<string, string>("Surface Temperature (K)","nSurfaceTemperature >= 273"),
+                new Tuple<string, string>("Radius (m)","nRadius >= 100000"),
+                new Tuple<string, string>("Radius (sols)","nRadiusSols >= 1"),
+                new Tuple<string, string>("Radius (Earth)","nRadiusEarths >= 1"),
+                new Tuple<string, string>("Has Rings","HasRings == 1"),
+                new Tuple<string, string>("Semi Major Axis (m)","nSemiMajorAxis >= 20000000"),
+                new Tuple<string, string>("Semi Major Axis (AU)","nSemiMajorAxisAU >= 1"),
+                new Tuple<string, string>("Eccentricity ","nEccentricity >= 0.1"),
+                new Tuple<string, string>("Orbital Inclination (Deg)","nOrbitalInclination > 1"),
+                new Tuple<string, string>("Periapsis (Deg)","nPeriapsis > 1"),
+                new Tuple<string, string>("Orbital period (s)","nOrbitalPeriod > 200"),
+                new Tuple<string, string>("Orbital period (days)","nOrbitalPeriodDays > 200"),
+                new Tuple<string, string>("Axial Tilt (Deg)","nAxialTiltDeg > 1"),
+
+                new Tuple<string, string>("Star Type","StarType $== A"),
                 new Tuple<string, string>("Star Mass (Sols)","nStellarMass >= 1"),
+                new Tuple<string, string>("Star Magnitude","nAbsoluteMagnitude >= 1"),
+                new Tuple<string, string>("Star Age (MY)","nAge >= 2000"),
+                new Tuple<string, string>("Star Luminosity","Luminosity $== V"),
+
                 new Tuple<string, string>("Planet Mass (Earths)","nMassEM >= 1"),
                 new Tuple<string, string>("Planet Materials","MaterialList contains iron"),
+                new Tuple<string, string>("Planet Class","PlanetClass $== \"High metal content body\""),
+                new Tuple<string, string>("Tidal Lock","nTidalLock == 1"),
+                new Tuple<string, string>("Terraformable","TerraformState $== Terraformable"),
+                new Tuple<string, string>("Atmosphere","Atmosphere $== \"thin sulfur dioxide atmosphere\""),
+                new Tuple<string, string>("Atmosphere ID","AtmosphereID $== Carbon_dioxide"),
+                new Tuple<string, string>("Atmosphere Property","AtmosphereProperty $== Rich"),
+                new Tuple<string, string>("Volcanism","Volcanism $== \"minor metallic magma volcanism\""),
+                new Tuple<string, string>("Volcanism ID","VolcanismID $== Ammonia_Magma"),
+                new Tuple<string, string>("Surface Gravity m/s","nSurfaceGravity >= 9.6"),
+                new Tuple<string, string>("Surface Gravity G","nSurfaceGravityG >= 1.0"),
+                new Tuple<string, string>("Surface Gravity Landable G","nSurfaceGravityG >= 1.0 And IsLandable == 1"),
+                new Tuple<string, string>("Surface Pressure (Pa)","nSurfacePressure >= 101325"),
+                new Tuple<string, string>("Surface Pressure (Earth Atmos)","nSurfacePressureEarth >= 1"),
+                new Tuple<string, string>("Landable","IsLandable == 1"),
             };
+
             public int StandardSearches;
 
             static private Queries instance = null;
@@ -125,16 +159,16 @@ namespace EDDiscovery.UserControls
 
             BaseUtils.Translator.Instance.Translate(this, new Control[] { });
             BaseUtils.Translator.Instance.Translate(toolTip, this);
-            //BaseUtils.Translator.Instance.Translate(dataGridViewEDSM.ContextMenu, this);
 
-            List<string> classnames = BaseUtils.TypeHelpers.GetPropertyFieldNames(typeof(JournalScan),bf:System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly);
-            classnames.Add("EventTimeUTC");     // add on a few from the base class..
-            classnames.Add("EventTimeLocal");
-            classnames.Add("SyncedEDSM");
+            List<BaseUtils.TypeHelpers.PropertyNameInfo> classnames = BaseUtils.TypeHelpers.GetPropertyFieldNames(typeof(JournalScan),bf:System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly);
+            classnames.Add(new BaseUtils.TypeHelpers.PropertyNameInfo("EventTimeUTC", "Date Time in UTC", BaseUtils.ConditionEntry.MatchType.DateAfter));     // add on a few from the base class..
+            classnames.Add(new BaseUtils.TypeHelpers.PropertyNameInfo("EventTimeLocal", "Date Time in Local time", BaseUtils.ConditionEntry.MatchType.DateAfter));     // add on a few from the base class..
+            classnames.Add(new BaseUtils.TypeHelpers.PropertyNameInfo("SyncedEDSM", "Synced to EDSM, 1 = yes, 0 = not", BaseUtils.ConditionEntry.MatchType.IsTrue));     // add on a few from the base class..
 
             string query = SQLiteConnectionUser.GetSettingString(DbQuerySave, "");
 
-            conditionFilterUC.InitConditionList(classnames, new BaseUtils.ConditionLists(query));   // will ignore if query is bad and return empty query
+            conditionFilterUC.VariableNames = classnames;
+            conditionFilterUC.InitConditionList(new BaseUtils.ConditionLists(query));   // will ignore if query is bad and return empty query
 
             dataGridView.Init(discoveryform);
 
@@ -229,7 +263,7 @@ namespace EDDiscovery.UserControls
                     BaseUtils.Variables scandata = new BaseUtils.Variables();
                     scandata.AddPropertiesFieldsOfClass(js, "", new Type[] { typeof(System.Drawing.Icon), typeof(System.Drawing.Image), typeof(System.Drawing.Bitmap), typeof(Newtonsoft.Json.Linq.JObject) }, 5);
 
-                    bool? res = cond.CheckAll(scandata, out string errlist);  // need function handler..
+                    bool? res = cond.CheckAll(scandata, out string errlist, out BaseUtils.ConditionLists.ErrorClass errclass );  // need function handler..
 
                     if ( res.HasValue && res.Value == true )
                     {
@@ -245,6 +279,12 @@ namespace EDDiscovery.UserControls
 
                         dataGridView.Rows.Add(rowobj);
                         dataGridView.Rows[dataGridView.Rows.Count - 1].Tag = sys;
+                    }
+
+                    if ( errclass == BaseUtils.ConditionLists.ErrorClass.LeftSideVarUndefined || errclass == BaseUtils.ConditionLists.ErrorClass.RightSideBadFormat )
+                    {
+                        ExtendedControls.MessageBoxTheme.Show(errlist, "Warning".Tx(), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        break;
                     }
                 }
 

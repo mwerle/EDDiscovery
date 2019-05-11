@@ -47,7 +47,7 @@ namespace EDDiscovery.UserControls
         {
             InitializeComponent();
             var corner = dataGridViewRouteSystems.TopLeftHeaderCell; // work around #1487
-            SystemName.AutoCompleteGenerator = SystemClassDB.ReturnOnlySystemsListForAutoComplete;
+            SystemName.AutoCompleteGenerator = SystemCache.ReturnSystemAutoCompleteList;
             currentroute = new SavedRouteClass("");
             savedroute = new List<SavedRouteClass>();
         }
@@ -694,7 +694,7 @@ namespace EDDiscovery.UserControls
 
             if (obj == null)
                 return;
-            ISystem sc = GetSystem((string)obj);
+            ISystem sc = SystemCache.FindSystem((string)obj);
             if (sc == null)
             {
                 ExtendedControls.MessageBoxTheme.Show(FindForm(), "Unknown system, system is without co-ordinates".Tx(this,"UnknownS"), "Warning".Tx(), MessageBoxButtons.OK);
@@ -760,14 +760,7 @@ namespace EDDiscovery.UserControls
 
         private ISystem GetSystem(string sysname)
         {
-            ISystem sys = SystemCache.FindSystem(sysname);
-
-            if (sys == null)
-            {
-                SystemClassDB.TryGetSystem(sysname, out sys, true);
-            }
-
-            return sys;
+            return SystemCache.FindSystem(sysname);
         }
 
         // If the route has any unsaved changes, prompt the user to save them.

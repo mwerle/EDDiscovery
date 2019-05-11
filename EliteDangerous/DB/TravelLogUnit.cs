@@ -23,6 +23,12 @@ namespace EliteDangerousCore.DB
 {
     public class TravelLogUnit
     {
+        public const int NetLogType = 1;
+        public const int EDSMType = 2;
+        public const int JournalType = 3;
+        public const int TypeMask = 0xff;
+        public const int BetaMarker = 0x8000;
+
         public long id;
         public string Name;
         public int type;            // bit 15 = BETA.  Type = 2 EDSM log, 3 = Journal, 1 = Old pre 2.1 logs.
@@ -72,13 +78,12 @@ namespace EliteDangerousCore.DB
         {
             get
             {
-                if ((Path != null && Path.Contains("PUBLIC_TEST_SERVER")) || (type & 0x8000) == 0x8000)
+                if ((Path != null && Path.Contains("PUBLIC_TEST_SERVER")) || (type & BetaMarker) == BetaMarker)
                     return true;
                 else
                     return false;
             }
         }
-
 
 
         public bool Add()
@@ -100,11 +105,11 @@ namespace EliteDangerousCore.DB
                 cmd.AddParameterWithValue("@Path", Path);
                 cmd.AddParameterWithValue("@CommanderID", CommanderId);
 
-                cn.SQLNonQueryText( cmd);
+                cmd.ExecuteNonQuery();
 
                 using (DbCommand cmd2 = cn.CreateCommand("Select Max(id) as id from TravelLogUnit"))
                 {
-                    id = (long)cn.SQLScalar( cmd2);
+                    id = (long)cmd2.ExecuteScalar();
                 }
 
                 return true;
@@ -130,7 +135,7 @@ namespace EliteDangerousCore.DB
                 cmd.AddParameterWithValue("@Path", Path);
                 cmd.AddParameterWithValue("@CommanderID", CommanderId);
 
-                cn.SQLNonQueryText( cmd);
+                cmd.ExecuteNonQuery();
 
                 return true;
             }
@@ -144,14 +149,13 @@ namespace EliteDangerousCore.DB
             {
                 using (DbCommand cmd = cn.CreateCommand("select * from TravelLogUnit"))
                 {
-                    DataSet ds = cn.SQLQueryText( cmd);
-                    if (ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
-                        return list;
-
-                    foreach (DataRow dr in ds.Tables[0].Rows)
+                    using (DbDataReader rdr = cmd.ExecuteReader())
                     {
-                        TravelLogUnit sys = new TravelLogUnit(dr);
-                        list.Add(sys);
+                        while (rdr.Read())
+                        {
+                            TravelLogUnit sys = new TravelLogUnit(rdr);
+                            list.Add(sys);
+                        }
                     }
 
                     return list;

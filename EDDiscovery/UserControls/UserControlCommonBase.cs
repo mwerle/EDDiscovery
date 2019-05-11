@@ -65,6 +65,7 @@ namespace EDDiscovery.UserControls
             Init();
         }    
         public virtual void Init() { }              // start up, called by above Init.  no cursor available
+        // themeing happens at this point
         public virtual void SetTransparency(bool ison, Color curcol) { }  // set on/off transparency of components - occurs before SetCursor/LoadLayout/InitialDisplay in a pop out form
         public virtual void SetCursor(IHistoryCursor cur) { uctg = cur; }       // cursor is set..  Most UCs don't need to implement this.
         public virtual void LoadLayout() { }        // then a chance to load a layout. cursor available
@@ -108,6 +109,11 @@ namespace EDDiscovery.UserControls
                 ((UserControlContainerResizable)(this.Parent)).SetControlText(s);
         }
 
+        public bool HasControlTextArea()
+        {
+            return (this.Parent is ExtendedControls.TabStrip) || (this.Parent is Forms.UserControlForm) || (this.Parent is UserControlContainerResizable);
+        }
+
         public void SetClipboardText(string s)
         {
             try
@@ -117,7 +123,7 @@ namespace EDDiscovery.UserControls
             }
             catch
             {
-                discoveryform.LogLineHighlight("Copying text to clipboard failed".Tx());
+                discoveryform.LogLineHighlight("Copying text to clipboard failed".Tx(this));
             }
         }
 

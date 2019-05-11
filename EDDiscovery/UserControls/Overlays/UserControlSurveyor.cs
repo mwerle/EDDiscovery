@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2016 - 2017 EDDiscovery development team
+ * Copyright © 2016 - 2019 EDDiscovery development team
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -13,23 +13,16 @@
  * 
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Drawing.Drawing2D;
 using EliteDangerousCore;
-using EliteDangerousCore.EDSM;
 using EliteDangerousCore.DB;
 using EliteDangerousCore.JournalEvents;
-using System.Diagnostics;
+using BaseUtils;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
 
 namespace EDDiscovery.UserControls
 {
@@ -40,7 +33,15 @@ namespace EDDiscovery.UserControls
         private string DbSave => DBName("Surveyor");
 
         private Font displayfont;
-        
+
+        private enum Alignment
+        {
+            left = 0,
+            center = 1,
+            right = 2,
+        }
+
+        private Alignment align;
 
         public UserControlSurveyor()
         {
@@ -52,10 +53,11 @@ namespace EDDiscovery.UserControls
         public override void Init()
         {
             discoveryform.OnHistoryChange += Display;
-            discoveryform.OnNewEntry += NewEntry;            
+            discoveryform.OnNewEntry += NewEntry;
 
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
+            BaseUtils.Translator.Instance.Translate(contextMenuStrip, this);
 
             displayfont = discoveryform.theme.GetFont;
             EDDTheme.Instance.ApplyToControls(this);
@@ -68,6 +70,20 @@ namespace EDDiscovery.UserControls
             hasVolcanismToolStripMenuItem.Checked = SQLiteDBClass.GetSettingBool(DbSave + "showVolcanism", true);
             hasRingsToolStripMenuItem.Checked = SQLiteDBClass.GetSettingBool(DbSave + "showRinged", true);
             hideAlreadyMappedBodiesToolStripMenuItem.Checked = SQLiteDBClass.GetSettingBool(DbSave + "hideMapped", true);
+            align = (Alignment)SQLiteDBClass.GetSettingInt(DbSave + nameof(align), 0);
+
+            switch (align)
+            {
+                case Alignment.right:
+                    rightToolStripMenuItem.Checked = true;
+                    break;
+                case Alignment.center:
+                    centerToolStripMenuItem.Checked = true;
+                    break;
+                default:
+                    leftToolStripMenuItem.Checked = true;
+                    break;
+            }
         }
 
         private void Display(HistoryList hl)
@@ -121,17 +137,30 @@ namespace EDDiscovery.UserControls
 
             if (he.EntryType == JournalTypeEnum.FSSAllBodiesFound)
             {
-                SetControlText("System scan complete.".Tx());
+                SetControlText("System scan complete.".Tx(this));
             }
 
             if (he.EntryType == JournalTypeEnum.FSDJump)
             {
+                SetControlText(string.Empty);
                 pictureBoxSurveyor.ClearImageList();
                 Refresh();
-            }            
+            }
+
+            if (he.EntryType == JournalTypeEnum.FSSDiscoveryScan)
+            {
+                var je = he.journalEntry as JournalFSSDiscoveryScan;
+                if (je != null)
+                {
+                    var bodies_found = je.BodyCount;
+                    SetControlText(bodies_found + " bodies found.".Tx(this));
+                }
+            }
         }
 
         public override Color ColorTransparency => Color.Green;
+
+        public int labelOffset { get; private set; }
 
         public override void SetTransparency(bool on, Color curcol)
         {
@@ -181,7 +210,7 @@ namespace EDDiscovery.UserControls
                 Mapped = mapped
             };
         }
-        
+
         /// <summary>
         /// Retrieve the list of bodies which match the user needs
         /// </summary>
@@ -197,7 +226,7 @@ namespace EDDiscovery.UserControls
             if (he == null)     //  no he, no display
             {
                 last_he = he;
-                SetControlText("No scan reported.".Tx());
+                SetControlText("No scan reported.".Tx(this));
                 return;
             }
             else
@@ -207,7 +236,7 @@ namespace EDDiscovery.UserControls
                 if (scannode == null)     // no data, clear display, clear any last_he so samesys is false next time
                 {
                     last_he = null;
-                    SetControlText("No scan reported.".Tx());
+                    SetControlText("No scan reported.".Tx(this));
                     return;
                 }
             }
@@ -222,20 +251,20 @@ namespace EDDiscovery.UserControls
 
                 foreach (StarScan.ScanNode sn in all_nodes)
                 {
-                    if (sn.ScanData?.BodyName != null && !sn.ScanData.IsStar)
+                    if (sn.ScanData != null && sn.ScanData?.BodyName != null && !sn.ScanData.IsStar)
                     {
                         bool hasrings, terraformable, volcanism, ammonia, earthlike, waterworld, mapped;
 
                         if (sn.ScanData.HasRings || sn.ScanData.Terraformable || sn.ScanData.Volcanism != null || sn.ScanData.PlanetTypeID == EDPlanet.Earthlike_body || sn.ScanData.PlanetTypeID == EDPlanet.Ammonia_world || sn.ScanData.PlanetTypeID == EDPlanet.Water_world)
                         {
-                            hasrings = sn.ScanData.PlanetTypeID == EDPlanet.Ammonia_world ? true : false;
+                            hasrings = sn.ScanData.HasRings;
                             terraformable = sn.ScanData.Terraformable ? true : false;
                             volcanism = sn.ScanData.Volcanism != null ? true : false;
                             ammonia = sn.ScanData.PlanetTypeID == EDPlanet.Ammonia_world ? true : false;
                             earthlike = sn.ScanData.PlanetTypeID == EDPlanet.Earthlike_body ? true : false;
                             waterworld = sn.ScanData.PlanetTypeID == EDPlanet.Water_world ? true : false;
 
-                            mapped = sn.IsMapped;
+                            mapped = sn.ScanData.Mapped;
 
                             var distanceString = new StringBuilder();
 
@@ -314,14 +343,13 @@ namespace EDDiscovery.UserControls
             information.Append(body.Name);
 
             // Additional information
-            information.Append((body.Ammonia) ? @" is an ammonia world." : null);
-            information.Append((body.Earthlike) ? @" is an earth like world." : null);
-            information.Append((body.WaterWorld && !body.Terraformable) ? @" is a water world." : null);
-            information.Append((body.WaterWorld && body.Terraformable) ? @" is a terraformable water world." : null);
-            information.Append((body.Terraformable && !body.WaterWorld) ? @" is a terraformable planet." : null);
-            information.Append((body.Ringed) ? @" Has ring." : null);
-            information.Append((body.Volcanism) ? @" Has " + body.VolcanismString : null);
-
+            information.Append((body.Ammonia) ? @" is an ammonia world.".Tx(this) : null);
+            information.Append((body.Earthlike) ? @" is an earth like world.".Tx(this) : null);
+            information.Append((body.WaterWorld && !body.Terraformable) ? @" is a water world.".Tx(this) : null);
+            information.Append((body.WaterWorld && body.Terraformable) ? @" is a terraformable water world.".Tx(this) : null);
+            information.Append((body.Terraformable && !body.WaterWorld) ? @" is a terraformable planet.".Tx(this) : null);
+            information.Append((body.Ringed) ? @" Has ring.".Tx(this) : null);
+            information.Append((body.Volcanism) ? @" Has ".Tx(this) + body.VolcanismString : null);
             information.Append(@" " + body.DistanceFromArrival);
 
             //Debug.Print(information.ToString()); // for testing
@@ -333,22 +361,48 @@ namespace EDDiscovery.UserControls
             var textcolour = IsTransparent ? discoveryform.theme.SPanelColor : discoveryform.theme.LabelColor;
             var backcolour = IsTransparent ? Color.Transparent : this.BackColor;
 
-            if (body != null)
+            using (var bitmap = new Bitmap(1, 1))
             {
-                if (!body.Mapped || (body.Mapped && !hideAlreadyMappedBodiesToolStripMenuItem.Checked))
+                var grfx = Graphics.FromImage(bitmap);
+
+                using (var font = new Font(displayfont, FontStyle.Regular))
                 {
-                    pictureBoxSurveyor?.AddTextAutoSize(
-                        new Point(0, vPos + 4),
-                        new Size(pictureBoxSurveyor.Width, 24),
-                        information.ToString(),
-                        displayfont,
-                        textcolour,
-                        backcolour,
-                        1.0F);
+                    if (body != null)
+                    {
+                        if (!body.Mapped || (body.Mapped && !hideAlreadyMappedBodiesToolStripMenuItem.Checked))
+                        {
+                            var containerSize = new Size(Math.Max(pictureBoxSurveyor.Width,24), 24);        // note when minimized, we could have a tiny width, so need to protect
+                            var label = information.ToString();
+
+                            var bounds = BitMapHelpers.DrawTextIntoAutoSizedBitmap(label, containerSize, displayfont, textcolour, backcolour, 1.0F);
+
+                            if (align == Alignment.center)
+                            {
+                                labelOffset = (int)((containerSize.Width - bounds.Width) / 2);
+                            }
+                            else if (align == Alignment.right)
+                            {
+                                labelOffset = (int)(containerSize.Width - bounds.Width);
+                            }
+                            else
+                            {
+                                labelOffset = 0;
+                            }
+
+                            pictureBoxSurveyor?.AddTextAutoSize(
+                                    new Point(labelOffset, vPos + 4),
+                                    new Size((int)bounds.Width, 24),
+                                    information.ToString(),
+                                    displayfont,
+                                    textcolour,
+                                    backcolour,
+                                    1.0F);
+                        }
+
+                        pictureBoxSurveyor.Refresh();
+                    }
                 }
             }
-                        
-            pictureBoxSurveyor.Refresh();
         }
 
         #endregion
@@ -400,6 +454,56 @@ namespace EDDiscovery.UserControls
             contextMenuStrip.Visible |= e.Button == MouseButtons.Right;
             contextMenuStrip.Top = MousePosition.Y;
             contextMenuStrip.Left = MousePosition.X;
+        }
+
+        private void leftToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SQLiteDBClass.PutSettingInt(DbSave + nameof(align), (int)Alignment.left);
+
+            align = Alignment.left;
+
+            if (leftToolStripMenuItem.Checked)
+            {
+                centerToolStripMenuItem.Checked = false;
+                rightToolStripMenuItem.Checked = false;
+            }
+
+            DrawSystem(last_he);
+        }
+
+        private void centerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SQLiteDBClass.PutSettingInt(DbSave + nameof(align), (int)Alignment.center);
+
+            align = Alignment.center;
+
+            if (centerToolStripMenuItem.Checked)
+            {
+                leftToolStripMenuItem.Checked = false;
+                rightToolStripMenuItem.Checked = false;
+            }
+
+            DrawSystem(last_he);
+        }
+
+        private void rightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SQLiteDBClass.PutSettingInt(DbSave + nameof(align), (int)Alignment.right);
+
+            align = Alignment.right;
+
+            if (rightToolStripMenuItem.Checked)
+            {
+                centerToolStripMenuItem.Checked = false;
+                leftToolStripMenuItem.Checked = false;
+            }
+
+            DrawSystem(last_he);
+        }
+
+        private void UserControlSurveyor_Resize(object sender, EventArgs e)
+        {
+            DrawSystem(last_he);
         }
     }
 }

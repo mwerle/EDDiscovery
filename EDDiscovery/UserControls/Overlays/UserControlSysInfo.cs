@@ -79,7 +79,7 @@ namespace EDDiscovery.UserControls
 
         public override void Init()
         {
-            textBoxTarget.SetAutoCompletor(SystemClassDB.ReturnSystemListForAutoComplete);
+            textBoxTarget.SetAutoCompletor(SystemCache.ReturnSystemAutoCompleteList);
 
             // same order as Sel bits are defined in, one bit per selection item.
             toolstriplist = new ToolStripMenuItem[] { toolStripSystem , toolStripEDSM , toolStripVisits, toolStripBody,
@@ -110,6 +110,7 @@ namespace EDDiscovery.UserControls
             discoveryform.OnNewTarget += RefreshTargetDisplay;
             discoveryform.OnNoteChanged += OnNoteChanged;
             discoveryform.OnEDSMSyncComplete += Discoveryform_OnEDSMSyncComplete;
+            discoveryform.OnNewUIEvent += Discoveryform_OnNewUIEvent;
 
             panelFD.BackgroundImage = EDDiscovery.Icons.Controls.notfirstdiscover;      // just to hide it during boot up
 
@@ -137,6 +138,7 @@ namespace EDDiscovery.UserControls
             discoveryform.OnNewTarget -= RefreshTargetDisplay;
             discoveryform.OnNoteChanged -= OnNoteChanged;
             discoveryform.OnEDSMSyncComplete -= Discoveryform_OnEDSMSyncComplete;
+            discoveryform.OnNewUIEvent -= Discoveryform_OnNewUIEvent;
             SQLiteDBClass.PutSettingString(DbOSave, BaseUtils.LineStore.ToString(Lines));
             SQLiteDBClass.PutSettingInt(DbSelection, Selection);
         }
@@ -154,6 +156,12 @@ namespace EDDiscovery.UserControls
         {
             //System.Diagnostics.Debug.WriteLine("EDSM SYNC COMPLETED with " + count + " '" + syslist + "'");
             Display(last_he, discoveryform.history);
+        }
+
+        private void Discoveryform_OnNewUIEvent(UIEvent obj)
+        {
+            if ( obj is EliteDangerousCore.UIEvents.UIFuel) // fuel UI update the SI information globally.
+                Display(last_he, discoveryform.history);
         }
 
         bool neverdisplayed = true;
@@ -284,9 +292,10 @@ namespace EDDiscovery.UserControls
                     if ( fsd != null )
                     {
                         EliteDangerousCalculations.FSDSpec.JumpInfo ji = fsd.GetJumpInfo(he.MaterialCommodity.CargoCount, 
-                                                                    si.ModuleMass() + si.HullMass(), si.FuelCapacity, si.FuelCapacity / 2);
+                                                                    si.ModuleMass() + si.HullMass(), si.FuelLevel, si.FuelCapacity / 2);
 
-                        textBoxJumpRange.Text = ji.cursinglejump.ToString("N1") + "ly";
+                        //System.Diagnostics.Debug.WriteLine("Jump range " + si.FuelLevel + " " + si.FuelCapacity + " " + ji.cursinglejump);
+                        textBoxJumpRange.Text = ji.cursinglejump.ToString("N2") + "ly";
                     }
                 }
                 else
@@ -538,7 +547,6 @@ namespace EDDiscovery.UserControls
         private void whenTransparentUseSkinnyLookToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToggleSelection(sender, BitSelSkinny);
-            UpdateSkinny();
         }
 
         void ToggleSelection(Object sender, int bit)
@@ -556,8 +564,11 @@ namespace EDDiscovery.UserControls
             SuspendLayout();
             int ver = 3;
 
-            foreach (Control c in this.Controls)
-                c.Visible = false;
+            foreach (Control c in extPanelScroll.Controls)
+            {
+                if ( !(c is ExtendedControls.ExtScrollBar))
+                    c.Visible = false;
+            }
 
             int textboxh = EDDTheme.Instance.FontSize > 10 ? 24 : 20;
             int vspacing = textboxh+4;
@@ -957,32 +968,42 @@ namespace EDDiscovery.UserControls
         public override Color ColorTransparency { get { return Color.Green; } }
         public override void SetTransparency(bool on, Color curcol)
         {
-            this.BackColor = curcol;
-            UpdateSkinny();
-        }
+            BackColor = curcol;
+            extPanelScroll.BackColor = curcol;
+            bool skinny = (Selection & (1 << BitSelSkinny)) != 0;
 
-        void UpdateSkinny()
-        { 
-            if (IsTransparent && (Selection & (1<<BitSelSkinny))!=0)
+            if ( !skinny )
+                EDDTheme.Instance.ApplyToControls(extPanelScroll);
+
+            foreach (Control c in extPanelScroll.Controls)
             {
-                foreach (Control c in Controls)
+                if (c is ExtendedControls.ExtTextBox)
                 {
-                    if (c is ExtendedControls.ExtTextBox)
+                    var tb = c as ExtendedControls.ExtTextBox;
+                    tb.BackColor = curcol;
+                    tb.ControlBackground = curcol;
+                    if (skinny)
                     {
-                        ExtendedControls.ExtTextBox b = c as ExtendedControls.ExtTextBox;
-                        b.ControlBackground = Color.Red;
-                        b.BorderStyle = BorderStyle.None;
-                        b.BorderColor = Color.Transparent;
+                        tb.BorderStyle = BorderStyle.None;
+                        tb.BorderColor = Color.Transparent;
                     }
                 }
+                else if (c is ExtendedControls.ExtRichTextBox)
+                {
+                    var tb = c as ExtendedControls.ExtRichTextBox;
+                    tb.TextBoxBackColor = curcol;
+                    if (skinny)
+                    {
+                        tb.BorderStyle = BorderStyle.None;
+                        tb.BorderColor = Color.Transparent;
+                    }
+                }
+                else
+                    c.BackColor = curcol;
             }
-            else
-                EDDTheme.Instance.ApplyToControls(this);
-
         }
 
         #endregion
-
-        
+       
     }
 }

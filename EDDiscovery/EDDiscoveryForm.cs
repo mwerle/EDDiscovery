@@ -112,6 +112,12 @@ namespace EDDiscovery
         }
         public void RefreshDisplays() { Controller.RefreshDisplays(); }
         public void RecalculateHistoryDBs() { Controller.RecalculateHistoryDBs(); }
+
+        public void ChangeToCommander(int id)
+        {
+            EDCommander.CurrentCmdrID = id;
+            Controller.RefreshHistoryAsync(currentcmdr: EDCommander.CurrentCmdrID);                                   // which will cause DIsplay to be called as some point
+        }
         #endregion
 
         #region Initialisation
@@ -149,7 +155,7 @@ namespace EDDiscovery
         {
             Trace.WriteLine(BaseUtils.AppTicks.TickCountLap() + " ED init");
 
-            msg.Invoke("Modulating Shields");
+            msg.Invoke("Loading Translations");
 
             if (EDDOptions.Instance.ResetLanguage)
                 EDDConfig.Instance.Language = "None";
@@ -178,7 +184,7 @@ namespace EDDiscovery
             Trace.WriteLine(BaseUtils.AppTicks.TickCountLap() + " Load popouts, themes, init controls");
             PopOuts = new PopOutControl(this);
 
-            msg.Invoke("Repairing Canopy");
+            msg.Invoke("Loading Themes");
             theme.LoadThemes();                                         // default themes and ones on disk loaded
 
             screenshotconverter = new ScreenShots.ScreenShotConverter(this);
@@ -216,6 +222,7 @@ namespace EDDiscovery
             PanelInformation.PanelIDs[] pids = PanelInformation.GetUserSelectablePanelIDs(EDDConfig.Instance.SortPanelsByName);      // only user panels
 
             BaseUtils.Translator.Instance.Translate(contextMenuStripTabs, this);        // need to translate BEFORE we add in extra items
+            BaseUtils.Translator.Instance.Translate(notifyIconContextMenuStrip, this);        // need to translate BEFORE we add in extra items
 
             foreach (PanelInformation.PanelIDs pid in pids)
             {
@@ -249,13 +256,15 @@ namespace EDDiscovery
 
             Trace.WriteLine(BaseUtils.AppTicks.TickCountLap() + " Audio");
 
-            msg.Invoke("Activating Sensors");
+            msg.Invoke("Loading Action Packs");
 
             actioncontroller = new Actions.ActionController(this, Controller, this.Icon);
 
             actioncontroller.ReLoad();          // load system up here
 
             Trace.WriteLine(BaseUtils.AppTicks.TickCountLap() + " Theming");
+
+            msg.Invoke("Applying Themes");
 
             ApplyTheme();
 
@@ -613,8 +622,8 @@ namespace EDDiscovery
 
         public void ForceEDSMEDDBFullRefresh()
         {
-            SystemClassEDSM.ForceEDSMFullUpdate();
-            EliteDangerousCore.EDDB.SystemClassEDDB.ForceEDDBFullUpdate();
+            SQLiteConnectionSystem.ForceEDSMFullUpdate();
+            SQLiteConnectionSystem.ForceEDDBFullUpdate();
             Controller.AsyncPerformSync(true, true);
         }
 
@@ -698,7 +707,7 @@ namespace EDDiscovery
 
             string prefix = "EventClass_";
             cv.AddPropertiesFieldsOfClass(uievent, prefix, new Type[] { typeof(System.Drawing.Icon), typeof(System.Drawing.Image), typeof(System.Drawing.Bitmap), typeof(Newtonsoft.Json.Linq.JObject) }, 5);
-            cv[prefix + "UIDisplayed"] = EDDConfig.ShowUIEvents ? "1" : "0";
+            cv[prefix + "UIDisplayed"] = "0";
             actioncontroller.ActionRun(Actions.ActionEventEDList.onUIEvent, cv);
             actioncontroller.ActionRun(Actions.ActionEventEDList.EliteUIEvent(uievent), cv);
 
@@ -864,7 +873,7 @@ namespace EDDiscovery
         {
             if (!EDDConfig.Instance.EDSMEDDBDownload)
                 ExtendedControls.MessageBoxTheme.Show(this, "Star Data download is disabled. Use Settings to reenable it".Tx(this, "SDDis"));
-            else if (!Controller.AsyncPerformSync(eddbsync: true))      // we want it to have run, to completion, to allow another go..
+            else if (!Controller.AsyncPerformSync(eddb_edsmalias_sync: true))      // we want it to have run, to completion, to allow another go..
                 ExtendedControls.MessageBoxTheme.Show(this, "Synchronisation to databases is in operation or pending, please wait".Tx(this, "SDSyncErr"));
         }
 
@@ -1405,11 +1414,8 @@ namespace EDDiscovery
             if (comboBoxCommander.SelectedIndex >= 0 && comboBoxCommander.Enabled)     // DONT trigger during LoadCommandersListBox
             {
                 var itm = (from EDCommander c in EDCommander.GetListInclHidden() where c.Name.Equals(comboBoxCommander.Text) select c).ToList();
-
-                EDCommander.CurrentCmdrID = itm[0].Nr;
-                Controller.RefreshHistoryAsync(currentcmdr: EDCommander.CurrentCmdrID);                                   // which will cause DIsplay to be called as some point
+                ChangeToCommander(itm[0].Nr);
             }
-
         }
 
 

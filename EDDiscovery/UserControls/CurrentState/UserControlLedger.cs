@@ -32,7 +32,7 @@ namespace EDDiscovery.UserControls
     {
         FilterSelector cfs; 
 
-        private string DbFilterSave { get { return DBName("LedgerGridEventFilter" ); } }
+        private string DbFilterSave { get { return DBName("LedgerGridEventFilter2" ); } }
         private string DbColumnSave { get { return DBName("LedgerGrid" ,  "DGVCol"); } }
         private string DbHistorySave { get { return DBName("LedgerGridEDUIHistory" ); } }
 
@@ -50,15 +50,14 @@ namespace EDDiscovery.UserControls
             dataGridViewLedger.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
             dataGridViewLedger.RowTemplate.Height = 26;
 
-            var jes = EliteDangerousCore.JournalEntry.GetTranslatedNamesOfEventsWithOptMethod(new string[] { "Ledger" });
+            var jes = EliteDangerousCore.JournalEntry.GetNameImageOfEvents(new string[] { "Ledger" });
             string cashtype = string.Join(";", jes.Select(x=>x.Item1) ) + ";";
 
             cfs = new FilterSelector(DbFilterSave);
-            cfs.AddGroupOption("Cash Transactions".Tx(this), cashtype , JournalEntry.JournalTypeIcons[JournalTypeEnum.Bounty]);
+            cfs.AddAllNone();
+            cfs.AddGroupOption(cashtype, "Cash Transactions".Tx(this),  JournalEntry.JournalTypeIcons[JournalTypeEnum.Bounty]);
             cfs.AddJournalEntries(new string[] { "Ledger", "LedgerNC" });
-            cfs.Changed += EventFilterChanged;
-
-            TravelHistoryFilter.InitaliseComboBox(comboBoxHistoryWindow, DbHistorySave , incldockstartend:false);
+            cfs.Closing += EventFilterChanged;
 
             discoveryform.OnHistoryChange += Redisplay;
             discoveryform.OnNewEntry += NewEntry;
@@ -66,6 +65,8 @@ namespace EDDiscovery.UserControls
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(contextMenuStrip, this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
+
+            TravelHistoryFilter.InitaliseComboBox(comboBoxHistoryWindow, DbHistorySave, incldockstartend: false);
         }
 
         public override void LoadLayout()
@@ -185,9 +186,10 @@ namespace EDDiscovery.UserControls
             dataGridViewLedger.FilterGridView(textBoxFilter.Text);
         }
 
-        private void EventFilterChanged(object sender, Object e)
+        private void EventFilterChanged(object sender, bool same, Object e)
         {
-            Display(current_mc);
+            if (!same)
+                Display(current_mc);
         }
 
         #region right clicks

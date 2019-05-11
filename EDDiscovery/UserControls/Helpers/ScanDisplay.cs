@@ -34,19 +34,27 @@ namespace EDDiscovery.UserControls
         public bool ShowMaterialsRare { get; set; }
         public bool HideFullMaterials { get; set; }
         public bool ShowOverlays { get; set; }
+        public int ValueLimit { get; set; } = 50000;
 
         public int WidthAvailable { get { return this.Width - vScrollBarCustom.Width; } }   // available display width
         public Point DisplayAreaUsed { get; private set; }  // used area to display in
         public Size StarSize { get; private set; }  // size of stars
 
         private Size beltsize, planetsize, moonsize, materialsize;
-        private Size itemsepar;
+        private int starfirstplanetspacerx;        // distance between star and first planet
+        private int starplanetgroupspacery;        // distance between each star/planet grouping 
+        private int planetspacerx;       // distance between each planet in a row
+        private int planetspacery;       // distance between each planet row
+        private int moonspacerx;        // distance to move moon across
+        private int moonspacery;        // distance to slide down moon vs planet
+        private int materiallinespacerxy;   // extra distance to add around material output
+        private int beltspacerx;
         private int leftmargin;
         private int topmargin;
-        private const int materialspacer = 4;
 
-        private Font stdfont = BaseUtils.FontLoader.GetFont("Microsoft Sans Serif", 8.25F);
-        private Font stdfontUnderline = BaseUtils.FontLoader.GetFont("Microsoft Sans Serif", 8.25F, FontStyle.Underline);
+        private Font stdfont = EDDTheme.Instance.GetFontAtSize(8.25f);
+        private Font largerfont = EDDTheme.Instance.GetFontAtSize(10f);
+        private Font stdfontUnderline = EDDTheme.Instance.GetFontAtSize(8.25f, FontStyle.Underline);
 
         #region Init
         public ScanDisplayControl()
@@ -67,23 +75,29 @@ namespace EDDiscovery.UserControls
 
         #region Display
 
-        public StarScan.SystemNode DrawSystem(ISystem showing_system, MaterialCommoditiesList curmats, HistoryList hl )   // draw showing_system (may be null), showing_matcomds (may be null)
+        public StarScan.SystemNode FindSystem(ISystem showing_system, HistoryList hl)
+        {
+            return showing_system != null ? hl.starscan.FindSystem(showing_system, CheckEDSM, byname: true) : null;
+        }
+
+        public void DrawSystem(StarScan.SystemNode last_sn, MaterialCommoditiesList curmats, HistoryList hl, string opttext = null )   // draw showing_system (may be null), showing_matcomds (may be null)
         {
             HideInfo();
 
             imagebox.ClearImageList();  // does not clear the image, render will do that
             
-            if (showing_system == null)
-            {
-                imagebox.Render();
-                return null;
-            }
-
-            StarScan.SystemNode last_sn = hl.starscan.FindSystem(showing_system, CheckEDSM, byname: true);
-
-            if (last_sn != null)     // 
+            if (last_sn != null)
             {
                 Point curpos = new Point(leftmargin, topmargin);
+
+                if ( opttext != null )
+                {
+                    ExtPictureBox.ImageElement lab = new ExtPictureBox.ImageElement();
+                    lab.TextAutosize(curpos, new Size(500, 30), opttext, largerfont, EDDTheme.Instance.LabelColor, this.BackColor);
+                    imagebox.Add(lab);
+                    curpos.Y += lab.img.Height + 8;
+                }
+
                 DisplayAreaUsed = curpos;
                 List<ExtPictureBox.ImageElement> starcontrols = new List<ExtPictureBox.ImageElement>();
 
@@ -91,7 +105,8 @@ namespace EDDiscovery.UserControls
 
                 foreach (StarScan.ScanNode starnode in last_sn.starnodes.Values)        // always has scan nodes
                 {
-                    //System.Diagnostics.Debug.WriteLine("Draw " + starnode.type);
+                    // Draw star
+
                     int offset = 0;
                     Point maxstarpos = DrawNode(starcontrols, starnode,curmats,hl,
                                 (starnode.type == StarScan.ScanNodeType.barycentre) ? Icons.Controls.Scan_Bodies_Barycentre : JournalScan.GetStarImageNotScanned(),
@@ -99,7 +114,7 @@ namespace EDDiscovery.UserControls
 
                     Point maxitemspos = maxstarpos;
 
-                    curpos = new Point(maxitemspos.X + itemsepar.Width, curpos.Y);   // move to the right
+                    curpos = new Point(maxitemspos.X + starfirstplanetspacerx, curpos.Y);   // move to the right
                     curpos.Y += StarSize.Height / 2 - planetsize.Height * 3 / 4;     // slide down for planet vs star difference in size
 
                     Point firstcolumn = curpos;
@@ -124,15 +139,16 @@ namespace EDDiscovery.UserControls
 
                             while (lastbelt != null && planetnode.ScanData != null && (lastbelt.BeltData == null || lastbelt.BeltData.OuterRad < planetnode.ScanData.nSemiMajorAxis))
                             {
+                                // if too far across, go back to star
                                 if (curpos.X + planetsize.Width > panelStars.Width - panelStars.ScrollBarWidth)
                                 {
-                                    curpos = new Point(firstcolumn.X, maxitemspos.Y + planetsize.Height);
+                                    curpos = new Point(firstcolumn.X, maxitemspos.Y + planetsize.Height + planetspacery);
                                 }
 
                                 DrawNode(starcontrols, lastbelt, curmats, hl, Icons.Controls.Scan_Bodies_Belt,
                                          new Point(curpos.X + (planetsize.Width - beltsize.Width) / 2, curpos.Y), beltsize, ref offset, false);
 
-                                curpos = new Point(curpos.X + planetsize.Width, curpos.Y);
+                                curpos = new Point(curpos.X + planetsize.Width + beltspacerx, curpos.Y);
                                 lastbelt = belts.Count != 0 ? belts.Dequeue() : null;
                             }
 
@@ -150,16 +166,16 @@ namespace EDDiscovery.UserControls
 
                                 if (maxpos.X > panelStars.Width - panelStars.ScrollBarWidth)          // uh oh too wide..
                                 {
-                                    int xoffset = firstcolumn.X - curpos.X;
-                                    int yoffset = maxitemspos.Y - curpos.Y;
+                                    int xoffset = firstcolumn.X - curpos.X;                     // shift to firstcolumn.x, maxitemspos.Y+planetspacer
+                                    int yoffset = (maxitemspos.Y+planetspacery) - curpos.Y;
 
                                     RepositionTree(pc, xoffset, yoffset);        // shift co-ords of all you've drawn
 
-                                    maxpos = new Point(maxpos.X + xoffset, maxpos.Y + yoffset);
-                                    curpos = new Point(maxpos.X, curpos.Y + yoffset);
+                                    maxpos = new Point(maxpos.X + xoffset, maxpos.Y + yoffset);     // remove the shift from maxpos
+                                    curpos = new Point(maxpos.X + planetspacerx, curpos.Y + yoffset);   // and set the curpos to maxpos.x + spacer, remove the shift from curpos.y
                                 }
                                 else
-                                    curpos = new Point(maxpos.X, curpos.Y);
+                                    curpos = new Point(maxpos.X + planetspacerx, curpos.Y);     // shift current pos right, plus a spacer
 
                                 maxitemspos = new Point(Math.Max(maxitemspos.X, maxpos.X), Math.Max(maxitemspos.Y, maxpos.Y));
 
@@ -177,39 +193,20 @@ namespace EDDiscovery.UserControls
                             DrawNode(starcontrols, lastbelt, curmats, hl, Icons.Controls.Scan_Bodies_Belt,
                                      new Point(curpos.X + (planetsize.Width - beltsize.Width) / 2, curpos.Y), beltsize, ref offset, false);
 
-                            curpos = new Point(curpos.X + planetsize.Width, curpos.Y);
+                            curpos = new Point(curpos.X + planetsize.Width + beltspacerx, curpos.Y);
                             lastbelt = belts.Count != 0 ? belts.Dequeue() : null;
                         }
                     }
 
                     DisplayAreaUsed = new Point(Math.Max(DisplayAreaUsed.X, maxitemspos.X), Math.Max(DisplayAreaUsed.Y, maxitemspos.Y));
-                    curpos = new Point(leftmargin, maxitemspos.Y + itemsepar.Height);
+
+                    curpos = new Point(leftmargin, maxitemspos.Y + starplanetgroupspacery);     // move back to left margin and move down to next position of star, allowing gap
                 }
 
                 imagebox.AddRange(starcontrols);
             }
 
             imagebox.Render();      // replaces image..
-
-            return last_sn;
-        }
-
-        private string BuildScanValue(StarScan.SystemNode system)
-        {
-            var value = 0;
-
-            foreach (var body in system.Bodies)
-            {
-                if (body?.ScanData != null)
-                {
-                    if (CheckEDSM || !body.ScanData.IsEDSMBody)
-                    {
-                        value += body.ScanData.EstimateScanValue(body.IsMapped, body.WasMappedEfficiently);
-                    }
-                }
-            }
-
-            return string.Format("Approx value: {0:N0}".Tx(this,"AV"), value);
         }
 
         // return right bottom of area used from curpos
@@ -228,7 +225,7 @@ namespace EDDiscovery.UserControls
             {
                 offset -= moonsize.Width;               // offset is centre of planet image, back off by a moon width to allow for 2 moon widths centred
 
-                Point moonpos = new Point(curpos.X + offset, maxtreepos.Y + itemsepar.Height);    // moon pos
+                Point moonpos = new Point(curpos.X + offset, maxtreepos.Y + moonspacery);    // moon pos
 
                 foreach (StarScan.ScanNode moonnode in planetnode.children.Values.Where(n => n.type != StarScan.ScanNodeType.barycentre))
                 {
@@ -247,9 +244,9 @@ namespace EDDiscovery.UserControls
                             Point submoonpos;
 
                             if (mmax.X <= moonpos.X + moonsize.Width * 2)           // if we have nothing wider than the 2 moon widths, we can go with it right aligned
-                                submoonpos = new Point(moonpos.X + moonsize.Width * 2 + itemsepar.Width, moonpos.Y);    // moon pos
+                                submoonpos = new Point(moonpos.X + moonsize.Width * 2 + moonspacerx, moonpos.Y);    // moon pos
                             else
-                                submoonpos = new Point(moonpos.X + moonsize.Width * 2 + itemsepar.Width, mmax.Y + itemsepar.Height);    // moon pos below and right
+                                submoonpos = new Point(moonpos.X + moonsize.Width * 2 + moonspacerx, mmax.Y + moonspacery);    // moon pos below and right
 
                             foreach (StarScan.ScanNode submoonnode in moonnode.children.Values)
                             {
@@ -263,12 +260,12 @@ namespace EDDiscovery.UserControls
 
                                     maxtreepos = new Point(Math.Max(maxtreepos.X, sbmax.X), Math.Max(maxtreepos.Y, sbmax.Y));
 
-                                    submoonpos = new Point(submoonpos.X, maxtreepos.Y + itemsepar.Height);
+                                    submoonpos = new Point(submoonpos.X, maxtreepos.Y + moonspacery);
                                 }
                             }
                         }
 
-                        moonpos = new Point(moonpos.X, maxtreepos.Y + itemsepar.Height);
+                        moonpos = new Point(moonpos.X, maxtreepos.Y + moonspacery);
                     }
                 }
             }
@@ -324,7 +321,7 @@ namespace EDDiscovery.UserControls
                 else //else not a top-level star
                 {
                     bool indicatematerials = sc.HasMaterials && !ShowMaterials;
-                    bool valuable = sc.EstimateScanValue(sn.IsMapped, sn.WasMappedEfficiently) > 50000;
+                    bool valuable = sc.EstimatedValue >= ValueLimit;
 
                     Image nodeimage = sc.IsStar ? sc.GetStarTypeImage() : sc.GetPlanetClassImage();
 
@@ -345,7 +342,7 @@ namespace EDDiscovery.UserControls
 
                             if (ShowOverlays)
                             {
-                                int overlaystotal = (sc.Terraformable ? 1 : 0) + (sc.HasMeaningfulVolcanism ? 1 : 0) + (valuable ? 1 : 0) + (sn.IsMapped ? 1 : 0);
+                                int overlaystotal = (sc.Terraformable ? 1 : 0) + (sc.HasMeaningfulVolcanism ? 1 : 0) + (valuable ? 1 : 0) + (sc.Mapped ? 1 : 0);
                                 int ovsize = (overlaystotal>1) ? quarterheight : (quarterheight*3/2);
                                 int pos = 0;
 
@@ -367,7 +364,7 @@ namespace EDDiscovery.UserControls
                                     pos += ovsize + 1;
                                 }
 
-                                if (sn.IsMapped)
+                                if (sc.Mapped)
                                     g.DrawImage(Icons.Controls.Scan_Bodies_Mapped, new Rectangle(0, pos, ovsize, ovsize));
                             }
 
@@ -495,11 +492,11 @@ namespace EDDiscovery.UserControls
 
                 if (++noperline == 4)
                 {
-                    matpos = new Point(startpos.X, matpos.Y + matsize.Height + materialspacer);
+                    matpos = new Point(startpos.X, matpos.Y + matsize.Height + materiallinespacerxy);
                     noperline = 0;
                 }
                 else
-                    matpos.X += matsize.Width + materialspacer;
+                    matpos.X += matsize.Width + materiallinespacerxy;
             }
 
             return maximum;
@@ -541,6 +538,8 @@ namespace EDDiscovery.UserControls
                 ExtPictureBox.ImageElement lab = new ExtPictureBox.ImageElement();
                 Size maxsize = new Size(300, 30);
 
+                //System.Diagnostics.Debug.WriteLine("Write Label " + label + " " + EDDTheme.Instance.LabelColor + " " + this.BackColor);
+
                 lab.TextCentreAutosize(labposcenthorz, maxsize, label, font, EDDTheme.Instance.LabelColor, this.BackColor);
 
                 if (lab.pos.X < postopright.X)
@@ -575,9 +574,17 @@ namespace EDDiscovery.UserControls
             moonsize = new Size(StarSize.Width * 2 / 4, StarSize.Height * 2 / 4);
             int matsize = stars >= 64 ? 24 : 16;
             materialsize = new Size(matsize, matsize);
-            itemsepar = new Size(stars / 16, stars / 16);
+
+            beltspacerx = Math.Min(stars / 2, 16);
+            starfirstplanetspacerx = Math.Min(stars / 2, 16);      // 16/2=8 to 16
+            starplanetgroupspacery = Math.Min(stars / 2, 24);      // 16/2=8 to 24
+            planetspacerx = Math.Min(stars / 4, 16);       
+            planetspacery = Math.Min(stars / 4, 16);
+            moonspacerx = Math.Min(stars / 4, 8);
+            moonspacery = Math.Min(stars / 4, 8);
             topmargin = 10;
             leftmargin = 0;
+            materiallinespacerxy = 4;
         }
 
         #endregion

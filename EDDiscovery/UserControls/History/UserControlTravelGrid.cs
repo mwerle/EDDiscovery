@@ -75,11 +75,12 @@ namespace EDDiscovery.UserControls
 
         private const int DefaultRowHeight = 26;
 
-        private string DbFilterSave { get { return DBName("TravelHistoryControlEventFilter" ); } }
+        private string DbFilterSave { get { return DBName("TravelHistoryControlEventFilter2" ); } }
         private string DbColumnSave { get { return DBName("TravelControl" ,  "DGVCol"); } }
         private string DbHistorySave { get { return DBName("EDUIHistory" ); } }
         private string DbFieldFilter { get { return DBName("TravelHistoryControlFieldFilter" ); } }
-        private string DbAutoTop { get { return DBName("TravelHistoryControlAutoTop" ); } }
+        private string DbAutoTop { get { return DBName("TravelHistoryControlAutoTop"); } }
+        private string DbOutlines { get { return DBName("TravelHistoryOutlines"); } }
 
         private HistoryList current_historylist;        // the last one set, for internal refresh purposes on sort
 
@@ -106,12 +107,12 @@ namespace EDDiscovery.UserControls
             //System.Diagnostics.Debug.WriteLine("Travel grid is " + this.GetHashCode());
 
             cfs = new FilterSelector(DbFilterSave);
+            cfs.AddAllNone();
             cfs.AddJournalExtraOptions();
             cfs.AddJournalEntries();
-            cfs.Changed += EventFilterChanged;
-            TravelHistoryFilter.InitaliseComboBox(comboBoxHistoryWindow, DbHistorySave);
+            cfs.Closing += EventFilterChanged;
 
-            checkBoxMoveToTop.Checked = SQLiteConnectionUser.GetSettingBool(DbAutoTop, true);
+            checkBoxCursorToTop.Checked = SQLiteConnectionUser.GetSettingBool(DbAutoTop, true);
 
             dataGridViewTravel.MakeDoubleBuffered();
             dataGridViewTravel.RowTemplate.Height = DefaultRowHeight;
@@ -136,9 +137,27 @@ namespace EDDiscovery.UserControls
             discoveryform.OnNewEntry += AddNewEntry;
             discoveryform.OnNoteChanged += OnNoteChanged;
 
+            contextMenuStripOutlines.SetToolStripState(SQLiteConnectionUser.GetSettingString(DbOutlines, ""));
+            this.rollUpOffToolStripMenuItem.Click += new System.EventHandler(this.rolluplimitToolStripMenuItem_Click);
+            this.rollUpAfterFirstToolStripMenuItem.Click += new System.EventHandler(this.rolluplimitToolStripMenuItem_Click);
+            this.rollUpAfter5ToolStripMenuItem.Click += new System.EventHandler(this.rolluplimitToolStripMenuItem_Click);
+            this.outliningOnOffToolStripMenuItem.Click += new System.EventHandler(this.toolStripOutliningToggle);
+            this.scanEventsOutliningOnOffToolStripMenuItem.Click += new System.EventHandler(this.toolStripOutliningToggle);
+            extCheckBoxOutlines.Checked = outliningOnOffToolStripMenuItem.Checked;
+
             BaseUtils.Translator.Instance.Translate(this);
             BaseUtils.Translator.Instance.Translate(historyContextMenu, this);
+            BaseUtils.Translator.Instance.Translate(contextMenuStripOutlines, this);
             BaseUtils.Translator.Instance.Translate(toolTip, this);
+
+            TravelHistoryFilter.InitaliseComboBox(comboBoxHistoryWindow, DbHistorySave);
+
+
+        }
+
+        private void ToolStripOutliningOn_CheckStateChanged(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("outlining Change state");
         }
 
         public override void LoadLayout()
@@ -154,7 +173,7 @@ namespace EDDiscovery.UserControls
             DGVSaveColumnLayout(dataGridViewTravel, DbColumnSave);
             discoveryform.OnHistoryChange -= HistoryChanged;
             discoveryform.OnNewEntry -= AddNewEntry;
-            SQLiteConnectionUser.PutSettingBool(DbAutoTop, checkBoxMoveToTop.Checked);
+            SQLiteConnectionUser.PutSettingBool(DbAutoTop, checkBoxCursorToTop.Checked);
             searchtimer.Dispose();
         }
 
@@ -201,6 +220,7 @@ namespace EDDiscovery.UserControls
 
             result = FilterHelpers.FilterHistory(result, fieldfilter, discoveryform.Globals, out ftotalfilters);
 
+            panelOutlining.Clear();
             dataGridViewTravel.Rows.Clear();
             rowsbyjournalid.Clear();
 
@@ -220,18 +240,34 @@ namespace EDDiscovery.UserControls
             string filtertext = textBoxFilter.Text;
             List<DataGridViewRow> rows = new List<DataGridViewRow>();
 
+            Outlining outlining = null;     // only outline if in normal time decend more with no filter text
+            bool rollupscans = false;
+            int rollupolder = 0;
+            if (filtertext.IsEmpty() && (sortcol < 0 || (sortcol == 0 && sortorder == SortOrder.Descending)) && outliningOnOffToolStripMenuItem.Checked)
+            {
+                outlining = new Outlining(panelOutlining);
+                rollupscans = scanEventsOutliningOnOffToolStripMenuItem.Checked;
+                rollupolder = rollUpOffToolStripMenuItem.Checked ? 0 : rollUpAfterFirstToolStripMenuItem.Checked ? 1 : 5;
+            }
+
+            extCheckBoxOutlines.Checked = outlining != null;
+
             if (chunks.Count != 0)
             {
                 var chunk = chunks[0];
 
-                dataGridViewTravel.SuspendLayout();
+                dataViewScrollerPanel.Suspend();
+
                 foreach (var item in chunk)
                 {
                     var row = CreateHistoryRow(item, filtertext);
                     if (row != null)
+                    {
+                        row.Visible = outlining?.Process(item, dataGridViewTravel.RowCount, rollupscans, rollupolder) ?? true;
+                        //row.Cells[2].Value = dataGridViewTravel.RowCount.ToString() + (string)row.Cells[2].Value;
                         dataGridViewTravel.Rows.Add(row);
+                    }
                 }
-                dataGridViewTravel.ResumeLayout();
 
                 int rowno = FindGridPosByJID(pos.Item1, true);     // find row.. must be visible..  -1 if not found/not visible
 
@@ -252,19 +288,33 @@ namespace EDDiscovery.UserControls
             {
                 todo.Enqueue(() =>
                 {
-                    dataGridViewTravel.SuspendLayout();
                     foreach (var item in chunk)
                     {
                         var row = CreateHistoryRow(item, filtertext);
                         if (row != null)
+                        {
+                            row.Visible = outlining?.Process(item, dataGridViewTravel.RowCount, rollupscans, rollupolder) ?? true;
+                            //row.Cells[2].Value = dataGridViewTravel.RowCount.ToString() + (string)row.Cells[2].Value;
                             dataGridViewTravel.Rows.Add(row);
+                        }
                     }
-                    dataGridViewTravel.ResumeLayout();
+
                 });
             }
 
             todo.Enqueue(() =>
             {
+                if (chunks.Count != 0)
+                {
+                    if (outlining != null)
+                    {
+                        dataGridViewTravel.Rows[dataGridViewTravel.Rows.Count - 1].Visible = true;
+                        outlining.ProcesslastLine(dataGridViewTravel.Rows.Count - 1, rollupolder);     // ensures we have a group at the end..
+                        panelOutlining.UpdateAfterAdd();
+                    }
+                    dataViewScrollerPanel.Resume();     // only resume if we added something
+                }
+
                 UpdateToolTipsForFilter();
 
                 int rowno = FindGridPosByJID(pos.Item1, true);     // find row.. must be visible..  -1 if not found/not visible
@@ -288,6 +338,7 @@ namespace EDDiscovery.UserControls
                     dataGridViewTravel.Sort(dataGridViewTravel.Columns[sortcol], (sortorder == SortOrder.Descending) ? ListSortDirection.Descending : ListSortDirection.Ascending);
                     dataGridViewTravel.Columns[sortcol].HeaderCell.SortGlyphDirection = sortorder;
                 }
+              
 
                 FireChangeSelection();      // and since we repainted, we should fire selection, as we in effect may have selected a new one
 
@@ -377,7 +428,7 @@ namespace EDDiscovery.UserControls
                     }
                 }
 
-                if (checkBoxMoveToTop.Checked && dataGridViewTravel.DisplayedRowCount(false) > 0)   // Move focus to new row
+                if (checkBoxCursorToTop.Checked && dataGridViewTravel.DisplayedRowCount(false) > 0)   // Move focus to new row
                 {
                     //System.Diagnostics.Debug.WriteLine("Auto Sel");
                     dataGridViewTravel.ClearSelection();
@@ -755,9 +806,51 @@ namespace EDDiscovery.UserControls
             }
         }
 
-#endregion
+        private void dataGridViewTravel_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            panelOutlining.Clear();
+            extCheckBoxOutlines.Checked = false;
+        }
 
-#region TravelHistoryRightClick
+        #endregion
+
+        #region Outlining
+
+        private void extButtonOutlines_Click(object sender, EventArgs e)
+        {
+            if (extCheckBoxOutlines.Checked == true && outliningOnOffToolStripMenuItem.Checked)     // if going checked.. means it was unchecked
+            {
+                HistoryChanged(current_historylist, true);      // Reapply, disabled by sorting etc
+            }
+            else
+            {
+                var p = extCheckBoxOutlines.PointToScreen(new Point(0, extCheckBoxOutlines.Height));
+                contextMenuStripOutlines.Show(p);
+            }
+        }
+
+        private void toolStripOutliningToggle(object sender, EventArgs e)
+        {
+            SQLiteConnectionUser.PutSettingString(DbOutlines, contextMenuStripOutlines.GetToolStripState());
+            extCheckBoxOutlines.Checked = outliningOnOffToolStripMenuItem.Checked;
+            if (outliningOnOffToolStripMenuItem.Checked || sender == outliningOnOffToolStripMenuItem)
+                HistoryChanged(current_historylist, true);
+        }
+
+        private void rolluplimitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem tmi = sender as ToolStripMenuItem;
+            rollUpOffToolStripMenuItem.Checked = tmi == rollUpOffToolStripMenuItem;         // makes them work as radio buttons
+            rollUpAfterFirstToolStripMenuItem.Checked = tmi == rollUpAfterFirstToolStripMenuItem;
+            rollUpAfter5ToolStripMenuItem.Checked = tmi == rollUpAfter5ToolStripMenuItem;
+            SQLiteConnectionUser.PutSettingString(DbOutlines, contextMenuStripOutlines.GetToolStripState());
+            if (outliningOnOffToolStripMenuItem.Checked )
+                HistoryChanged(current_historylist, true);
+        }
+
+        #endregion
+
+        #region TravelHistoryRightClick
 
         private void historyContextMenu_Opening(object sender, CancelEventArgs e)
         {
@@ -1008,72 +1101,7 @@ namespace EDDiscovery.UserControls
 
         private void selectCorrectSystemToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<JournalEntry> jents = JournalEntry.GetAll(EDCommander.CurrentCmdrID).OrderBy(j => j.EventTimeUTC).ThenBy(j => j.Id).ToList();
-            int selindex = jents.FindIndex(j => j.Id == rightclicksystem.Journalid);
-            int firstrow = selindex;
-            int lastrow = selindex;
-
-            if (selindex < 0)
-            {
-                // Selected entry is not in history for commander - abort.
-                return;
-            }
-
-            EliteDangerousCore.JournalEvents.JournalLocOrJump journalent = null;
-
-            if (jents[selindex].EventTypeID != JournalTypeEnum.FSDJump)
-            {
-                for (int i = selindex - 1; i >= 0; i--)
-                {
-                    var jent = jents[i];
-                    if (jent.EdsmID != rightclicksystem.System.EDSMID || jent.EventTypeID == JournalTypeEnum.Died)
-                        break;
-                    firstrow = i;
-                    if (jent.EventTypeID == JournalTypeEnum.FSDJump)
-                        break;
-                }
-            }
-
-            for (int i = rightclickrow + 1; i < dataGridViewTravel.RowCount; i++)
-            {
-                var jent = jents[i];
-                if (jent.EdsmID != rightclicksystem.System.EDSMID || jent.EventTypeID == JournalTypeEnum.FSDJump)
-                    break;
-                lastrow = i;
-                if (jent.EventTypeID == JournalTypeEnum.Died)
-                    break;
-            }
-
-            var _jents = jents;
-            jents = new List<JournalEntry>();
-
-            for (int i = firstrow; i <= lastrow; i++)
-            {
-                jents.Add(_jents[i]);
-            }
-
-            journalent = jents.OfType<EliteDangerousCore.JournalEvents.JournalLocOrJump>().FirstOrDefault();
-
-            if (journalent == null)
-            {
-                ExtendedControls.MessageBoxTheme.Show(FindForm(), "Could not find Location or FSDJump entry associated with selected journal entry".Tx(this,"NOLOC"));
-                return;
-            }
-
-            using (Forms.AssignTravelLogSystemForm form = new Forms.AssignTravelLogSystemForm(journalent))
-            {
-                DialogResult result = form.ShowDialog(FindForm());
-                if (result == DialogResult.OK)
-                {
-                    foreach (var jent in jents)
-                    {
-                        jent.SetEDSMId(form.AssignedEdsmId);
-                        jent.Update();
-                    }
-
-                    discoveryform.RefreshHistoryAsync();
-                }
-            }
+            ExtendedControls.MessageBoxTheme.Show(FindForm(), "Removed from EDD - please inform us if this is a problem");
         }
 
         private void toolStripMenuItemStartStop_Click(object sender, EventArgs e)
@@ -1203,9 +1231,9 @@ namespace EDDiscovery.UserControls
             }
         }
 
-#endregion
+        #endregion
 
-#region Event Filter
+        #region Event Filter
 
         private void buttonFilter_Click(object sender, EventArgs e)
         {
@@ -1213,25 +1241,19 @@ namespace EDDiscovery.UserControls
             cfs.Filter(b, this.FindForm());
         }
 
-        private void EventFilterChanged(object sender, Object e)
+        private void EventFilterChanged(object sender, bool same, Object e)
         {
-            HistoryChanged(current_historylist,true);
+            if (!same)
+                HistoryChanged(current_historylist,true);
         }
 
 
         private void buttonField_Click(object sender, EventArgs e)
         {
-            ExtendedConditionsForms.ConditionFilterForm frm = new ExtendedConditionsForms.ConditionFilterForm();
-            List<string> namelist = new List<string>() { "Note" };
-            namelist.AddRange(discoveryform.Globals.NameList);
-            frm.InitFilter("History: Filter out fields",
-                            System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                            JournalEntry.GetNamesOfEventsWithOptMethod(),
-                            (s) => { return BaseUtils.TypeHelpers.GetPropertyFieldNames(JournalEntry.TypeOfJournalEntry(s)); },
-                            namelist, fieldfilter);
-            if (frm.ShowDialog(this.FindForm()) == DialogResult.OK)
+            BaseUtils.ConditionLists res = FilterHelpers.ShowDialog(FindForm(), fieldfilter, discoveryform, "History: Filter out fields".Tx(this, "THF"));
+            if (res != null)
             {
-                fieldfilter = frm.Result;
+                fieldfilter = res;
                 SQLiteDBClass.PutSettingString(DbFieldFilter, fieldfilter.GetJSON());
                 HistoryChanged(current_historylist);
             }
@@ -1462,3 +1484,5 @@ namespace EDDiscovery.UserControls
         #endregion
     }
 }
+
+
